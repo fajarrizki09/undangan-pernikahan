@@ -88,6 +88,70 @@ textarea:focus {
   gap: 12px;
 }
 
+.inline-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.inline-check input {
+  width: auto;
+}
+
+.gallery-preview {
+  margin-top: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.gallery-item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.gallery-item img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: #f2e8e0;
+  display: block;
+}
+
+.gallery-item-body {
+  padding: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.gallery-item-url {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  word-break: break-all;
+}
+
+.btn-mini {
+  border: 1px solid #d8b9ac;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: #fff8f3;
+  color: #7a4e3c;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.preview-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .actions {
   margin-top: 12px;
   display: flex;

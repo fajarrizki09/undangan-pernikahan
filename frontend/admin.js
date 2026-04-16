@@ -40,6 +40,8 @@ const guestLinks = document.getElementById("guestLinks");
 const photoFilesInput = document.getElementById("photoFiles");
 const deletePhotoUrlsInput = document.getElementById("deletePhotoUrls");
 const musicFileInput = document.getElementById("musicFile");
+const galleryPreview = document.getElementById("galleryPreview");
+const deleteFromDriveInput = document.getElementById("deleteFromDrive");
 const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
 
@@ -175,10 +177,7 @@ function parseNonNegativeNumber(value) {
 }
 
 function readConfigFromForm() {
-  const photos = fields.galleryPhotos.value
-    .split(/\r?\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const photos = getGalleryUrls();
 
   return {
     brandInitials: fields.brandInitials.value.trim(),
@@ -244,6 +243,7 @@ function fillForm(config) {
   fields.resepsiMapUrl.value = (config.resepsi && config.resepsi.mapUrl) || "";
 
   fields.galleryPhotos.value = Array.isArray(config.galleryPhotos) ? config.galleryPhotos.join("\n") : "";
+  renderGalleryPreview();
 }
 
 async function postApi(payload) {
@@ -327,10 +327,7 @@ function fileToBase64(file) {
 }
 
 function appendGalleryUrls(urls) {
-  const existing = fields.galleryPhotos.value
-    .split(/\r?\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const existing = getGalleryUrls();
 
   const unique = new Set(existing);
   urls.forEach((url) => {
@@ -338,6 +335,7 @@ function appendGalleryUrls(urls) {
   });
 
   fields.galleryPhotos.value = Array.from(unique).join("\n");
+  renderGalleryPreview();
 }
 
 function removeGalleryUrls(urls) {
@@ -347,13 +345,118 @@ function removeGalleryUrls(urls) {
       .filter(Boolean)
   );
 
-  const existing = fields.galleryPhotos.value
-    .split(/\r?\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const existing = getGalleryUrls();
 
   const filtered = existing.filter((url) => !targets.has(url));
   fields.galleryPhotos.value = filtered.join("\n");
+  renderGalleryPreview();
+}
+
+function getGalleryUrls() {
+  return fields.galleryPhotos.value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function normalizePreviewUrl(url) {
+  const clean = String(url || "").trim();
+  if (!clean) return "";
+
+  const idFromQuery = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  const idFromPath = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  const fileId = (idFromQuery && idFromQuery[1]) || (idFromPath && idFromPath[1]);
+  if (clean.includes("drive.google.com") && fileId) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+  }
+
+  return clean;
+}
+
+async function deleteSinglePhoto(url) {
+  const targetUrl = String(url || "").trim();
+  if (!targetUrl) return;
+
+  const alsoDeleteDrive = Boolean(deleteFromDriveInput && deleteFromDriveInput.checked);
+  const confirmText = alsoDeleteDrive
+    ? "Hapus foto ini dari galeri dan Google Drive?"
+    : "Hapus foto ini dari galeri undangan?";
+  if (!window.confirm(confirmText)) return;
+
+  try {
+    const adminKey = getAdminKeyOrThrow();
+    setStatus(statusConfig, "Menghapus foto...");
+
+    if (alsoDeleteDrive) {
+      const result = await postApi({
+        action: "deletePhotos",
+        adminKey,
+        urls: [targetUrl]
+      });
+      if (Number(result.deletedCount || 0) < 1) {
+        const reason = result.failed && result.failed[0] && result.failed[0].reason;
+        throw new Error(reason || "Gagal menghapus file dari Google Drive");
+      }
+    }
+
+    removeGalleryUrls([targetUrl]);
+    await postApi({
+      action: "saveConfig",
+      adminKey,
+      config: readConfigFromForm()
+    });
+
+    setStatus(statusConfig, alsoDeleteDrive
+      ? "Foto berhasil dihapus dari Drive dan galeri."
+      : "Foto berhasil dihapus dari galeri.");
+  } catch (error) {
+    setStatus(statusConfig, `Error: ${error.message}`);
+  }
+}
+
+function renderGalleryPreview() {
+  if (!galleryPreview) return;
+  const urls = getGalleryUrls();
+
+  galleryPreview.innerHTML = "";
+  if (!urls.length) {
+    const empty = document.createElement("p");
+    empty.className = "preview-empty";
+    empty.textContent = "Belum ada foto di galeri.";
+    galleryPreview.appendChild(empty);
+    return;
+  }
+
+  urls.forEach((url) => {
+    const card = document.createElement("article");
+    card.className = "gallery-item";
+
+    const img = document.createElement("img");
+    img.src = normalizePreviewUrl(url);
+    img.alt = "Preview foto galeri";
+    img.loading = "lazy";
+
+    const body = document.createElement("div");
+    body.className = "gallery-item-body";
+
+    const urlText = document.createElement("p");
+    urlText.className = "gallery-item-url";
+    urlText.textContent = url;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "btn-mini";
+    removeBtn.textContent = "Hapus Foto";
+    removeBtn.addEventListener("click", () => {
+      deleteSinglePhoto(url);
+    });
+
+    body.appendChild(urlText);
+    body.appendChild(removeBtn);
+    card.appendChild(img);
+    card.appendChild(body);
+    galleryPreview.appendChild(card);
+  });
 }
 
 async function uploadPhotosToDrive() {
@@ -542,6 +645,7 @@ if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
 fillForm(WEDDING_CONFIG);
 loadSavedAdminKey();
 loadSavedInvitationBaseUrl();
+renderGalleryPreview();
 adminKeyInput.addEventListener("change", () => {
   saveAdminKey(adminKeyInput.value.trim());
 });
@@ -553,6 +657,7 @@ invitationBaseUrlInput.addEventListener("input", () => {
 });
 fields.weddingDateTimeLocal.addEventListener("input", updateWeddingIsoPreview);
 fields.weddingTimeOffset.addEventListener("change", updateWeddingIsoPreview);
+fields.galleryPhotos.addEventListener("input", renderGalleryPreview);
 if (RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
   loadConfigFromServer();
 }
