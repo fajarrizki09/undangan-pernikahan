@@ -133,7 +133,13 @@ async function loadConfigFromServer() {
     }
 
     setStatus(statusConfig, "Memuat konfigurasi...");
-    const response = await fetch(`${RSVP_API_URL}?action=config`);
+    const url = new URL(RSVP_API_URL);
+    url.searchParams.set("action", "config");
+    url.searchParams.set("_ts", String(Date.now()));
+
+    const response = await fetch(url.toString(), {
+      cache: "no-store"
+    });
     const result = await response.json();
 
     if (!result.success) {
@@ -227,7 +233,10 @@ async function loadGuests() {
 if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
   setStatus(statusConn, "Isi RSVP_API_URL di config.js agar admin panel aktif.");
 } else {
-  setStatus(statusConn, "Siap digunakan. Masukkan Admin Key untuk akses tulis data.");
+  setStatus(statusConn, "Terhubung. Konfigurasi server akan dimuat otomatis.");
 }
 
 fillForm(WEDDING_CONFIG);
+if (RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
+  loadConfigFromServer();
+}
