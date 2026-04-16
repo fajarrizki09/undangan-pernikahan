@@ -46,6 +46,25 @@ function setHtml(id, value) {
   if (el && value) el.innerHTML = value;
 }
 
+function setIframeSrc(id, value) {
+  const el = document.getElementById(id);
+  if (el && value) el.src = value;
+}
+
+function buildEmbedUrl(mapUrl, venue) {
+  const cleanMapUrl = (mapUrl || "").trim();
+  if (cleanMapUrl.includes("google.com/maps/embed")) {
+    return cleanMapUrl;
+  }
+
+  const query = encodeURIComponent((venue || "").trim());
+  if (query) {
+    return `https://maps.google.com/maps?q=${query}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  return "https://maps.google.com/maps?q=Indonesia&t=&z=5&ie=UTF8&iwloc=&output=embed";
+}
+
 function getGuestNameFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const raw = params.get("to") || params.get("tamu") || params.get("nama");
@@ -132,6 +151,8 @@ function applyWeddingConfig() {
     setText("akadTime", currentConfig.akad.time);
     setText("akadVenue", currentConfig.akad.venue);
     setLink("akadMap", currentConfig.akad.mapUrl);
+    setLink("akadMapOpen", currentConfig.akad.mapUrl);
+    setIframeSrc("akadMapEmbed", buildEmbedUrl(currentConfig.akad.mapUrl, currentConfig.akad.venue));
   }
 
   if (currentConfig.resepsi) {
@@ -139,6 +160,8 @@ function applyWeddingConfig() {
     setText("resepsiTime", currentConfig.resepsi.time);
     setText("resepsiVenue", currentConfig.resepsi.venue);
     setLink("resepsiMap", currentConfig.resepsi.mapUrl);
+    setLink("resepsiMapOpen", currentConfig.resepsi.mapUrl);
+    setIframeSrc("resepsiMapEmbed", buildEmbedUrl(currentConfig.resepsi.mapUrl, currentConfig.resepsi.venue));
   }
 
   if (Array.isArray(currentConfig.galleryPhotos)) {
