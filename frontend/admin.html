@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Undangan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <main class="container">
+    <header>
+      <p class="eyebrow">Admin Panel</p>
+      <h1>Kelola Undangan Pernikahan</h1>
+      <p>Atur nama, acara, foto, lalu import daftar tamu dalam satu halaman.</p>
+    </header>
+
+    <section class="card">
+      <h2>Koneksi</h2>
+      <div class="grid two">
+        <label>
+          URL Web App (GAS)
+          <input id="apiUrl" type="text" readonly />
+        </label>
+        <label>
+          Admin Key
+          <input id="adminKey" type="password" placeholder="Masukkan ADMIN_KEY dari Code.gs" />
+        </label>
+      </div>
+      <label>
+        Base URL Undangan (untuk generate link tamu)
+        <input id="invitationBaseUrl" type="text" placeholder="https://username.github.io/nama-repo/" />
+      </label>
+      <p class="status" id="statusConn"></p>
+    </section>
+
+    <section class="card">
+      <div class="row-between">
+        <h2>Konfigurasi Undangan</h2>
+        <button id="btnLoadConfig" class="btn btn-ghost" type="button">Muat dari Server</button>
+      </div>
+      <div class="grid two">
+        <label>Inisial Brand<input id="brandInitials" type="text" /></label>
+        <label>Tanggal & Lokasi Hero<input id="heroDatePlace" type="text" /></label>
+        <label>Nama Pendek Mempelai Wanita<input id="brideShortName" type="text" /></label>
+        <label>Nama Pendek Mempelai Pria<input id="groomShortName" type="text" /></label>
+        <label>Nama Lengkap Mempelai Wanita<input id="brideFullName" type="text" /></label>
+        <label>Nama Lengkap Mempelai Pria<input id="groomFullName" type="text" /></label>
+        <label>Orang Tua Mempelai Wanita<input id="brideParents" type="text" /></label>
+        <label>Orang Tua Mempelai Pria<input id="groomParents" type="text" /></label>
+        <label>Footer Names<input id="footerNames" type="text" /></label>
+        <label>Wedding Date ISO<input id="weddingDateISO" type="text" placeholder="2026-12-20T08:00:00+07:00" /></label>
+      </div>
+
+      <h3>Akad</h3>
+      <div class="grid two">
+        <label>Tanggal Akad<input id="akadDate" type="text" /></label>
+        <label>Waktu Akad<input id="akadTime" type="text" /></label>
+        <label>Tempat Akad<input id="akadVenue" type="text" /></label>
+        <label>Link Maps Akad<input id="akadMapUrl" type="text" /></label>
+      </div>
+
+      <h3>Resepsi</h3>
+      <div class="grid two">
+        <label>Tanggal Resepsi<input id="resepsiDate" type="text" /></label>
+        <label>Waktu Resepsi<input id="resepsiTime" type="text" /></label>
+        <label>Tempat Resepsi<input id="resepsiVenue" type="text" /></label>
+        <label>Link Maps Resepsi<input id="resepsiMapUrl" type="text" /></label>
+      </div>
+
+      <label>
+        Foto Galeri (1 baris = 1 URL/path)
+        <textarea id="galleryPhotos" rows="7" placeholder="assets/photos/foto-1.jpg"></textarea>
+      </label>
+
+      <div class="actions">
+        <button id="btnSaveConfig" class="btn" type="button">Simpan Konfigurasi</button>
+      </div>
+      <p class="status" id="statusConfig"></p>
+    </section>
+
+    <section class="card">
+      <h2>Import Tamu</h2>
+      <label>
+        Daftar Tamu (1 baris 1 nama, atau dipisah koma)
+        <textarea id="guestInput" rows="8" placeholder="Bapak Andi\nIbu Rina\nKeluarga Budi"></textarea>
+      </label>
+      <div class="actions">
+        <button id="btnImportGuests" class="btn" type="button">Import Nama Tamu</button>
+        <button id="btnLoadGuests" class="btn btn-ghost" type="button">Muat Semua Tamu</button>
+      </div>
+      <p class="status" id="statusGuests"></p>
+      <label>
+        Hasil Link Undangan Tamu
+        <textarea id="guestLinks" rows="10" readonly></textarea>
+      </label>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

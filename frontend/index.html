@@ -1,0 +1,175 @@
+﻿<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Undangan Pernikahan</title>
+  <meta name="description" content="Undangan pernikahan digital dengan RSVP online." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="texture"></div>
+  <div id="leafLayer" class="leaf-layer" aria-hidden="true"></div>
+  <div id="flowerLayer" class="flower-layer" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a href="#home" class="brand" id="brandInitials">A & F</a>
+    <nav>
+      <a href="#mempelai">Mempelai</a>
+      <a href="#acara">Acara</a>
+      <a href="#galeri">Galeri</a>
+      <a href="#rsvp">RSVP</a>
+    </nav>
+  </header>
+
+  <section id="home" class="hero section reveal">
+    <p class="overline">Undangan Pernikahan</p>
+    <h1><span id="heroBrideShort">Alya</span> <span class="amp">&</span> <span id="heroGroomShort">Fajar</span></h1>
+    <p class="subtitle" id="heroDatePlace">Minggu, 20 Desember 2026 • Surabaya</p>
+
+    <div class="guest-badge">
+      <p>Kepada Yth.</p>
+      <h3 id="guestName">Bapak/Ibu/Saudara/i</h3>
+    </div>
+
+    <div class="hero-actions">
+      <a href="#rsvp" class="btn">Konfirmasi Kehadiran</a>
+      <a href="#acara" class="btn btn-ghost">Lihat Detail Acara</a>
+    </div>
+
+    <div class="countdown" id="countdown" aria-live="polite">
+      <div><strong id="cdDays">0</strong><span>Hari</span></div>
+      <div><strong id="cdHours">0</strong><span>Jam</span></div>
+      <div><strong id="cdMinutes">0</strong><span>Menit</span></div>
+      <div><strong id="cdSeconds">0</strong><span>Detik</span></div>
+    </div>
+  </section>
+
+  <main>
+    <section id="mempelai" class="section card reveal">
+      <h2>Bismillahirrahmanirrahim</h2>
+      <p>
+        Assalamu'alaikum Warahmatullahi Wabarakatuh. Dengan memohon rahmat dan ridho Allah SWT,
+        kami mengundang Bapak/Ibu/Saudara/i untuk hadir di hari bahagia kami.
+      </p>
+      <div class="couple-grid">
+        <article class="profile">
+          <div class="avatar" id="avatarBride">A</div>
+          <h3 id="brideFullName">Alya Putri Ramadhani</h3>
+          <p id="brideParents">Putri dari Bapak Ahmad & Ibu Nurhayati</p>
+        </article>
+        <div class="connector">&</div>
+        <article class="profile">
+          <div class="avatar" id="avatarGroom">F</div>
+          <h3 id="groomFullName">Fajar Maulana Pratama</h3>
+          <p id="groomParents">Putra dari Bapak Hadi & Ibu Siti Aminah</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="acara" class="section card reveal">
+      <h2>Rangkaian Acara</h2>
+      <div class="event-grid">
+        <article class="event-item">
+          <p class="event-tag">Akad Nikah</p>
+          <h3 id="akadDate">Minggu, 20 Desember 2026</h3>
+          <p id="akadTime">08.00 WIB</p>
+          <p id="akadVenue">Masjid Al-Ikhlas, Surabaya</p>
+          <a class="text-link" id="akadMap" href="https://maps.google.com" target="_blank" rel="noopener noreferrer">Buka Lokasi</a>
+        </article>
+        <article class="event-item">
+          <p class="event-tag">Resepsi</p>
+          <h3 id="resepsiDate">Minggu, 20 Desember 2026</h3>
+          <p id="resepsiTime">11.00 - 14.00 WIB</p>
+          <p id="resepsiVenue">Graha Puspita, Surabaya</p>
+          <a class="text-link" id="resepsiMap" href="https://maps.google.com" target="_blank" rel="noopener noreferrer">Buka Lokasi</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="galeri" class="section card reveal">
+      <h2>Galeri Foto</h2>
+      <p>Ganti foto dengan dokumentasi terbaik kalian di folder `assets/photos`.</p>
+      <div class="gallery-grid">
+        <img id="photo1" src="assets/photos/foto-1.svg" alt="Foto pasangan 1" loading="lazy" />
+        <img id="photo2" src="assets/photos/foto-2.svg" alt="Foto pasangan 2" loading="lazy" />
+        <img id="photo3" src="assets/photos/foto-3.svg" alt="Foto pasangan 3" loading="lazy" />
+        <img id="photo4" src="assets/photos/foto-4.svg" alt="Foto pasangan 4" loading="lazy" />
+        <img id="photo5" src="assets/photos/foto-5.svg" alt="Foto pasangan 5" loading="lazy" />
+        <img id="photo6" src="assets/photos/foto-6.svg" alt="Foto pasangan 6" loading="lazy" />
+      </div>
+    </section>
+
+    <section id="loveStory" class="section card reveal">
+      <h2>Love Story</h2>
+      <div class="timeline">
+        <article>
+          <p class="year">2021</p>
+          <h3>Pertama Bertemu</h3>
+          <p>Kami bertemu dalam sebuah kegiatan komunitas dan mulai saling mengenal lebih dekat.</p>
+        </article>
+        <article>
+          <p class="year">2023</p>
+          <h3>Lamaran</h3>
+          <p>Dengan restu keluarga, kami melangkah ke tahap yang lebih serius untuk masa depan bersama.</p>
+        </article>
+        <article>
+          <p class="year">2026</p>
+          <h3>Hari Pernikahan</h3>
+          <p>InsyaAllah kami menyempurnakan separuh agama dan memulai perjalanan rumah tangga.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section card reveal quran-card">
+      <h2>Doa dan Ayat Al-Quran</h2>
+      <p class="quran-ar" id="quranAyatArab">&#x648;&#x64E;&#x645;&#x650;&#x646;&#x652; &#x622;&#x64A;&#x64E;&#x627;&#x62A;&#x650;&#x647;&#x650; &#x623;&#x64E;&#x646;&#x652; &#x62E;&#x64E;&#x644;&#x64E;&#x642;&#x64E; &#x644;&#x64E;&#x643;&#x64F;&#x645;&#x652; &#x645;&#x650;&#x646;&#x652; &#x623;&#x64E;&#x646;&#x652;&#x641;&#x64F;&#x633;&#x650;&#x643;&#x64F;&#x645;&#x652; &#x623;&#x64E;&#x632;&#x652;&#x648;&#x64E;&#x627;&#x62C;&#x64B;&#x627; &#x644;&#x650;&#x62A;&#x64E;&#x633;&#x652;&#x643;&#x64F;&#x646;&#x64F;&#x648;&#x627; &#x625;&#x650;&#x644;&#x64E;&#x64A;&#x652;&#x647;&#x64E;&#x627; &#x648;&#x64E;&#x62C;&#x64E;&#x639;&#x64E;&#x644;&#x64E; &#x628;&#x64E;&#x64A;&#x652;&#x646;&#x64E;&#x643;&#x64F;&#x645;&#x652; &#x645;&#x64E;&#x648;&#x64E;&#x62F;&#x64E;&#x651;&#x629;&#x64B; &#x648;&#x64E;&#x631;&#x64E;&#x62D;&#x652;&#x645;&#x64E;&#x629;&#x64B;</p>
+      <p id="quranAyatTrans">Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya di antaramu rasa kasih dan sayang.</p>
+      <p class="quran-ref" id="quranAyatRef">QS. Ar-Rum: 21</p>
+    </section>
+
+    <section id="rsvp" class="section card reveal">
+      <h2>RSVP & Ucapan</h2>
+      <p>Mohon konfirmasi kehadiran Anda melalui form berikut.</p>
+      <form id="rsvpForm" class="rsvp-form">
+        <label>
+          Nama
+          <input type="text" id="inputNama" name="nama" required />
+        </label>
+        <label>
+          Jumlah Tamu
+          <input type="number" name="jumlah" min="1" max="10" required />
+        </label>
+        <label>
+          Kehadiran
+          <select name="kehadiran" required>
+            <option value="Hadir">Hadir</option>
+            <option value="Tidak Hadir">Tidak Hadir</option>
+          </select>
+        </label>
+        <label>
+          Ucapan
+          <textarea name="ucapan" rows="4" placeholder="Tulis doa dan ucapan..."></textarea>
+        </label>
+        <button type="submit" class="btn">Kirim RSVP</button>
+      </form>
+      <p id="formStatus" class="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer class="section footer reveal">
+    <p>Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Anda berkenan hadir.</p>
+    <p class="footer-names" id="footerNames">Alya & Fajar</p>
+  </footer>
+
+  <button id="musicToggle" class="music-toggle" type="button" aria-label="Putar musik">Play Music</button>
+  <audio id="bgMusic" loop preload="none"></audio>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
+
