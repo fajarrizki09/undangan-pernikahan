@@ -30,6 +30,7 @@ const statusGuests = document.getElementById("statusGuests");
 
 const guestInput = document.getElementById("guestInput");
 const guestLinks = document.getElementById("guestLinks");
+const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 
 document.getElementById("btnLoadConfig").addEventListener("click", loadConfigFromServer);
 document.getElementById("btnSaveConfig").addEventListener("click", saveConfigToServer);
@@ -38,6 +39,29 @@ document.getElementById("btnLoadGuests").addEventListener("click", loadGuests);
 
 apiUrlInput.value = RSVP_API_URL;
 invitationBaseUrlInput.value = (ADMIN_CONFIG && ADMIN_CONFIG.invitationBaseUrl) || window.location.origin + window.location.pathname.replace(/admin\.html$/, "");
+
+function loadSavedAdminKey() {
+  try {
+    const saved = localStorage.getItem(ADMIN_KEY_STORAGE_KEY);
+    if (saved) {
+      adminKeyInput.value = saved;
+    }
+  } catch (error) {
+    // Ignore localStorage access issues.
+  }
+}
+
+function saveAdminKey(value) {
+  try {
+    if (!value) {
+      localStorage.removeItem(ADMIN_KEY_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(ADMIN_KEY_STORAGE_KEY, value);
+  } catch (error) {
+    // Ignore localStorage access issues.
+  }
+}
 
 function setStatus(el, message) {
   el.textContent = message;
@@ -157,6 +181,7 @@ async function saveConfigToServer() {
   try {
     const adminKey = adminKeyInput.value.trim();
     if (!adminKey) throw new Error("Admin key wajib diisi");
+    saveAdminKey(adminKey);
 
     setStatus(statusConfig, "Menyimpan konfigurasi...");
     await postApi({
@@ -198,6 +223,7 @@ async function importGuests() {
   try {
     const adminKey = adminKeyInput.value.trim();
     if (!adminKey) throw new Error("Admin key wajib diisi");
+    saveAdminKey(adminKey);
 
     const guests = parseGuestInput();
     if (!guests.length) throw new Error("Daftar tamu kosong");
@@ -220,6 +246,7 @@ async function loadGuests() {
   try {
     const adminKey = adminKeyInput.value.trim();
     if (!adminKey) throw new Error("Admin key wajib diisi");
+    saveAdminKey(adminKey);
 
     setStatus(statusGuests, "Memuat daftar tamu...");
     const result = await postApi({ action: "listGuests", adminKey });
@@ -237,6 +264,10 @@ if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
 }
 
 fillForm(WEDDING_CONFIG);
+loadSavedAdminKey();
+adminKeyInput.addEventListener("change", () => {
+  saveAdminKey(adminKeyInput.value.trim());
+});
 if (RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
   loadConfigFromServer();
 }
