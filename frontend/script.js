@@ -186,12 +186,30 @@ function normalizeGalleryUrl(url) {
   const clean = String(url || "").trim();
   if (!clean) return "";
 
-  const queryIdMatch = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  const pathIdMatch = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  const fileId = (queryIdMatch && queryIdMatch[1]) || (pathIdMatch && pathIdMatch[1]);
+  const fileId = extractDriveFileId(clean);
 
   if (clean.includes("drive.google.com") && fileId) {
     return `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`;
+  }
+
+  return clean;
+}
+
+function extractDriveFileId(url) {
+  const clean = String(url || "").trim();
+  if (!clean) return "";
+  const queryIdMatch = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  const pathIdMatch = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return (queryIdMatch && queryIdMatch[1]) || (pathIdMatch && pathIdMatch[1]) || "";
+}
+
+function normalizeAudioUrl(url) {
+  const clean = String(url || "").trim();
+  if (!clean) return "";
+
+  const fileId = extractDriveFileId(clean);
+  if (clean.includes("drive.google.com") && fileId) {
+    return `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
   }
 
   return clean;
@@ -217,7 +235,7 @@ function applyWeddingConfig() {
   setText("quranAyatRef", currentConfig.quranVerseReference);
 
   if (currentConfig.backgroundMusicUrl && bgMusic) {
-    bgMusic.src = currentConfig.backgroundMusicUrl;
+    bgMusic.src = normalizeAudioUrl(currentConfig.backgroundMusicUrl);
   }
 
   if (currentConfig.akad) {
@@ -450,6 +468,16 @@ function setupMusicControl() {
   });
 
   bgMusic.addEventListener("ended", () => setPlayingState(false));
+  bgMusic.addEventListener("error", () => {
+    const fallback = normalizeAudioUrl(WEDDING_CONFIG.backgroundMusicUrl);
+    if (fallback && bgMusic.src !== fallback) {
+      bgMusic.src = fallback;
+      bgMusic.load();
+      musicToggle.textContent = "Play Music (Sumber Cadangan)";
+    } else {
+      musicToggle.textContent = "Musik gagal dimuat";
+    }
+  });
 }
 
 function createLeaf() {
