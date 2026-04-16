@@ -385,7 +385,7 @@ function setupMusicControl() {
   const parsedLoopStart = parseAudioSecond(currentConfig.musicLoopStartSec);
   const parsedLoopEnd = parseAudioSecond(currentConfig.musicLoopEndSec);
 
-  musicState.startSec = parsedStart ?? 0;
+  musicState.startSec = parsedStart ?? (parsedLoopStart ?? 0);
   musicState.loopStartSec = parsedLoopStart;
   musicState.loopEndSec = parsedLoopEnd;
 
@@ -396,15 +396,21 @@ function setupMusicControl() {
   );
   bgMusic.loop = !hasSegmentLoop;
 
-  const applyInitialOffset = () => {
-    const maxDuration = Number.isFinite(bgMusic.duration) ? bgMusic.duration : null;
-    const safeStart = maxDuration
-      ? Math.min(musicState.startSec, Math.max(0, maxDuration - 0.25))
-      : musicState.startSec;
-    if (safeStart > 0) {
-      bgMusic.currentTime = safeStart;
+  function seekAudio(second) {
+    const target = Number(second);
+    if (!Number.isFinite(target) || target <= 0) return;
+    try {
+      const maxDuration = Number.isFinite(bgMusic.duration) ? bgMusic.duration : null;
+      const safeTarget = maxDuration
+        ? Math.min(target, Math.max(0, maxDuration - 0.25))
+        : target;
+      if (safeTarget > 0) bgMusic.currentTime = safeTarget;
+    } catch (error) {
+      // Skip seek jika metadata belum siap / browser menolak seek saat ini.
     }
-  };
+  }
+
+  const applyInitialOffset = () => seekAudio(musicState.startSec);
 
   bgMusic.addEventListener("loadedmetadata", applyInitialOffset);
   if (bgMusic.readyState >= 1) applyInitialOffset();
@@ -429,10 +435,10 @@ function setupMusicControl() {
   musicToggle.addEventListener("click", async () => {
     if (bgMusic.paused) {
       try {
-        if ((bgMusic.currentTime || 0) <= 0.05 && musicState.startSec > 0) {
-          bgMusic.currentTime = musicState.startSec;
-        }
         await bgMusic.play();
+        if ((bgMusic.currentTime || 0) <= 0.25 && musicState.startSec > 0) {
+          seekAudio(musicState.startSec);
+        }
         setPlayingState(true);
       } catch (error) {
         setPlayingState(false);
