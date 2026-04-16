@@ -143,11 +143,29 @@
       <div class="actions">
         <button id="btnImportGuests" class="btn" type="button">Import Nama Tamu</button>
         <button id="btnLoadGuests" class="btn btn-ghost" type="button">Muat Semua Tamu</button>
+        <button id="btnExportGuestsCsv" class="btn btn-ghost" type="button">Export CSV</button>
       </div>
       <p class="status" id="statusGuests"></p>
       <label>
+        Cari Tamu
+        <input id="guestSearch" type="text" placeholder="Ketik nama tamu..." />
+      </label>
+      <div class="guest-table-wrap">
+        <table class="guest-table">
+          <thead>
+            <tr>
+              <th>Kode</th>
+              <th>Nama</th>
+              <th>Link</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="guestTableBody"></tbody>
+        </table>
+      </div>
+      <label>
         Hasil Link Undangan Tamu
-        <textarea id="guestLinks" rows="10" readonly></textarea>
+        <textarea id="guestLinks" rows="8" readonly></textarea>
       </label>
     </section>
   </main>

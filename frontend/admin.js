@@ -36,7 +36,9 @@ const statusConfig = document.getElementById("statusConfig");
 const statusGuests = document.getElementById("statusGuests");
 
 const guestInput = document.getElementById("guestInput");
+const guestSearch = document.getElementById("guestSearch");
 const guestLinks = document.getElementById("guestLinks");
+const guestTableBody = document.getElementById("guestTableBody");
 const photoFilesInput = document.getElementById("photoFiles");
 const deletePhotoUrlsInput = document.getElementById("deletePhotoUrls");
 const musicFileInput = document.getElementById("musicFile");
@@ -52,8 +54,10 @@ document.getElementById("btnDeletePhotos").addEventListener("click", deletePhoto
 document.getElementById("btnUploadMusic").addEventListener("click", uploadMusicToDrive);
 document.getElementById("btnImportGuests").addEventListener("click", importGuests);
 document.getElementById("btnLoadGuests").addEventListener("click", loadGuests);
+document.getElementById("btnExportGuestsCsv").addEventListener("click", exportGuestsCsv);
 
 apiUrlInput.value = RSVP_API_URL;
+let currentGuests = [];
 
 function getDefaultInvitationBaseUrl() {
   const fromConfig = (ADMIN_CONFIG && ADMIN_CONFIG.invitationBaseUrl) || "";
@@ -590,6 +594,17 @@ function buildGuestLink(baseUrl, name) {
   return `${baseUrl}?to=${encodeURIComponent(name)}`;
 }
 
+function toCsvCell(value) {
+  const text = String(value || "");
+  return `"${text.replace(/"/g, "\"\"")}"`;
+}
+
+function getFilteredGuests() {
+  const keyword = String((guestSearch && guestSearch.value) || "").trim().toLowerCase();
+  if (!keyword) return [...currentGuests];
+  return currentGuests.filter((item) => String(item.name || "").toLowerCase().includes(keyword));
+}
+
 function renderGuestLinks(guests) {
   const baseUrl = normalizeBaseUrl(invitationBaseUrlInput.value);
   if (!baseUrl) {
@@ -600,6 +615,147 @@ function renderGuestLinks(guests) {
   guestLinks.value = guests
     .map((guest) => `${guest.name} => ${buildGuestLink(baseUrl, guest.name)}`)
     .join("\n");
+}
+
+async function updateGuestName(code, nextName) {
+  try {
+    const adminKey = getAdminKeyOrThrow();
+    const cleanName = String(nextName || "").trim();
+    if (!cleanName) throw new Error("Nama tamu tidak boleh kosong");
+
+    setStatus(statusGuests, "Menyimpan perubahan tamu...");
+    await postApi({
+      action: "updateGuest",
+      adminKey,
+      code,
+      name: cleanName
+    });
+    setStatus(statusGuests, "Nama tamu berhasil diperbarui");
+    await loadGuests();
+  } catch (error) {
+    setStatus(statusGuests, `Error: ${error.message}`);
+  }
+}
+
+async function deleteGuestByCode(code) {
+  try {
+    const adminKey = getAdminKeyOrThrow();
+    if (!window.confirm("Hapus tamu ini?")) return;
+
+    setStatus(statusGuests, "Menghapus tamu...");
+    await postApi({
+      action: "deleteGuest",
+      adminKey,
+      code
+    });
+    setStatus(statusGuests, "Tamu berhasil dihapus");
+    await loadGuests();
+  } catch (error) {
+    setStatus(statusGuests, `Error: ${error.message}`);
+  }
+}
+
+function renderGuestTable(guests) {
+  if (!guestTableBody) return;
+
+  guestTableBody.innerHTML = "";
+  if (!guests.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 4;
+    cell.textContent = "Belum ada data tamu.";
+    row.appendChild(cell);
+    guestTableBody.appendChild(row);
+    return;
+  }
+
+  const baseUrl = normalizeBaseUrl(invitationBaseUrlInput.value);
+  guests.forEach((guest) => {
+    const row = document.createElement("tr");
+
+    const codeCell = document.createElement("td");
+    codeCell.textContent = guest.code || "-";
+
+    const nameCell = document.createElement("td");
+    const nameInput = document.createElement("input");
+    nameInput.className = "guest-name-input";
+    nameInput.type = "text";
+    nameInput.value = guest.name || "";
+    nameCell.appendChild(nameInput);
+
+    const linkCell = document.createElement("td");
+    if (baseUrl && guest.name) {
+      const link = document.createElement("a");
+      link.className = "guest-link-mini";
+      link.href = buildGuestLink(baseUrl, guest.name);
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "Buka Link";
+      linkCell.appendChild(link);
+    } else {
+      linkCell.textContent = "-";
+    }
+
+    const actionCell = document.createElement("td");
+    const actions = document.createElement("div");
+    actions.className = "guest-actions";
+
+    const saveBtn = document.createElement("button");
+    saveBtn.type = "button";
+    saveBtn.className = "btn-mini";
+    saveBtn.textContent = "Simpan";
+    saveBtn.addEventListener("click", () => updateGuestName(guest.code, nameInput.value));
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn-mini";
+    deleteBtn.textContent = "Hapus";
+    deleteBtn.addEventListener("click", () => deleteGuestByCode(guest.code));
+
+    actions.appendChild(saveBtn);
+    actions.appendChild(deleteBtn);
+    actionCell.appendChild(actions);
+
+    row.appendChild(codeCell);
+    row.appendChild(nameCell);
+    row.appendChild(linkCell);
+    row.appendChild(actionCell);
+    guestTableBody.appendChild(row);
+  });
+}
+
+function refreshGuestViews() {
+  const filteredGuests = getFilteredGuests();
+  renderGuestTable(filteredGuests);
+  renderGuestLinks(filteredGuests);
+}
+
+function exportGuestsCsv() {
+  const guests = getFilteredGuests();
+  if (!guests.length) {
+    setStatus(statusGuests, "Belum ada data tamu untuk diexport.");
+    return;
+  }
+
+  const baseUrl = normalizeBaseUrl(invitationBaseUrlInput.value);
+  const lines = [
+    "code,nama,link_undangan",
+    ...guests.map((guest) => {
+      const link = baseUrl ? buildGuestLink(baseUrl, guest.name || "") : "";
+      return [toCsvCell(guest.code), toCsvCell(guest.name), toCsvCell(link)].join(",");
+    })
+  ];
+
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "daftar-tamu-undangan.csv";
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+  setStatus(statusGuests, `CSV berhasil diexport (${guests.length} tamu).`);
 }
 
 async function importGuests() {
@@ -629,8 +785,9 @@ async function loadGuests() {
 
     setStatus(statusGuests, "Memuat daftar tamu...");
     const result = await postApi({ action: "listGuests", adminKey });
-    renderGuestLinks(result.guests || []);
-    setStatus(statusGuests, `Berhasil memuat ${result.guests.length} tamu`);
+    currentGuests = Array.isArray(result.guests) ? result.guests : [];
+    refreshGuestViews();
+    setStatus(statusGuests, `Berhasil memuat ${currentGuests.length} tamu`);
   } catch (error) {
     setStatus(statusGuests, `Error: ${error.message}`);
   }
@@ -654,10 +811,14 @@ invitationBaseUrlInput.addEventListener("change", () => {
 });
 invitationBaseUrlInput.addEventListener("input", () => {
   saveInvitationBaseUrl(invitationBaseUrlInput.value);
+  refreshGuestViews();
 });
 fields.weddingDateTimeLocal.addEventListener("input", updateWeddingIsoPreview);
 fields.weddingTimeOffset.addEventListener("change", updateWeddingIsoPreview);
 fields.galleryPhotos.addEventListener("input", renderGalleryPreview);
+if (guestSearch) {
+  guestSearch.addEventListener("input", refreshGuestViews);
+}
 if (RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
   loadConfigFromServer();
 }
