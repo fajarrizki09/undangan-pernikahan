@@ -30,10 +30,12 @@ const statusGuests = document.getElementById("statusGuests");
 
 const guestInput = document.getElementById("guestInput");
 const guestLinks = document.getElementById("guestLinks");
+const photoFilesInput = document.getElementById("photoFiles");
 const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 
 document.getElementById("btnLoadConfig").addEventListener("click", loadConfigFromServer);
 document.getElementById("btnSaveConfig").addEventListener("click", saveConfigToServer);
+document.getElementById("btnUploadPhotos").addEventListener("click", uploadPhotosToDrive);
 document.getElementById("btnImportGuests").addEventListener("click", importGuests);
 document.getElementById("btnLoadGuests").addEventListener("click", loadGuests);
 
@@ -61,6 +63,26 @@ function saveAdminKey(value) {
   } catch (error) {
     // Ignore localStorage access issues.
   }
+}
+
+function getAdminKeyOrThrow() {
+  const fromInput = adminKeyInput.value.trim();
+  if (fromInput) {
+    saveAdminKey(fromInput);
+    return fromInput;
+  }
+
+  try {
+    const stored = (localStorage.getItem(ADMIN_KEY_STORAGE_KEY) || "").trim();
+    if (stored) {
+      adminKeyInput.value = stored;
+      return stored;
+    }
+  } catch (error) {
+    // Ignore localStorage access issues.
+  }
+
+  throw new Error("Admin key wajib diisi");
 }
 
 function setStatus(el, message) {
@@ -179,9 +201,7 @@ async function loadConfigFromServer() {
 
 async function saveConfigToServer() {
   try {
-    const adminKey = adminKeyInput.value.trim();
-    if (!adminKey) throw new Error("Admin key wajib diisi");
-    saveAdminKey(adminKey);
+    const adminKey = getAdminKeyOrThrow();
 
     setStatus(statusConfig, "Menyimpan konfigurasi...");
     await postApi({
@@ -191,6 +211,71 @@ async function saveConfigToServer() {
     });
 
     setStatus(statusConfig, "Konfigurasi berhasil disimpan");
+  } catch (error) {
+    setStatus(statusConfig, `Error: ${error.message}`);
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      const parts = result.split(",");
+      if (parts.length < 2) {
+        reject(new Error(`Format file tidak valid: ${file.name}`));
+        return;
+      }
+      resolve(parts[1]);
+    };
+    reader.onerror = () => reject(new Error(`Gagal membaca file: ${file.name}`));
+    reader.readAsDataURL(file);
+  });
+}
+
+function appendGalleryUrls(urls) {
+  const existing = fields.galleryPhotos.value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const unique = new Set(existing);
+  urls.forEach((url) => {
+    if (url) unique.add(url);
+  });
+
+  fields.galleryPhotos.value = Array.from(unique).join("\n");
+}
+
+async function uploadPhotosToDrive() {
+  try {
+    const adminKey = getAdminKeyOrThrow();
+    const files = Array.from(photoFilesInput.files || []);
+    if (!files.length) throw new Error("Pilih minimal 1 foto dulu");
+
+    const tooLarge = files.find((file) => file.size > 8 * 1024 * 1024);
+    if (tooLarge) throw new Error(`Ukuran file maksimal 8MB per foto. Terlalu besar: ${tooLarge.name}`);
+
+    setStatus(statusConfig, `Mengupload ${files.length} foto...`);
+
+    const payloadFiles = await Promise.all(
+      files.map(async (file) => ({
+        name: file.name,
+        mimeType: file.type || "application/octet-stream",
+        contentBase64: await fileToBase64(file)
+      }))
+    );
+
+    const result = await postApi({
+      action: "uploadPhotos",
+      adminKey,
+      files: payloadFiles
+    });
+
+    const uploadedUrls = (result.files || []).map((item) => item.publicUrl).filter(Boolean);
+    appendGalleryUrls(uploadedUrls);
+    photoFilesInput.value = "";
+    setStatus(statusConfig, `${uploadedUrls.length} foto berhasil diupload ke Google Drive`);
   } catch (error) {
     setStatus(statusConfig, `Error: ${error.message}`);
   }
@@ -221,9 +306,7 @@ function renderGuestLinks(guests) {
 
 async function importGuests() {
   try {
-    const adminKey = adminKeyInput.value.trim();
-    if (!adminKey) throw new Error("Admin key wajib diisi");
-    saveAdminKey(adminKey);
+    const adminKey = getAdminKeyOrThrow();
 
     const guests = parseGuestInput();
     if (!guests.length) throw new Error("Daftar tamu kosong");
@@ -244,9 +327,7 @@ async function importGuests() {
 
 async function loadGuests() {
   try {
-    const adminKey = adminKeyInput.value.trim();
-    if (!adminKey) throw new Error("Admin key wajib diisi");
-    saveAdminKey(adminKey);
+    const adminKey = getAdminKeyOrThrow();
 
     setStatus(statusGuests, "Memuat daftar tamu...");
     const result = await postApi({ action: "listGuests", adminKey });

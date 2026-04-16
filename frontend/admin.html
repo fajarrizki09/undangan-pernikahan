@@ -74,9 +74,16 @@
         Foto Galeri (1 baris = 1 URL/path)
         <textarea id="galleryPhotos" rows="7" placeholder="assets/photos/foto-1.jpg"></textarea>
       </label>
+      <div class="grid">
+        <label>
+          Upload Foto ke Google Drive
+          <input id="photoFiles" type="file" accept="image/*" multiple />
+        </label>
+      </div>
 
       <div class="actions">
         <button id="btnSaveConfig" class="btn" type="button">Simpan Konfigurasi</button>
+        <button id="btnUploadPhotos" class="btn btn-ghost" type="button">Upload Foto</button>
       </div>
       <p class="status" id="statusConfig"></p>
     </section>
