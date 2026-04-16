@@ -86,9 +86,13 @@ function getGuestNameFromUrl() {
 function mergeConfig(base, incoming) {
   if (!incoming || typeof incoming !== "object") return base;
 
+  const incomingMusicUrl = String(incoming.backgroundMusicUrl || "").trim();
+  const baseMusicUrl = String(base.backgroundMusicUrl || "").trim();
+
   return {
     ...base,
     ...incoming,
+    backgroundMusicUrl: incomingMusicUrl || baseMusicUrl,
     akad: {
       ...(base.akad || {}),
       ...(incoming.akad || {})
@@ -236,8 +240,11 @@ function applyWeddingConfig() {
   setText("quranAyatTrans", currentConfig.quranVerseTranslation);
   setText("quranAyatRef", currentConfig.quranVerseReference);
 
-  if (currentConfig.backgroundMusicUrl && bgMusic) {
-    bgMusic.src = normalizeAudioUrl(currentConfig.backgroundMusicUrl);
+  const primaryMusicUrl = normalizeAudioUrl(currentConfig.backgroundMusicUrl);
+  const fallbackMusicUrl = normalizeAudioUrl(WEDDING_CONFIG.backgroundMusicUrl);
+  const resolvedMusicUrl = primaryMusicUrl || fallbackMusicUrl;
+  if (resolvedMusicUrl && bgMusic) {
+    bgMusic.src = resolvedMusicUrl;
   }
 
   if (currentConfig.akad) {
@@ -444,7 +451,15 @@ function setupRevealAnimation() {
 function setupMusicControl() {
   if (!musicToggle || !bgMusic) return;
 
-  const hasMusic = Boolean(currentConfig.backgroundMusicUrl);
+  const primaryMusicUrl = normalizeAudioUrl(currentConfig.backgroundMusicUrl);
+  const fallbackMusicUrl = normalizeAudioUrl(WEDDING_CONFIG.backgroundMusicUrl);
+  const resolvedMusicUrl = primaryMusicUrl || fallbackMusicUrl;
+
+  if (resolvedMusicUrl && !bgMusic.src) {
+    bgMusic.src = resolvedMusicUrl;
+  }
+
+  const hasMusic = Boolean(resolvedMusicUrl || bgMusic.src);
   if (!hasMusic) {
     musicToggle.disabled = true;
     musicToggle.textContent = "Musik belum diatur";
