@@ -12,6 +12,7 @@ const musicToggle = document.getElementById("musicToggle");
 const bgMusic = document.getElementById("bgMusic");
 const leafLayer = document.getElementById("leafLayer");
 const flowerLayer = document.getElementById("flowerLayer");
+const heroCloudPhoto = document.getElementById("heroCloudPhoto");
 const pageLoader = document.getElementById("pageLoader");
 const loaderText = document.getElementById("loaderText");
 const loaderRetry = document.getElementById("loaderRetry");
@@ -253,6 +254,18 @@ function normalizeAudioUrl(url) {
   return clean;
 }
 
+function applyHeroCloudPhoto() {
+  if (!heroCloudPhoto) return;
+
+  const gallerySource = Array.isArray(currentConfig.galleryPhotos) ? currentConfig.galleryPhotos[0] : "";
+  const rawSource = String(currentConfig.heroBackgroundPhoto || gallerySource || "assets/photos/foto-1.svg").trim();
+  const source = normalizeGalleryUrl(rawSource);
+  if (!source) return;
+
+  const safeUrl = source.replace(/"/g, '\\"');
+  heroCloudPhoto.style.backgroundImage = `linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08)), url("${safeUrl}")`;
+}
+
 function applyWeddingConfig() {
   setText("brandInitials", currentConfig.brandInitials);
   setText("heroOverline", currentConfig.heroOverline || "Wedding Invitation");
@@ -305,6 +318,8 @@ function applyWeddingConfig() {
       if (img && normalizedSrc) img.src = normalizedSrc;
     });
   }
+
+  applyHeroCloudPhoto();
 
   const titleNames = `${currentConfig.brideShortName || "Mempelai"} & ${currentConfig.groomShortName || "Mempelai"}`;
   document.title = `Undangan Pernikahan | ${titleNames}`;
