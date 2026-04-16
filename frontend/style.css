@@ -159,6 +159,15 @@ h2 {
   overflow-wrap: anywhere;
 }
 
+.bismillah-title {
+  font-size: clamp(1.72rem, 6.2vw, 3rem);
+  line-height: 1.12;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+  text-wrap: balance;
+}
+
 .amp {
   color: var(--champagne);
   font-style: italic;
@@ -786,6 +795,12 @@ body.is-loading .page-loader {
 
   .topbar nav a {
     font-size: 0.8rem;
+  }
+
+  .bismillah-title {
+    font-size: clamp(1.55rem, 8vw, 2rem);
+    line-height: 1.15;
+    letter-spacing: 0.01em;
   }
 
   .hero {
