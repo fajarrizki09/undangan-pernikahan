@@ -9,6 +9,7 @@ const ADMIN_CONFIG = {
 // Konfigurasi fallback (dipakai jika server belum punya data config).
 const WEDDING_CONFIG = {
   brandInitials: "A & F",
+  heroOverline: "Wedding Invitation",
   brideShortName: "Alya",
   groomShortName: "Fajar",
   brideFullName: "Alya Putri Ramadhani",

@@ -1,5 +1,6 @@
 const fields = {
   brandInitials: document.getElementById("brandInitials"),
+  heroOverline: document.getElementById("heroOverline"),
   brideShortName: document.getElementById("brideShortName"),
   groomShortName: document.getElementById("groomShortName"),
   brideFullName: document.getElementById("brideFullName"),
@@ -179,6 +180,7 @@ function readConfigFromForm() {
 
   return {
     brandInitials: fields.brandInitials.value.trim(),
+    heroOverline: fields.heroOverline.value.trim(),
     brideShortName: fields.brideShortName.value.trim(),
     groomShortName: fields.groomShortName.value.trim(),
     brideFullName: fields.brideFullName.value.trim(),
@@ -210,6 +212,7 @@ function readConfigFromForm() {
 
 function fillForm(config) {
   fields.brandInitials.value = config.brandInitials || "";
+  fields.heroOverline.value = config.heroOverline || "";
   fields.brideShortName.value = config.brideShortName || "";
   fields.groomShortName.value = config.groomShortName || "";
   fields.brideFullName.value = config.brideFullName || "";

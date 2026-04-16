@@ -218,6 +218,7 @@ function normalizeAudioUrl(url) {
 
 function applyWeddingConfig() {
   setText("brandInitials", currentConfig.brandInitials);
+  setText("heroOverline", currentConfig.heroOverline || "Wedding Invitation");
   setText("heroBrideShort", currentConfig.brideShortName);
   setText("heroGroomShort", currentConfig.groomShortName);
   setText("heroDatePlace", currentConfig.heroDatePlace);
