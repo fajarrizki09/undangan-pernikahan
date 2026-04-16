@@ -534,6 +534,16 @@ body.is-loading .page-loader {
   animation: spin 0.9s linear infinite;
 }
 
+.loader-retry {
+  border: 1px solid #7ca792;
+  background: #ffffff;
+  color: #3f6653;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

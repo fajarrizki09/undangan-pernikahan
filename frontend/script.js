@@ -12,6 +12,8 @@ const bgMusic = document.getElementById("bgMusic");
 const leafLayer = document.getElementById("leafLayer");
 const flowerLayer = document.getElementById("flowerLayer");
 const pageLoader = document.getElementById("pageLoader");
+const loaderText = document.getElementById("loaderText");
+const loaderRetry = document.getElementById("loaderRetry");
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isSmallScreen = window.matchMedia("(max-width: 860px)").matches;
@@ -110,31 +112,39 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
 }
 
 async function loadServerConfig() {
+  let hasSheetConfig = false;
   const cachedConfig = readCachedConfig();
   if (cachedConfig) {
     currentConfig = mergeConfig(currentConfig, cachedConfig);
+    hasSheetConfig = true;
   }
 
   if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
-    return;
+    return true;
   }
 
-  try {
-    const url = new URL(RSVP_API_URL);
-    url.searchParams.set("action", "config");
+  const url = new URL(RSVP_API_URL);
+  url.searchParams.set("action", "config");
+  url.searchParams.set("_ts", String(Date.now()));
 
-    const response = await fetchWithTimeout(url.toString(), {
-      cache: "force-cache"
-    }, 4500);
-    const result = await response.json();
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      const response = await fetchWithTimeout(url.toString(), {
+        cache: "no-store"
+      }, 10000);
 
-    if (response.ok && result.success && result.config) {
-      currentConfig = mergeConfig(currentConfig, result.config);
-      writeCachedConfig(result.config);
+      const result = await response.json();
+      if (response.ok && result.success && result.config) {
+        currentConfig = mergeConfig(currentConfig, result.config);
+        writeCachedConfig(result.config);
+        return true;
+      }
+    } catch (error) {
+      // Retry 1x jika koneksi awal lambat.
     }
-  } catch (error) {
-    // Fallback ke config lokal jika gagal mengambil config server.
   }
+
+  return hasSheetConfig;
 }
 
 function readCachedConfig() {
@@ -160,6 +170,11 @@ function writeCachedConfig(config) {
   } catch (error) {
     // Abaikan jika storage penuh/terblokir.
   }
+}
+
+function setLoaderMessage(message, allowRetry) {
+  if (loaderText && message) loaderText.textContent = message;
+  if (loaderRetry) loaderRetry.hidden = !allowRetry;
 }
 
 function normalizeGalleryUrl(url) {
@@ -450,9 +465,20 @@ if (form) {
 }
 
 async function initPage() {
+  setLoaderMessage("Memuat data undangan dari Sheet...", false);
+
   try {
-    await loadServerConfig();
+    const ready = await loadServerConfig();
+    const shouldUseServer = RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL");
+
+    if (shouldUseServer && !ready) {
+      setLoaderMessage("Gagal memuat data Sheet. Periksa Apps Script lalu coba lagi.", true);
+      return;
+    }
   } finally {
+    const shouldKeepLoading = loaderRetry && !loaderRetry.hidden;
+    if (shouldKeepLoading) return;
+
     applyWeddingConfig();
     applyGuestName();
     updateCountdown();
@@ -470,3 +496,10 @@ async function initPage() {
 }
 
 initPage();
+
+if (loaderRetry) {
+  loaderRetry.addEventListener("click", () => {
+    loaderRetry.hidden = true;
+    initPage();
+  });
+}
