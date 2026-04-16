@@ -38,6 +38,7 @@ const statusGuests = document.getElementById("statusGuests");
 const guestInput = document.getElementById("guestInput");
 const guestLinks = document.getElementById("guestLinks");
 const photoFilesInput = document.getElementById("photoFiles");
+const deletePhotoUrlsInput = document.getElementById("deletePhotoUrls");
 const musicFileInput = document.getElementById("musicFile");
 const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
@@ -45,6 +46,7 @@ const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
 document.getElementById("btnLoadConfig").addEventListener("click", loadConfigFromServer);
 document.getElementById("btnSaveConfig").addEventListener("click", saveConfigToServer);
 document.getElementById("btnUploadPhotos").addEventListener("click", uploadPhotosToDrive);
+document.getElementById("btnDeletePhotos").addEventListener("click", deletePhotosFromDriveAndGallery);
 document.getElementById("btnUploadMusic").addEventListener("click", uploadMusicToDrive);
 document.getElementById("btnImportGuests").addEventListener("click", importGuests);
 document.getElementById("btnLoadGuests").addEventListener("click", loadGuests);
@@ -338,6 +340,22 @@ function appendGalleryUrls(urls) {
   fields.galleryPhotos.value = Array.from(unique).join("\n");
 }
 
+function removeGalleryUrls(urls) {
+  const targets = new Set(
+    (urls || [])
+      .map((item) => String(item || "").trim())
+      .filter(Boolean)
+  );
+
+  const existing = fields.galleryPhotos.value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const filtered = existing.filter((url) => !targets.has(url));
+  fields.galleryPhotos.value = filtered.join("\n");
+}
+
 async function uploadPhotosToDrive() {
   try {
     const adminKey = getAdminKeyOrThrow();
@@ -375,6 +393,44 @@ async function uploadPhotosToDrive() {
 
     photoFilesInput.value = "";
     setStatus(statusConfig, `${uploadedUrls.length} foto berhasil diupload dan konfigurasi galeri otomatis disimpan`);
+  } catch (error) {
+    setStatus(statusConfig, `Error: ${error.message}`);
+  }
+}
+
+async function deletePhotosFromDriveAndGallery() {
+  try {
+    const adminKey = getAdminKeyOrThrow();
+    const targetUrls = deletePhotoUrlsInput.value
+      .split(/\r?\n/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    if (!targetUrls.length) throw new Error("Isi minimal 1 URL foto yang ingin dihapus");
+
+    setStatus(statusConfig, `Menghapus ${targetUrls.length} foto dari Drive...`);
+    const result = await postApi({
+      action: "deletePhotos",
+      adminKey,
+      urls: targetUrls
+    });
+
+    removeGalleryUrls(targetUrls);
+
+    await postApi({
+      action: "saveConfig",
+      adminKey,
+      config: readConfigFromForm()
+    });
+
+    deletePhotoUrlsInput.value = "";
+    const deletedCount = Number(result.deletedCount || 0);
+    const failedCount = Array.isArray(result.failed) ? result.failed.length : 0;
+    if (failedCount > 0) {
+      setStatus(statusConfig, `${deletedCount} foto dihapus. ${failedCount} foto gagal dihapus (cek izin/link).`);
+    } else {
+      setStatus(statusConfig, `${deletedCount} foto berhasil dihapus dari Drive dan galeri.`);
+    }
   } catch (error) {
     setStatus(statusConfig, `Error: ${error.message}`);
   }

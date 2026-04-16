@@ -112,10 +112,15 @@
           <input id="photoFiles" type="file" accept="image/*" multiple />
         </label>
       </div>
+      <label>
+        Hapus Foto (tempel URL, 1 baris 1 URL)
+        <textarea id="deletePhotoUrls" rows="4" placeholder="https://drive.google.com/uc?export=view&id=..."></textarea>
+      </label>
 
       <div class="actions">
         <button id="btnSaveConfig" class="btn" type="button">Simpan Konfigurasi</button>
         <button id="btnUploadPhotos" class="btn btn-ghost" type="button">Upload Foto</button>
+        <button id="btnDeletePhotos" class="btn btn-ghost" type="button">Hapus Foto (Drive + Galeri)</button>
         <button id="btnUploadMusic" class="btn btn-ghost" type="button">Upload Musik</button>
       </div>
       <p class="status" id="statusConfig"></p>
