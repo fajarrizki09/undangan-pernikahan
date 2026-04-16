@@ -288,17 +288,42 @@ function setCountdownNumber(el, value) {
   el.classList.add("tick");
 }
 
-function parseWeddingTimestamp() {
-  const isoValue = String(currentConfig.weddingDateISO || "").trim();
-  if (isoValue) {
-    const isoTime = new Date(isoValue).getTime();
-    if (!Number.isNaN(isoTime)) return isoTime;
+function parseIsoDateTimeToMs(value) {
+  const clean = String(value || "").trim();
+  if (!clean) return NaN;
+
+  const match = clean.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(Z|[+\-]\d{2}:\d{2})?$/
+  );
+  if (!match) return NaN;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  const second = Number(match[6] || 0);
+  const tz = match[7] || "+07:00";
+
+  let offsetMinutes = 0;
+  if (tz === "Z") {
+    offsetMinutes = 0;
+  } else {
+    const sign = tz.startsWith("-") ? -1 : 1;
+    const parts = tz.slice(1).split(":");
+    const tzHour = Number(parts[0] || 0);
+    const tzMinute = Number(parts[1] || 0);
+    offsetMinutes = sign * (tzHour * 60 + tzMinute);
   }
 
-  const resepsiDate = String((currentConfig.resepsi && currentConfig.resepsi.date) || "").trim();
-  if (!resepsiDate) return NaN;
+  return Date.UTC(year, month - 1, day, hour, minute, second) - (offsetMinutes * 60 * 1000);
+}
 
-  const normalized = resepsiDate
+function parseIndonesianDateToMs(dateText, timeText) {
+  const rawDate = String(dateText || "").trim();
+  if (!rawDate) return NaN;
+
+  const normalized = rawDate
     .toLowerCase()
     .replace(/,/g, " ")
     .replace(/\s+/g, " ")
@@ -319,24 +344,56 @@ function parseWeddingTimestamp() {
     desember: 12
   };
 
+  let day = null;
+  let month = null;
+  let year = null;
+
   const idMatch = normalized.match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/);
   if (idMatch && monthMap[idMatch[2]]) {
-    const day = idMatch[1].padStart(2, "0");
-    const month = String(monthMap[idMatch[2]]).padStart(2, "0");
-    const year = idMatch[3];
-    return new Date(`${year}-${month}-${day}T08:00:00+07:00`).getTime();
+    day = Number(idMatch[1]);
+    month = Number(monthMap[idMatch[2]]);
+    year = Number(idMatch[3]);
+  } else {
+    const slashMatch = normalized.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+    if (slashMatch) {
+      day = Number(slashMatch[1]);
+      month = Number(slashMatch[2]);
+      year = Number(slashMatch[3]);
+    }
   }
 
-  const slashMatch = normalized.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
-  if (slashMatch) {
-    const day = slashMatch[1].padStart(2, "0");
-    const month = slashMatch[2].padStart(2, "0");
-    const year = slashMatch[3];
-    return new Date(`${year}-${month}-${day}T08:00:00+07:00`).getTime();
+  if (!day || !month || !year) return NaN;
+
+  let hour = 8;
+  let minute = 0;
+  const rawTime = String(timeText || "").trim().toLowerCase();
+  if (rawTime) {
+    const timeMatch = rawTime.match(/(\d{1,2})[.:](\d{2})/);
+    if (timeMatch) {
+      hour = Number(timeMatch[1]);
+      minute = Number(timeMatch[2]);
+    }
   }
 
-  const directTime = new Date(resepsiDate).getTime();
-  return Number.isNaN(directTime) ? NaN : directTime;
+  return Date.UTC(year, month - 1, day, hour, minute, 0) - (7 * 60 * 60 * 1000);
+}
+
+function parseWeddingTimestamp() {
+  const isoValue = String(currentConfig.weddingDateISO || "").trim();
+  if (isoValue) {
+    const isoTime = parseIsoDateTimeToMs(isoValue);
+    if (!Number.isNaN(isoTime)) return isoTime;
+  }
+
+  const resepsiDate = (currentConfig.resepsi && currentConfig.resepsi.date) || "";
+  const resepsiTime = (currentConfig.resepsi && currentConfig.resepsi.time) || "";
+  const resepsiMs = parseIndonesianDateToMs(resepsiDate, resepsiTime);
+  if (!Number.isNaN(resepsiMs)) return resepsiMs;
+
+  const heroMs = parseIndonesianDateToMs(currentConfig.heroDatePlace || "", resepsiTime);
+  if (!Number.isNaN(heroMs)) return heroMs;
+
+  return NaN;
 }
 
 function updateCountdown() {
