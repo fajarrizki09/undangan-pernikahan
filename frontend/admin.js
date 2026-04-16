@@ -39,6 +39,7 @@ const guestLinks = document.getElementById("guestLinks");
 const photoFilesInput = document.getElementById("photoFiles");
 const musicFileInput = document.getElementById("musicFile");
 const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
+const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
 
 document.getElementById("btnLoadConfig").addEventListener("click", loadConfigFromServer);
 document.getElementById("btnSaveConfig").addEventListener("click", saveConfigToServer);
@@ -48,7 +49,39 @@ document.getElementById("btnImportGuests").addEventListener("click", importGuest
 document.getElementById("btnLoadGuests").addEventListener("click", loadGuests);
 
 apiUrlInput.value = RSVP_API_URL;
-invitationBaseUrlInput.value = (ADMIN_CONFIG && ADMIN_CONFIG.invitationBaseUrl) || window.location.origin + window.location.pathname.replace(/admin\.html$/, "");
+
+function getDefaultInvitationBaseUrl() {
+  const fromConfig = (ADMIN_CONFIG && ADMIN_CONFIG.invitationBaseUrl) || "";
+  if (fromConfig.trim()) return fromConfig.trim();
+  return `${window.location.origin}/`;
+}
+
+function loadSavedInvitationBaseUrl() {
+  try {
+    const saved = localStorage.getItem(INVITATION_BASE_URL_STORAGE_KEY);
+    if (saved && saved.trim()) {
+      invitationBaseUrlInput.value = saved.trim();
+      return;
+    }
+  } catch (error) {
+    // Ignore localStorage access issues.
+  }
+
+  invitationBaseUrlInput.value = getDefaultInvitationBaseUrl();
+}
+
+function saveInvitationBaseUrl(value) {
+  try {
+    const clean = (value || "").trim();
+    if (!clean) {
+      localStorage.removeItem(INVITATION_BASE_URL_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(INVITATION_BASE_URL_STORAGE_KEY, clean);
+  } catch (error) {
+    // Ignore localStorage access issues.
+  }
+}
 
 function loadSavedAdminKey() {
   try {
@@ -449,8 +482,15 @@ if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
 
 fillForm(WEDDING_CONFIG);
 loadSavedAdminKey();
+loadSavedInvitationBaseUrl();
 adminKeyInput.addEventListener("change", () => {
   saveAdminKey(adminKeyInput.value.trim());
+});
+invitationBaseUrlInput.addEventListener("change", () => {
+  saveInvitationBaseUrl(invitationBaseUrlInput.value);
+});
+invitationBaseUrlInput.addEventListener("input", () => {
+  saveInvitationBaseUrl(invitationBaseUrlInput.value);
 });
 fields.weddingDateTimeLocal.addEventListener("input", updateWeddingIsoPreview);
 fields.weddingTimeOffset.addEventListener("change", updateWeddingIsoPreview);
