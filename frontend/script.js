@@ -6,6 +6,7 @@ const cdDays = document.getElementById("cdDays");
 const cdHours = document.getElementById("cdHours");
 const cdMinutes = document.getElementById("cdMinutes");
 const cdSeconds = document.getElementById("cdSeconds");
+const countdownNodes = [cdDays, cdHours, cdMinutes, cdSeconds];
 
 const musicToggle = document.getElementById("musicToggle");
 const bgMusic = document.getElementById("bgMusic");
@@ -276,6 +277,16 @@ function applyGuestName() {
   }
 }
 
+function setCountdownNumber(el, value) {
+  if (!el) return;
+  const nextValue = String(value);
+  if (el.textContent === nextValue) return;
+  el.textContent = nextValue;
+  el.classList.remove("tick");
+  void el.offsetWidth;
+  el.classList.add("tick");
+}
+
 function parseWeddingTimestamp() {
   const isoValue = String(currentConfig.weddingDateISO || "").trim();
   if (isoValue) {
@@ -331,10 +342,7 @@ function updateCountdown() {
   const weddingDate = parseWeddingTimestamp();
 
   if (Number.isNaN(weddingDate)) {
-    cdDays.textContent = "-";
-    cdHours.textContent = "-";
-    cdMinutes.textContent = "-";
-    cdSeconds.textContent = "-";
+    countdownNodes.forEach((node) => setCountdownNumber(node, "-"));
     return;
   }
 
@@ -342,10 +350,7 @@ function updateCountdown() {
   const distance = weddingDate - now;
 
   if (distance <= 0) {
-    cdDays.textContent = "0";
-    cdHours.textContent = "0";
-    cdMinutes.textContent = "0";
-    cdSeconds.textContent = "0";
+    countdownNodes.forEach((node) => setCountdownNumber(node, "0"));
     return;
   }
 
@@ -354,10 +359,10 @@ function updateCountdown() {
   const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-  cdDays.textContent = String(days);
-  cdHours.textContent = String(hours).padStart(2, "0");
-  cdMinutes.textContent = String(minutes).padStart(2, "0");
-  cdSeconds.textContent = String(seconds).padStart(2, "0");
+  setCountdownNumber(cdDays, String(days));
+  setCountdownNumber(cdHours, String(hours).padStart(2, "0"));
+  setCountdownNumber(cdMinutes, String(minutes).padStart(2, "0"));
+  setCountdownNumber(cdSeconds, String(seconds).padStart(2, "0"));
 }
 
 function setupRevealAnimation() {

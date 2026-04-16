@@ -201,28 +201,68 @@ h2 {
 .countdown {
   margin-top: 20px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 10px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45), rgba(212, 228, 217, 0.32));
+  border: 1px solid rgba(79, 119, 100, 0.22);
 }
 
-.countdown div {
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.62);
-  padding: 12px 8px;
+.countdown-item {
+  position: relative;
+  border-radius: 16px;
+  border: 1px solid rgba(79, 119, 100, 0.28);
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.9), transparent 50%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(228, 239, 232, 0.58));
+  padding: 14px 8px 12px;
+  box-shadow: 0 10px 22px rgba(42, 66, 54, 0.12);
+  overflow: hidden;
+}
+
+.countdown-item::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #6f9882, #d8b07d);
+  opacity: 0.85;
 }
 
 .countdown strong {
   display: block;
   color: var(--sage);
-  font-size: 1.5rem;
+  font-size: clamp(1.38rem, 3.5vw, 1.78rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.75);
+}
+
+.countdown strong.tick {
+  animation: countdown-pop 0.32s ease;
 }
 
 .countdown span {
-  font-size: 0.76rem;
+  margin-top: 4px;
+  font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #5f7066;
+  font-weight: 700;
+}
+
+@keyframes countdown-pop {
+  0% {
+    transform: translateY(4px) scale(0.92);
+    opacity: 0.45;
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 .card {
