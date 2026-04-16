@@ -93,6 +93,17 @@
           Upload Musik ke Google Drive
           <input id="musicFile" type="file" accept="audio/*" />
         </label>
+        <label>
+          Mulai Musik Dari Detik
+          <input id="musicStartSec" type="number" min="0" step="0.1" placeholder="contoh: 45" />
+        </label>
+        <label>
+          Loop Reff (Detik Mulai - Detik Selesai)
+          <div class="grid two">
+            <input id="musicLoopStartSec" type="number" min="0" step="0.1" placeholder="mulai: 60" />
+            <input id="musicLoopEndSec" type="number" min="0" step="0.1" placeholder="selesai: 85" />
+          </div>
+        </label>
       </div>
       <div class="grid">
         <label>

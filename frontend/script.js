@@ -26,6 +26,11 @@ const particleState = {
   maxLeaves: isLowPowerDevice ? 8 : 18,
   maxFlowers: isLowPowerDevice ? 6 : 14
 };
+const musicState = {
+  startSec: 0,
+  loopStartSec: null,
+  loopEndSec: null
+};
 
 let currentConfig = {
   ...WEDDING_CONFIG,
@@ -370,11 +375,63 @@ function setupMusicControl() {
     musicToggle.classList.toggle("is-playing", isPlaying);
   }
 
+  function parseAudioSecond(value) {
+    const num = Number(value);
+    if (!Number.isFinite(num) || num < 0) return null;
+    return num;
+  }
+
+  const parsedStart = parseAudioSecond(currentConfig.musicStartSec);
+  const parsedLoopStart = parseAudioSecond(currentConfig.musicLoopStartSec);
+  const parsedLoopEnd = parseAudioSecond(currentConfig.musicLoopEndSec);
+
+  musicState.startSec = parsedStart ?? 0;
+  musicState.loopStartSec = parsedLoopStart;
+  musicState.loopEndSec = parsedLoopEnd;
+
+  const hasSegmentLoop = (
+    musicState.loopStartSec !== null &&
+    musicState.loopEndSec !== null &&
+    musicState.loopEndSec > musicState.loopStartSec
+  );
+  bgMusic.loop = !hasSegmentLoop;
+
+  const applyInitialOffset = () => {
+    const maxDuration = Number.isFinite(bgMusic.duration) ? bgMusic.duration : null;
+    const safeStart = maxDuration
+      ? Math.min(musicState.startSec, Math.max(0, maxDuration - 0.25))
+      : musicState.startSec;
+    if (safeStart > 0) {
+      bgMusic.currentTime = safeStart;
+    }
+  };
+
+  bgMusic.addEventListener("loadedmetadata", applyInitialOffset);
+  if (bgMusic.readyState >= 1) applyInitialOffset();
+
+  bgMusic.addEventListener("timeupdate", () => {
+    if (!hasSegmentLoop) return;
+
+    const loopStart = Math.max(0, musicState.loopStartSec || 0);
+    const loopEnd = Math.max(loopStart + 0.1, musicState.loopEndSec || 0);
+    const current = bgMusic.currentTime || 0;
+
+    if (current >= loopEnd) {
+      bgMusic.currentTime = loopStart;
+      if (bgMusic.paused) {
+        bgMusic.play().catch(() => {});
+      }
+    }
+  });
+
   setPlayingState(false);
 
   musicToggle.addEventListener("click", async () => {
     if (bgMusic.paused) {
       try {
+        if ((bgMusic.currentTime || 0) <= 0.05 && musicState.startSec > 0) {
+          bgMusic.currentTime = musicState.startSec;
+        }
         await bgMusic.play();
         setPlayingState(true);
       } catch (error) {

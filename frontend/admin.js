@@ -20,7 +20,10 @@ const fields = {
   resepsiVenue: document.getElementById("resepsiVenue"),
   resepsiMapUrl: document.getElementById("resepsiMapUrl"),
   galleryPhotos: document.getElementById("galleryPhotos"),
-  backgroundMusicUrl: document.getElementById("backgroundMusicUrl")
+  backgroundMusicUrl: document.getElementById("backgroundMusicUrl"),
+  musicStartSec: document.getElementById("musicStartSec"),
+  musicLoopStartSec: document.getElementById("musicLoopStartSec"),
+  musicLoopEndSec: document.getElementById("musicLoopEndSec")
 };
 
 const adminKeyInput = document.getElementById("adminKey");
@@ -129,6 +132,12 @@ function updateWeddingIsoPreview() {
   fields.weddingDateISO.value = buildWeddingIsoFromInputs();
 }
 
+function parseNonNegativeNumber(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < 0) return "";
+  return String(num);
+}
+
 function readConfigFromForm() {
   const photos = fields.galleryPhotos.value
     .split(/\r?\n/)
@@ -146,6 +155,9 @@ function readConfigFromForm() {
     heroDatePlace: fields.heroDatePlace.value.trim(),
     footerNames: fields.footerNames.value.trim(),
     backgroundMusicUrl: fields.backgroundMusicUrl.value.trim(),
+    musicStartSec: parseNonNegativeNumber(fields.musicStartSec.value.trim()),
+    musicLoopStartSec: parseNonNegativeNumber(fields.musicLoopStartSec.value.trim()),
+    musicLoopEndSec: parseNonNegativeNumber(fields.musicLoopEndSec.value.trim()),
     weddingDateISO: buildWeddingIsoFromInputs(),
     akad: {
       date: fields.akadDate.value.trim(),
@@ -174,6 +186,9 @@ function fillForm(config) {
   fields.heroDatePlace.value = config.heroDatePlace || "";
   fields.footerNames.value = config.footerNames || "";
   fields.backgroundMusicUrl.value = config.backgroundMusicUrl || "";
+  fields.musicStartSec.value = config.musicStartSec || "";
+  fields.musicLoopStartSec.value = config.musicLoopStartSec || "";
+  fields.musicLoopEndSec.value = config.musicLoopEndSec || "";
 
   const parsedWeddingDate = parseWeddingIso(config.weddingDateISO || "");
   fields.weddingDateTimeLocal.value = parsedWeddingDate.localDateTime;

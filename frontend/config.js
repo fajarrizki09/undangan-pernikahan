@@ -22,6 +22,9 @@ const WEDDING_CONFIG = {
   quranVerseTranslation: "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya di antaramu rasa kasih dan sayang.",
   quranVerseReference: "QS. Ar-Rum: 21",
   backgroundMusicUrl: "assets/music/wedding-theme.mp3",
+  musicStartSec: "",
+  musicLoopStartSec: "",
+  musicLoopEndSec: "",
   akad: {
     date: "Minggu, 20 Desember 2026",
     time: "08.00 WIB",
