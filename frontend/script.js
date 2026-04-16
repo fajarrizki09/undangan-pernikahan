@@ -16,6 +16,10 @@ const heroCloudPhoto = document.getElementById("heroCloudPhoto");
 const pageLoader = document.getElementById("pageLoader");
 const loaderText = document.getElementById("loaderText");
 const loaderRetry = document.getElementById("loaderRetry");
+const invitationGate = document.getElementById("invitationGate");
+const openInvitationBtn = document.getElementById("openInvitationBtn");
+const gateNames = document.getElementById("gateNames");
+const gateDatePlace = document.getElementById("gateDatePlace");
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isSmallScreen = window.matchMedia("(max-width: 860px)").matches;
@@ -272,6 +276,8 @@ function applyWeddingConfig() {
   setAnimatedName("heroBrideShort", currentConfig.brideShortName, 140);
   setAnimatedName("heroGroomShort", currentConfig.groomShortName, 420);
   setText("heroDatePlace", currentConfig.heroDatePlace);
+  setText("gateNames", `${currentConfig.brideShortName || "Mempelai"} & ${currentConfig.groomShortName || "Mempelai"}`);
+  setText("gateDatePlace", currentConfig.heroDatePlace);
 
   setText("avatarBride", (currentConfig.brideShortName || "A").charAt(0).toUpperCase());
   setText("avatarGroom", (currentConfig.groomShortName || "F").charAt(0).toUpperCase());
@@ -323,6 +329,25 @@ function applyWeddingConfig() {
 
   const titleNames = `${currentConfig.brideShortName || "Mempelai"} & ${currentConfig.groomShortName || "Mempelai"}`;
   document.title = `Undangan Pernikahan | ${titleNames}`;
+}
+
+function setupInvitationGate() {
+  if (!invitationGate || !openInvitationBtn) {
+    document.body.classList.remove("invitation-locked");
+    return;
+  }
+
+  openInvitationBtn.addEventListener("click", () => {
+    invitationGate.classList.add("is-opening");
+    openInvitationBtn.disabled = true;
+
+    window.setTimeout(() => {
+      document.body.classList.remove("invitation-locked");
+      invitationGate.setAttribute("aria-hidden", "true");
+      invitationGate.classList.remove("is-opening");
+      openInvitationBtn.disabled = false;
+    }, 620);
+  });
 }
 
 function applyGuestName() {
@@ -752,6 +777,7 @@ async function initPage() {
     setupRevealAnimation();
     setupMusicControl();
     setupVisibilityOptimization();
+    setupInvitationGate();
     startTimers();
 
     window.requestAnimationFrame(() => {
