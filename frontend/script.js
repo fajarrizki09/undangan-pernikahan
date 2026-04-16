@@ -253,9 +253,59 @@ function applyGuestName() {
   }
 }
 
+function parseWeddingTimestamp() {
+  const isoValue = String(currentConfig.weddingDateISO || "").trim();
+  if (isoValue) {
+    const isoTime = new Date(isoValue).getTime();
+    if (!Number.isNaN(isoTime)) return isoTime;
+  }
+
+  const resepsiDate = String((currentConfig.resepsi && currentConfig.resepsi.date) || "").trim();
+  if (!resepsiDate) return NaN;
+
+  const normalized = resepsiDate
+    .toLowerCase()
+    .replace(/,/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const monthMap = {
+    januari: 1,
+    februari: 2,
+    maret: 3,
+    april: 4,
+    mei: 5,
+    juni: 6,
+    juli: 7,
+    agustus: 8,
+    september: 9,
+    oktober: 10,
+    november: 11,
+    desember: 12
+  };
+
+  const idMatch = normalized.match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/);
+  if (idMatch && monthMap[idMatch[2]]) {
+    const day = idMatch[1].padStart(2, "0");
+    const month = String(monthMap[idMatch[2]]).padStart(2, "0");
+    const year = idMatch[3];
+    return new Date(`${year}-${month}-${day}T08:00:00+07:00`).getTime();
+  }
+
+  const slashMatch = normalized.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+  if (slashMatch) {
+    const day = slashMatch[1].padStart(2, "0");
+    const month = slashMatch[2].padStart(2, "0");
+    const year = slashMatch[3];
+    return new Date(`${year}-${month}-${day}T08:00:00+07:00`).getTime();
+  }
+
+  const directTime = new Date(resepsiDate).getTime();
+  return Number.isNaN(directTime) ? NaN : directTime;
+}
+
 function updateCountdown() {
-  const dateISO = currentConfig.weddingDateISO || "2026-12-20T08:00:00+07:00";
-  const weddingDate = new Date(dateISO).getTime();
+  const weddingDate = parseWeddingTimestamp();
 
   if (Number.isNaN(weddingDate)) {
     cdDays.textContent = "-";
