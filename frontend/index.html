@@ -12,6 +12,8 @@
 </head>
 <body>
   <div class="texture"></div>
+  <div class="aura aura-left"></div>
+  <div class="aura aura-right"></div>
   <div id="leafLayer" class="leaf-layer" aria-hidden="true"></div>
   <div id="flowerLayer" class="flower-layer" aria-hidden="true"></div>
 
@@ -26,7 +28,7 @@
   </header>
 
   <section id="home" class="hero section reveal">
-    <p class="overline">Undangan Pernikahan</p>
+    <p class="overline">Wedding Invitation</p>
     <h1><span id="heroBrideShort">Alya</span> <span class="amp">&</span> <span id="heroGroomShort">Fajar</span></h1>
     <p class="subtitle" id="heroDatePlace">Minggu, 20 Desember 2026 • Surabaya</p>
 
@@ -37,7 +39,7 @@
 
     <div class="hero-actions">
       <a href="#rsvp" class="btn">Konfirmasi Kehadiran</a>
-      <a href="#acara" class="btn btn-ghost">Lihat Detail Acara</a>
+      <a href="#acara" class="btn btn-ghost">Detail Acara</a>
     </div>
 
     <div class="countdown" id="countdown" aria-live="polite">
@@ -50,18 +52,22 @@
 
   <main>
     <section id="mempelai" class="section card reveal">
+      <p class="section-kicker">&#x628;&#x650;&#x633;&#x652;&#x645;&#x650; &#x671;&#x644;&#x644;&#x64E;&#x651;&#x647;&#x650;</p>
       <h2>Bismillahirrahmanirrahim</h2>
-      <p>
+      <p class="lead">
         Assalamu'alaikum Warahmatullahi Wabarakatuh. Dengan memohon rahmat dan ridho Allah SWT,
         kami mengundang Bapak/Ibu/Saudara/i untuk hadir di hari bahagia kami.
       </p>
+
       <div class="couple-grid">
         <article class="profile">
           <div class="avatar" id="avatarBride">A</div>
           <h3 id="brideFullName">Alya Putri Ramadhani</h3>
           <p id="brideParents">Putri dari Bapak Ahmad & Ibu Nurhayati</p>
         </article>
+
         <div class="connector">&</div>
+
         <article class="profile">
           <div class="avatar" id="avatarGroom">F</div>
           <h3 id="groomFullName">Fajar Maulana Pratama</h3>
@@ -72,6 +78,7 @@
 
     <section id="acara" class="section card reveal">
       <h2>Rangkaian Acara</h2>
+      <p class="lead">Dengan hormat, kami menantikan kehadiran dan doa restu Anda.</p>
       <div class="event-grid">
         <article class="event-item">
           <p class="event-tag">Akad Nikah</p>
@@ -80,6 +87,7 @@
           <p id="akadVenue">Masjid Al-Ikhlas, Surabaya</p>
           <a class="text-link" id="akadMap" href="https://maps.google.com" target="_blank" rel="noopener noreferrer">Buka Lokasi</a>
         </article>
+
         <article class="event-item">
           <p class="event-tag">Resepsi</p>
           <h3 id="resepsiDate">Minggu, 20 Desember 2026</h3>
@@ -91,8 +99,8 @@
     </section>
 
     <section id="galeri" class="section card reveal">
-      <h2>Galeri Foto</h2>
-      <p>Ganti foto dengan dokumentasi terbaik kalian di folder `assets/photos`.</p>
+      <h2>Galeri Momen</h2>
+      <p class="lead">Potret perjalanan kami menuju hari istimewa.</p>
       <div class="gallery-grid">
         <img id="photo1" src="assets/photos/foto-1.svg" alt="Foto pasangan 1" loading="lazy" decoding="async" />
         <img id="photo2" src="assets/photos/foto-2.svg" alt="Foto pasangan 2" loading="lazy" decoding="async" />
@@ -111,11 +119,13 @@
           <h3>Pertama Bertemu</h3>
           <p>Kami bertemu dalam sebuah kegiatan komunitas dan mulai saling mengenal lebih dekat.</p>
         </article>
+
         <article>
           <p class="year">2023</p>
           <h3>Lamaran</h3>
           <p>Dengan restu keluarga, kami melangkah ke tahap yang lebih serius untuk masa depan bersama.</p>
         </article>
+
         <article>
           <p class="year">2026</p>
           <h3>Hari Pernikahan</h3>
@@ -133,7 +143,7 @@
 
     <section id="rsvp" class="section card reveal">
       <h2>RSVP & Ucapan</h2>
-      <p>Mohon konfirmasi kehadiran Anda melalui form berikut.</p>
+      <p class="lead">Mohon konfirmasi kehadiran Anda melalui form berikut.</p>
       <form id="rsvpForm" class="rsvp-form">
         <label>
           Nama
@@ -172,8 +182,4 @@
   <script src="script.js" defer></script>
 </body>
 </html>
-
-
-
-
 
