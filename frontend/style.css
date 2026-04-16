@@ -129,6 +129,27 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
   color: #5d7065;
 }
 
+.gate-recipient {
+  margin: 14px auto 0;
+  width: min(360px, 100%);
+  border: 1px solid rgba(79, 119, 100, 0.24);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 10px 12px;
+}
+
+.gate-recipient p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #62746a;
+}
+
+.gate-recipient h3 {
+  margin: 4px 0 0;
+  font-size: clamp(1.2rem, 4.6vw, 1.58rem);
+  line-height: 1.1;
+}
+
 .gate-open-btn {
   margin-top: 16px;
 }
@@ -237,7 +258,7 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
 .hero-cloud-photo {
   position: absolute;
   left: 50%;
-  top: 54%;
+  top: 60%;
   transform: translate(-50%, -50%);
   width: min(680px, 88vw);
   aspect-ratio: 16 / 10;
@@ -288,6 +309,16 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
   letter-spacing: 0.24em;
   color: var(--muted);
   font-size: 0.74rem;
+}
+
+.hero-title-block {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 14px 14px 10px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.42));
+  border: 1px solid rgba(79, 119, 100, 0.14);
+  backdrop-filter: blur(3px);
 }
 
 h1,
@@ -360,7 +391,7 @@ h2 {
 .envelope-shell {
   position: relative;
   width: min(560px, 100%);
-  margin: 12px auto 0;
+  margin: 14px auto 0;
   padding-top: 18px;
 }
 
@@ -397,7 +428,7 @@ h2 {
   padding: 14px;
   border: 1px solid rgba(79, 119, 100, 0.28);
   border-radius: 0 0 20px 20px;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.74), rgba(244, 235, 224, 0.66));
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.86), rgba(248, 242, 234, 0.78));
   box-shadow: 0 12px 24px rgba(53, 76, 63, 0.14);
 }
 
@@ -960,8 +991,12 @@ body.is-loading .page-loader {
   }
 
   .hero-cloud-photo {
-    top: 56%;
+    top: 61%;
     opacity: 0.28;
+  }
+
+  .hero-title-block {
+    backdrop-filter: none;
   }
 }
 
@@ -999,8 +1034,13 @@ body.is-loading .page-loader {
 
   .hero-cloud-photo {
     width: min(92vw, 500px);
-    top: 52%;
+    top: 60%;
     opacity: 0.25;
+  }
+
+  .hero-title-block {
+    padding: 12px 10px 8px;
+    border-radius: 16px;
   }
 
   .envelope-flap {

@@ -20,6 +20,7 @@ const invitationGate = document.getElementById("invitationGate");
 const openInvitationBtn = document.getElementById("openInvitationBtn");
 const gateNames = document.getElementById("gateNames");
 const gateDatePlace = document.getElementById("gateDatePlace");
+const gateGuestName = document.getElementById("gateGuestName");
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isSmallScreen = window.matchMedia("(max-width: 860px)").matches;
@@ -353,6 +354,7 @@ function setupInvitationGate() {
 function applyGuestName() {
   const guestName = getGuestNameFromUrl();
   setText("guestName", guestName);
+  setText("gateGuestName", guestName);
   if (inputNama && guestName !== "Bapak/Ibu/Saudara/i") {
     inputNama.value = guestName;
   }
