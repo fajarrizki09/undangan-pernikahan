@@ -133,9 +133,12 @@ function normalizeGalleryUrl(url) {
   const clean = String(url || "").trim();
   if (!clean) return "";
 
-  const match = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (clean.includes("drive.google.com") && match && match[1]) {
-    return `https://drive.usercontent.google.com/download?id=${match[1]}&export=view`;
+  const queryIdMatch = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  const pathIdMatch = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  const fileId = (queryIdMatch && queryIdMatch[1]) || (pathIdMatch && pathIdMatch[1]);
+
+  if (clean.includes("drive.google.com") && fileId) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`;
   }
 
   return clean;
