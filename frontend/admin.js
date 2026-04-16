@@ -19,7 +19,8 @@ const fields = {
   resepsiTime: document.getElementById("resepsiTime"),
   resepsiVenue: document.getElementById("resepsiVenue"),
   resepsiMapUrl: document.getElementById("resepsiMapUrl"),
-  galleryPhotos: document.getElementById("galleryPhotos")
+  galleryPhotos: document.getElementById("galleryPhotos"),
+  backgroundMusicUrl: document.getElementById("backgroundMusicUrl")
 };
 
 const adminKeyInput = document.getElementById("adminKey");
@@ -33,11 +34,13 @@ const statusGuests = document.getElementById("statusGuests");
 const guestInput = document.getElementById("guestInput");
 const guestLinks = document.getElementById("guestLinks");
 const photoFilesInput = document.getElementById("photoFiles");
+const musicFileInput = document.getElementById("musicFile");
 const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 
 document.getElementById("btnLoadConfig").addEventListener("click", loadConfigFromServer);
 document.getElementById("btnSaveConfig").addEventListener("click", saveConfigToServer);
 document.getElementById("btnUploadPhotos").addEventListener("click", uploadPhotosToDrive);
+document.getElementById("btnUploadMusic").addEventListener("click", uploadMusicToDrive);
 document.getElementById("btnImportGuests").addEventListener("click", importGuests);
 document.getElementById("btnLoadGuests").addEventListener("click", loadGuests);
 
@@ -142,6 +145,7 @@ function readConfigFromForm() {
     groomParents: fields.groomParents.value.trim(),
     heroDatePlace: fields.heroDatePlace.value.trim(),
     footerNames: fields.footerNames.value.trim(),
+    backgroundMusicUrl: fields.backgroundMusicUrl.value.trim(),
     weddingDateISO: buildWeddingIsoFromInputs(),
     akad: {
       date: fields.akadDate.value.trim(),
@@ -169,6 +173,7 @@ function fillForm(config) {
   fields.groomParents.value = config.groomParents || "";
   fields.heroDatePlace.value = config.heroDatePlace || "";
   fields.footerNames.value = config.footerNames || "";
+  fields.backgroundMusicUrl.value = config.backgroundMusicUrl || "";
 
   const parsedWeddingDate = parseWeddingIso(config.weddingDateISO || "");
   fields.weddingDateTimeLocal.value = parsedWeddingDate.localDateTime;
@@ -319,6 +324,46 @@ async function uploadPhotosToDrive() {
 
     photoFilesInput.value = "";
     setStatus(statusConfig, `${uploadedUrls.length} foto berhasil diupload dan konfigurasi galeri otomatis disimpan`);
+  } catch (error) {
+    setStatus(statusConfig, `Error: ${error.message}`);
+  }
+}
+
+async function uploadMusicToDrive() {
+  try {
+    const adminKey = getAdminKeyOrThrow();
+    const file = (musicFileInput.files || [])[0];
+    if (!file) throw new Error("Pilih 1 file musik dulu");
+
+    const allowedAudio = /^audio\//.test(file.type || "");
+    if (!allowedAudio) throw new Error("File harus format audio (mp3/m4a/wav, dll)");
+    if (file.size > 15 * 1024 * 1024) throw new Error("Ukuran file musik maksimal 15MB");
+
+    setStatus(statusConfig, "Mengupload musik...");
+
+    const result = await postApi({
+      action: "uploadPhotos",
+      adminKey,
+      files: [{
+        name: file.name,
+        mimeType: file.type || "audio/mpeg",
+        contentBase64: await fileToBase64(file)
+      }]
+    });
+
+    const uploadedUrl = (result.files && result.files[0] && result.files[0].publicUrl) || "";
+    if (!uploadedUrl) throw new Error("URL musik dari server kosong");
+
+    fields.backgroundMusicUrl.value = uploadedUrl;
+
+    await postApi({
+      action: "saveConfig",
+      adminKey,
+      config: readConfigFromForm()
+    });
+
+    musicFileInput.value = "";
+    setStatus(statusConfig, "Musik berhasil diupload dan konfigurasi tersimpan");
   } catch (error) {
     setStatus(statusConfig, `Error: ${error.message}`);
   }

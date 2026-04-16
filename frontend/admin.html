@@ -84,6 +84,16 @@
         Foto Galeri (1 baris = 1 URL/path)
         <textarea id="galleryPhotos" rows="7" placeholder="assets/photos/foto-1.jpg"></textarea>
       </label>
+      <div class="grid two">
+        <label>
+          Background Music URL
+          <input id="backgroundMusicUrl" type="text" placeholder="https://.../music.mp3" />
+        </label>
+        <label>
+          Upload Musik ke Google Drive
+          <input id="musicFile" type="file" accept="audio/*" />
+        </label>
+      </div>
       <div class="grid">
         <label>
           Upload Foto ke Google Drive
@@ -94,6 +104,7 @@
       <div class="actions">
         <button id="btnSaveConfig" class="btn" type="button">Simpan Konfigurasi</button>
         <button id="btnUploadPhotos" class="btn btn-ghost" type="button">Upload Foto</button>
+        <button id="btnUploadMusic" class="btn btn-ghost" type="button">Upload Musik</button>
       </div>
       <p class="status" id="statusConfig"></p>
     </section>
