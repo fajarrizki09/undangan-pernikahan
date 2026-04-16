@@ -1,5 +1,5 @@
 ﻿// Ganti URL ini dengan URL Web App Google Apps Script Anda setelah deploy.
-const RSVP_API_URL = "PASTE_WEB_APP_URL_DI_SINI";
+const RSVP_API_URL = "https://script.google.com/macros/s/AKfycbxzlazLkS5hXUtj4dg7UiZESPEsCx8sBUQawgWlTsS3lXsGuO7W6plCavPqNp6-YQsw/exec";
 
 // Pengaturan untuk halaman admin.
 const ADMIN_CONFIG = {
