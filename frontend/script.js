@@ -47,6 +47,39 @@ function setText(id, value) {
   if (el && value) el.textContent = value;
 }
 
+function setAnimatedName(id, value, baseDelayMs = 0) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  const text = String(value || "").trim();
+  if (!text) {
+    el.textContent = "";
+    return;
+  }
+
+  if (prefersReducedMotion) {
+    el.textContent = text;
+    return;
+  }
+
+  if (el.dataset.animatedText === text) return;
+  el.dataset.animatedText = text;
+  el.setAttribute("aria-label", text);
+  el.textContent = "";
+  el.classList.add("hero-name");
+
+  const fragment = document.createDocumentFragment();
+  Array.from(text).forEach((char, idx) => {
+    const letter = document.createElement("span");
+    letter.className = char === " " ? "char is-space" : "char";
+    letter.style.animationDelay = `${(baseDelayMs + (idx * 45)) / 1000}s`;
+    letter.textContent = char === " " ? "\u00A0" : char;
+    fragment.appendChild(letter);
+  });
+
+  el.appendChild(fragment);
+}
+
 function setLink(id, value) {
   const el = document.getElementById(id);
   if (el && value) el.href = value;
@@ -223,8 +256,8 @@ function normalizeAudioUrl(url) {
 function applyWeddingConfig() {
   setText("brandInitials", currentConfig.brandInitials);
   setText("heroOverline", currentConfig.heroOverline || "Wedding Invitation");
-  setText("heroBrideShort", currentConfig.brideShortName);
-  setText("heroGroomShort", currentConfig.groomShortName);
+  setAnimatedName("heroBrideShort", currentConfig.brideShortName, 140);
+  setAnimatedName("heroGroomShort", currentConfig.groomShortName, 420);
   setText("heroDatePlace", currentConfig.heroDatePlace);
 
   setText("avatarBride", (currentConfig.brideShortName || "A").charAt(0).toUpperCase());

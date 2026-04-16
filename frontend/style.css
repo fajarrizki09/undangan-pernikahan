@@ -164,6 +164,34 @@ h2 {
   font-style: italic;
 }
 
+.hero-name {
+  display: inline-flex;
+  flex-wrap: wrap;
+}
+
+.hero-name .char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(16px) scale(0.92);
+  animation: hero-letter-in 0.52s cubic-bezier(.2, .8, .22, 1) forwards;
+}
+
+.hero-name .char.is-space {
+  width: 0.35em;
+}
+
+@keyframes hero-letter-in {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.92);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .subtitle {
   margin: 0;
   color: var(--muted);
