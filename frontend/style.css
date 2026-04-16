@@ -258,15 +258,15 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
 .hero-cloud-photo {
   position: absolute;
   left: 50%;
-  top: 60%;
+  top: 31%;
   transform: translate(-50%, -50%);
-  width: min(680px, 88vw);
-  aspect-ratio: 16 / 10;
+  width: min(720px, 92vw);
+  aspect-ratio: 18 / 8.5;
   border-radius: 36px;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08)),
     url("assets/photos/foto-1.svg") center/cover no-repeat;
-  opacity: 0.34;
+  opacity: 0.38;
   z-index: 0;
   box-shadow: 0 24px 50px rgba(42, 65, 55, 0.18);
   overflow: hidden;
@@ -388,46 +388,12 @@ h2 {
   font-size: 1.06rem;
 }
 
-.envelope-shell {
-  position: relative;
+.guest-badge {
   width: min(560px, 100%);
   margin: 14px auto 0;
-  padding-top: 18px;
-}
-
-.envelope-flap {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
-  width: min(220px, 52%);
-  height: 44px;
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  background: linear-gradient(180deg, #f3e4d5, #ecd8c4);
-  border: 1px solid rgba(79, 119, 100, 0.24);
-  border-bottom: none;
-  z-index: 3;
-}
-
-.envelope-seal {
-  position: absolute;
-  left: 50%;
-  top: 30px;
-  transform: translateX(-50%);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #f3d8b7, #cfa071);
-  box-shadow: 0 4px 10px rgba(112, 80, 46, 0.24);
-  z-index: 4;
-}
-
-.guest-badge {
-  width: 100%;
-  margin: 0 auto;
   padding: 14px;
   border: 1px solid rgba(79, 119, 100, 0.28);
-  border-radius: 0 0 20px 20px;
+  border-radius: 16px;
   background: linear-gradient(165deg, rgba(255, 255, 255, 0.86), rgba(248, 242, 234, 0.78));
   box-shadow: 0 12px 24px rgba(53, 76, 63, 0.14);
 }
@@ -991,8 +957,8 @@ body.is-loading .page-loader {
   }
 
   .hero-cloud-photo {
-    top: 61%;
-    opacity: 0.28;
+    top: 33%;
+    opacity: 0.3;
   }
 
   .hero-title-block {
@@ -1033,24 +999,14 @@ body.is-loading .page-loader {
   }
 
   .hero-cloud-photo {
-    width: min(92vw, 500px);
-    top: 60%;
-    opacity: 0.25;
+    width: min(95vw, 520px);
+    top: 35%;
+    opacity: 0.32;
   }
 
   .hero-title-block {
     padding: 12px 10px 8px;
     border-radius: 16px;
-  }
-
-  .envelope-flap {
-    height: 38px;
-  }
-
-  .envelope-seal {
-    top: 24px;
-    width: 26px;
-    height: 26px;
   }
 
   .hero-actions,
