@@ -8,6 +8,8 @@ const fields = {
   groomParents: document.getElementById("groomParents"),
   heroDatePlace: document.getElementById("heroDatePlace"),
   footerNames: document.getElementById("footerNames"),
+  weddingDateTimeLocal: document.getElementById("weddingDateTimeLocal"),
+  weddingTimeOffset: document.getElementById("weddingTimeOffset"),
   weddingDateISO: document.getElementById("weddingDateISO"),
   akadDate: document.getElementById("akadDate"),
   akadTime: document.getElementById("akadTime"),
@@ -95,6 +97,35 @@ function normalizeBaseUrl(value) {
   return clean.endsWith("/") ? clean : clean + "/";
 }
 
+function parseWeddingIso(isoString) {
+  const fallback = {
+    localDateTime: "",
+    offset: "+07:00"
+  };
+
+  const value = (isoString || "").trim();
+  if (!value) return fallback;
+
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::\d{2})?(Z|[+\-]\d{2}:\d{2})?$/);
+  if (!match) return fallback;
+
+  return {
+    localDateTime: `${match[1]}T${match[2]}`,
+    offset: match[3] === "Z" ? "+00:00" : (match[3] || "+07:00")
+  };
+}
+
+function buildWeddingIsoFromInputs() {
+  const dateTime = fields.weddingDateTimeLocal.value.trim();
+  const offset = fields.weddingTimeOffset.value || "+07:00";
+  if (!dateTime) return "";
+  return `${dateTime}:00${offset}`;
+}
+
+function updateWeddingIsoPreview() {
+  fields.weddingDateISO.value = buildWeddingIsoFromInputs();
+}
+
 function readConfigFromForm() {
   const photos = fields.galleryPhotos.value
     .split(/\r?\n/)
@@ -111,7 +142,7 @@ function readConfigFromForm() {
     groomParents: fields.groomParents.value.trim(),
     heroDatePlace: fields.heroDatePlace.value.trim(),
     footerNames: fields.footerNames.value.trim(),
-    weddingDateISO: fields.weddingDateISO.value.trim(),
+    weddingDateISO: buildWeddingIsoFromInputs(),
     akad: {
       date: fields.akadDate.value.trim(),
       time: fields.akadTime.value.trim(),
@@ -138,7 +169,11 @@ function fillForm(config) {
   fields.groomParents.value = config.groomParents || "";
   fields.heroDatePlace.value = config.heroDatePlace || "";
   fields.footerNames.value = config.footerNames || "";
-  fields.weddingDateISO.value = config.weddingDateISO || "";
+
+  const parsedWeddingDate = parseWeddingIso(config.weddingDateISO || "");
+  fields.weddingDateTimeLocal.value = parsedWeddingDate.localDateTime;
+  fields.weddingTimeOffset.value = parsedWeddingDate.offset;
+  updateWeddingIsoPreview();
 
   fields.akadDate.value = (config.akad && config.akad.date) || "";
   fields.akadTime.value = (config.akad && config.akad.time) || "";
@@ -357,6 +392,8 @@ loadSavedAdminKey();
 adminKeyInput.addEventListener("change", () => {
   saveAdminKey(adminKeyInput.value.trim());
 });
+fields.weddingDateTimeLocal.addEventListener("input", updateWeddingIsoPreview);
+fields.weddingTimeOffset.addEventListener("change", updateWeddingIsoPreview);
 if (RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
   loadConfigFromServer();
 }

@@ -51,7 +51,17 @@
         <label>Orang Tua Mempelai Wanita<input id="brideParents" type="text" /></label>
         <label>Orang Tua Mempelai Pria<input id="groomParents" type="text" /></label>
         <label>Footer Names<input id="footerNames" type="text" /></label>
-        <label>Wedding Date ISO<input id="weddingDateISO" type="text" placeholder="2026-12-20T08:00:00+07:00" /></label>
+        <label>Tanggal & Jam Acara<input id="weddingDateTimeLocal" type="datetime-local" /></label>
+        <label>Zona Waktu
+          <select id="weddingTimeOffset">
+            <option value="+07:00">WIB (+07:00)</option>
+            <option value="+08:00">WITA (+08:00)</option>
+            <option value="+09:00">WIT (+09:00)</option>
+          </select>
+        </label>
+        <label>Format ISO (otomatis)
+          <input id="weddingDateISO" type="text" readonly />
+        </label>
       </div>
 
       <h3>Akad</h3>
