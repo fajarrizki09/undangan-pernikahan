@@ -258,15 +258,15 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
 .hero-cloud-photo {
   position: absolute;
   left: 50%;
-  top: 31%;
+  top: 27%;
   transform: translate(-50%, -50%);
-  width: min(720px, 92vw);
-  aspect-ratio: 18 / 8.5;
+  width: min(740px, 92vw);
+  aspect-ratio: 18 / 7.8;
   border-radius: 36px;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08)),
     url("assets/photos/foto-1.svg") center/cover no-repeat;
-  opacity: 0.38;
+  opacity: 0.42;
   z-index: 0;
   box-shadow: 0 24px 50px rgba(42, 65, 55, 0.18);
   overflow: hidden;
@@ -314,11 +314,29 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
 .hero-title-block {
   width: min(760px, 100%);
   margin: 0 auto;
-  padding: 14px 14px 10px;
+  padding: 14px 14px 12px;
   border-radius: 20px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.42));
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.34));
   border: 1px solid rgba(79, 119, 100, 0.14);
   backdrop-filter: blur(3px);
+}
+
+.calendar-cta {
+  margin: 6px 0 0;
+}
+
+.calendar-cta a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border: 1px solid rgba(79, 119, 100, 0.28);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #466654;
+  background: rgba(255, 255, 255, 0.72);
 }
 
 h1,
@@ -957,8 +975,8 @@ body.is-loading .page-loader {
   }
 
   .hero-cloud-photo {
-    top: 33%;
-    opacity: 0.3;
+    top: 29%;
+    opacity: 0.34;
   }
 
   .hero-title-block {
@@ -1000,8 +1018,8 @@ body.is-loading .page-loader {
 
   .hero-cloud-photo {
     width: min(95vw, 520px);
-    top: 35%;
-    opacity: 0.32;
+    top: 30%;
+    opacity: 0.36;
   }
 
   .hero-title-block {

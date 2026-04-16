@@ -21,6 +21,7 @@ const openInvitationBtn = document.getElementById("openInvitationBtn");
 const gateNames = document.getElementById("gateNames");
 const gateDatePlace = document.getElementById("gateDatePlace");
 const gateGuestName = document.getElementById("gateGuestName");
+const addToCalendarLink = document.getElementById("addToCalendarLink");
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isSmallScreen = window.matchMedia("(max-width: 860px)").matches;
@@ -271,6 +272,64 @@ function applyHeroCloudPhoto() {
   heroCloudPhoto.style.backgroundImage = `linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08)), url("${safeUrl}")`;
 }
 
+function formatGoogleCalendarDate(ms) {
+  const date = new Date(ms);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hour = String(date.getUTCHours()).padStart(2, "0");
+  const minute = String(date.getUTCMinutes()).padStart(2, "0");
+  const second = String(date.getUTCSeconds()).padStart(2, "0");
+  return `${year}${month}${day}T${hour}${minute}${second}Z`;
+}
+
+function buildCalendarEndTime(startMs) {
+  const resepsiTime = String((currentConfig.resepsi && currentConfig.resepsi.time) || "").trim();
+  const rangeMatch = resepsiTime.match(/(\d{1,2})[.:](\d{2})\s*[-–]\s*(\d{1,2})[.:](\d{2})/);
+  if (!rangeMatch) return startMs + (2 * 60 * 60 * 1000);
+
+  const startHour = Number(rangeMatch[1]);
+  const startMinute = Number(rangeMatch[2]);
+  const endHour = Number(rangeMatch[3]);
+  const endMinute = Number(rangeMatch[4]);
+  const durationMs = ((endHour * 60 + endMinute) - (startHour * 60 + startMinute)) * 60 * 1000;
+
+  if (!Number.isFinite(durationMs) || durationMs <= 0) {
+    return startMs + (2 * 60 * 60 * 1000);
+  }
+
+  return startMs + durationMs;
+}
+
+function applyCalendarLink() {
+  if (!addToCalendarLink) return;
+
+  const startMs = parseWeddingTimestamp();
+  if (!Number.isFinite(startMs)) {
+    addToCalendarLink.style.display = "none";
+    return;
+  }
+
+  const endMs = buildCalendarEndTime(startMs);
+  const title = `${currentConfig.brideShortName || "Mempelai"} & ${currentConfig.groomShortName || "Mempelai"} - Resepsi Pernikahan`;
+  const location = String((currentConfig.resepsi && currentConfig.resepsi.venue) || "").trim();
+  const detailParts = [
+    "Undangan digital pernikahan.",
+    location ? `Lokasi: ${location}` : "",
+    String((currentConfig.resepsi && currentConfig.resepsi.mapUrl) || "").trim()
+  ].filter(Boolean);
+
+  const url = new URL("https://calendar.google.com/calendar/render");
+  url.searchParams.set("action", "TEMPLATE");
+  url.searchParams.set("text", title);
+  url.searchParams.set("dates", `${formatGoogleCalendarDate(startMs)}/${formatGoogleCalendarDate(endMs)}`);
+  if (detailParts.length) url.searchParams.set("details", detailParts.join("\n"));
+  if (location) url.searchParams.set("location", location);
+
+  addToCalendarLink.href = url.toString();
+  addToCalendarLink.style.display = "inline-flex";
+}
+
 function applyWeddingConfig() {
   setText("brandInitials", currentConfig.brandInitials);
   setText("heroOverline", currentConfig.heroOverline || "Wedding Invitation");
@@ -327,6 +386,7 @@ function applyWeddingConfig() {
   }
 
   applyHeroCloudPhoto();
+  applyCalendarLink();
 
   const titleNames = `${currentConfig.brideShortName || "Mempelai"} & ${currentConfig.groomShortName || "Mempelai"}`;
   document.title = `Undangan Pernikahan | ${titleNames}`;
