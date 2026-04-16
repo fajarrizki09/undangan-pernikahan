@@ -274,8 +274,16 @@ async function uploadPhotosToDrive() {
 
     const uploadedUrls = (result.files || []).map((item) => item.publicUrl).filter(Boolean);
     appendGalleryUrls(uploadedUrls);
+
+    // Auto-save config setelah upload agar galeri publik langsung ikut update.
+    await postApi({
+      action: "saveConfig",
+      adminKey,
+      config: readConfigFromForm()
+    });
+
     photoFilesInput.value = "";
-    setStatus(statusConfig, `${uploadedUrls.length} foto berhasil diupload ke Google Drive`);
+    setStatus(statusConfig, `${uploadedUrls.length} foto berhasil diupload dan konfigurasi galeri otomatis disimpan`);
   } catch (error) {
     setStatus(statusConfig, `Error: ${error.message}`);
   }

@@ -112,7 +112,13 @@ async function loadServerConfig() {
   }
 
   try {
-    const response = await fetchWithTimeout(`${RSVP_API_URL}?action=config`, {}, 6000);
+    const url = new URL(RSVP_API_URL);
+    url.searchParams.set("action", "config");
+    url.searchParams.set("_ts", String(Date.now()));
+
+    const response = await fetchWithTimeout(url.toString(), {
+      cache: "no-store"
+    }, 6000);
     const result = await response.json();
 
     if (response.ok && result.success && result.config) {
@@ -121,6 +127,18 @@ async function loadServerConfig() {
   } catch (error) {
     // Fallback ke config lokal jika gagal mengambil config server.
   }
+}
+
+function normalizeGalleryUrl(url) {
+  const clean = String(url || "").trim();
+  if (!clean) return "";
+
+  const match = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (clean.includes("drive.google.com") && match && match[1]) {
+    return `https://drive.usercontent.google.com/download?id=${match[1]}&export=view`;
+  }
+
+  return clean;
 }
 
 function applyWeddingConfig() {
@@ -167,7 +185,8 @@ function applyWeddingConfig() {
   if (Array.isArray(currentConfig.galleryPhotos)) {
     currentConfig.galleryPhotos.forEach((src, index) => {
       const img = document.getElementById(`photo${index + 1}`);
-      if (img && src) img.src = src;
+      const normalizedSrc = normalizeGalleryUrl(src);
+      if (img && normalizedSrc) img.src = normalizedSrc;
     });
   }
 
