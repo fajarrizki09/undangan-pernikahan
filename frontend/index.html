@@ -94,12 +94,12 @@
       <h2>Galeri Foto</h2>
       <p>Ganti foto dengan dokumentasi terbaik kalian di folder `assets/photos`.</p>
       <div class="gallery-grid">
-        <img id="photo1" src="assets/photos/foto-1.svg" alt="Foto pasangan 1" loading="lazy" />
-        <img id="photo2" src="assets/photos/foto-2.svg" alt="Foto pasangan 2" loading="lazy" />
-        <img id="photo3" src="assets/photos/foto-3.svg" alt="Foto pasangan 3" loading="lazy" />
-        <img id="photo4" src="assets/photos/foto-4.svg" alt="Foto pasangan 4" loading="lazy" />
-        <img id="photo5" src="assets/photos/foto-5.svg" alt="Foto pasangan 5" loading="lazy" />
-        <img id="photo6" src="assets/photos/foto-6.svg" alt="Foto pasangan 6" loading="lazy" />
+        <img id="photo1" src="assets/photos/foto-1.svg" alt="Foto pasangan 1" loading="lazy" decoding="async" />
+        <img id="photo2" src="assets/photos/foto-2.svg" alt="Foto pasangan 2" loading="lazy" decoding="async" />
+        <img id="photo3" src="assets/photos/foto-3.svg" alt="Foto pasangan 3" loading="lazy" decoding="async" />
+        <img id="photo4" src="assets/photos/foto-4.svg" alt="Foto pasangan 4" loading="lazy" decoding="async" />
+        <img id="photo5" src="assets/photos/foto-5.svg" alt="Foto pasangan 5" loading="lazy" decoding="async" />
+        <img id="photo6" src="assets/photos/foto-6.svg" alt="Foto pasangan 6" loading="lazy" decoding="async" />
       </div>
     </section>
 
@@ -168,8 +168,12 @@
   <button id="musicToggle" class="music-toggle" type="button" aria-label="Putar musik">Play Music</button>
   <audio id="bgMusic" loop preload="none"></audio>
 
-  <script src="config.js"></script>
-  <script src="script.js"></script>
+  <script src="config.js" defer></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
+
+
+
+
 

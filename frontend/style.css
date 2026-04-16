@@ -65,6 +65,7 @@ body {
   opacity: 0.95;
   box-shadow: 0 0 8px rgba(56, 142, 60, 0.45);
   animation: leaf-fall linear forwards;
+  will-change: transform, opacity;
 }
 
 .flower {
@@ -75,6 +76,7 @@ body {
   background: radial-gradient(circle at 45% 45%, #fff6fa 15%, #ffc4de 58%, #f08ab4 100%);
   box-shadow: 0 0 8px rgba(240, 138, 180, 0.45);
   animation: flower-fall linear forwards;
+  will-change: transform, opacity;
 }
 
 .flower::before,
@@ -271,6 +273,8 @@ h2 {
   backdrop-filter: blur(10px);
   position: relative;
   z-index: 2;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 640px;
 }
 
 .card p {
@@ -565,6 +569,11 @@ textarea:focus {
   .countdown {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .card,
+  .topbar {
+    backdrop-filter: none;
+  }
 }
 
 @media (max-width: 520px) {
@@ -589,5 +598,23 @@ textarea:focus {
 
   .hero-actions {
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal,
+  .leaf,
+  .flower {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .leaf-layer,
+  .flower-layer {
+    display: none;
   }
 }

@@ -1,4 +1,4 @@
-﻿const form = document.getElementById("rsvpForm");
+const form = document.getElementById("rsvpForm");
 const statusText = document.getElementById("formStatus");
 const inputNama = document.getElementById("inputNama");
 
@@ -11,6 +11,18 @@ const musicToggle = document.getElementById("musicToggle");
 const bgMusic = document.getElementById("bgMusic");
 const leafLayer = document.getElementById("leafLayer");
 const flowerLayer = document.getElementById("flowerLayer");
+
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const isSmallScreen = window.matchMedia("(max-width: 860px)").matches;
+const isLowPowerDevice = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || isSmallScreen;
+
+const particleState = {
+  leafTimer: null,
+  flowerTimer: null,
+  countdownTimer: null,
+  maxLeaves: isLowPowerDevice ? 8 : 18,
+  maxFlowers: isLowPowerDevice ? 6 : 14
+};
 
 let currentConfig = {
   ...WEDDING_CONFIG,
@@ -61,13 +73,27 @@ function mergeConfig(base, incoming) {
   };
 }
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 async function loadServerConfig() {
   if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
     return;
   }
 
   try {
-    const response = await fetch(`${RSVP_API_URL}?action=config`);
+    const response = await fetchWithTimeout(`${RSVP_API_URL}?action=config`, {}, 6000);
     const result = await response.json();
 
     if (response.ok && result.success && result.config) {
@@ -221,13 +247,13 @@ function setupMusicControl() {
 }
 
 function createLeaf() {
-  if (!leafLayer) return;
+  if (!leafLayer || leafLayer.childElementCount >= particleState.maxLeaves) return;
 
   const leaf = document.createElement("span");
   leaf.className = "leaf";
   const left = Math.random() * 100;
-  const duration = 8 + Math.random() * 8;
-  const delay = Math.random() * 1.5;
+  const duration = (isLowPowerDevice ? 9 : 8) + Math.random() * (isLowPowerDevice ? 6 : 8);
+  const delay = Math.random() * 1.2;
   const scale = 0.7 + Math.random() * 1.1;
 
   leaf.style.left = `${left}%`;
@@ -239,18 +265,13 @@ function createLeaf() {
   setTimeout(() => leaf.remove(), (duration + delay) * 1000 + 200);
 }
 
-function setupLeafEffect() {
-  if (!leafLayer) return;
-  setInterval(createLeaf, 900);
-}
-
 function createFlower() {
-  if (!flowerLayer) return;
+  if (!flowerLayer || flowerLayer.childElementCount >= particleState.maxFlowers) return;
 
   const flower = document.createElement("span");
   flower.className = "flower";
   const left = Math.random() * 100;
-  const duration = 7 + Math.random() * 7;
+  const duration = (isLowPowerDevice ? 8 : 7) + Math.random() * (isLowPowerDevice ? 5 : 7);
   const delay = Math.random() * 1.2;
   const scale = 0.65 + Math.random() * 0.9;
 
@@ -263,63 +284,102 @@ function createFlower() {
   setTimeout(() => flower.remove(), (duration + delay) * 1000 + 200);
 }
 
-function setupFlowerEffect() {
-  if (!flowerLayer) return;
-  setInterval(createFlower, 1100);
+function startTimers() {
+  if (!particleState.countdownTimer) {
+    particleState.countdownTimer = window.setInterval(updateCountdown, 1000);
+  }
+
+  if (prefersReducedMotion) return;
+
+  if (!particleState.leafTimer && leafLayer) {
+    particleState.leafTimer = window.setInterval(createLeaf, isLowPowerDevice ? 1300 : 900);
+  }
+
+  if (!particleState.flowerTimer && flowerLayer) {
+    particleState.flowerTimer = window.setInterval(createFlower, isLowPowerDevice ? 1600 : 1100);
+  }
 }
 
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
-    statusText.textContent = "URL backend belum diisi pada config.js";
-    return;
+function stopTimers() {
+  if (particleState.countdownTimer) {
+    clearInterval(particleState.countdownTimer);
+    particleState.countdownTimer = null;
   }
 
-  const formData = new FormData(form);
-  const payload = {
-    nama: formData.get("nama")?.toString().trim(),
-    jumlah: Number(formData.get("jumlah")),
-    kehadiran: formData.get("kehadiran"),
-    ucapan: formData.get("ucapan")?.toString().trim() || "-"
-  };
+  if (particleState.leafTimer) {
+    clearInterval(particleState.leafTimer);
+    particleState.leafTimer = null;
+  }
 
-  statusText.textContent = "Mengirim RSVP...";
+  if (particleState.flowerTimer) {
+    clearInterval(particleState.flowerTimer);
+    particleState.flowerTimer = null;
+  }
+}
 
-  try {
-    const response = await fetch(RSVP_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(payload)
-    });
+function setupVisibilityOptimization() {
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopTimers();
+    } else {
+      updateCountdown();
+      startTimers();
+    }
+  });
+}
 
-    const result = await response.json();
+if (form) {
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-    if (!response.ok || !result.success) {
-      throw new Error(result.message || "Gagal mengirim data");
+    if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
+      statusText.textContent = "URL backend belum diisi pada config.js";
+      return;
     }
 
-    form.reset();
-    applyGuestName();
-    statusText.textContent = "RSVP berhasil dikirim. Terima kasih.";
-  } catch (error) {
-    statusText.textContent = `Terjadi kesalahan: ${error.message}`;
-  }
-});
+    const formData = new FormData(form);
+    const payload = {
+      nama: formData.get("nama")?.toString().trim(),
+      jumlah: Number(formData.get("jumlah")),
+      kehadiran: formData.get("kehadiran"),
+      ucapan: formData.get("ucapan")?.toString().trim() || "-"
+    };
+
+    statusText.textContent = "Mengirim RSVP...";
+
+    try {
+      const response = await fetchWithTimeout(RSVP_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(payload)
+      }, 10000);
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Gagal mengirim data");
+      }
+
+      form.reset();
+      applyGuestName();
+      statusText.textContent = "RSVP berhasil dikirim. Terima kasih.";
+    } catch (error) {
+      statusText.textContent = `Terjadi kesalahan: ${error.message}`;
+    }
+  });
+}
 
 async function initPage() {
   await loadServerConfig();
   applyWeddingConfig();
   applyGuestName();
   updateCountdown();
-  setInterval(updateCountdown, 1000);
   setupRevealAnimation();
   setupMusicControl();
-  setupLeafEffect();
-  setupFlowerEffect();
+  setupVisibilityOptimization();
+  startTimers();
 }
 
 initPage();
-
