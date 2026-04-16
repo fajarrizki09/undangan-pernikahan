@@ -20,6 +20,7 @@ const fields = {
   resepsiTime: document.getElementById("resepsiTime"),
   resepsiVenue: document.getElementById("resepsiVenue"),
   resepsiMapUrl: document.getElementById("resepsiMapUrl"),
+  loveStoryPhotos: document.getElementById("loveStoryPhotos"),
   galleryPhotos: document.getElementById("galleryPhotos"),
   backgroundMusicUrl: document.getElementById("backgroundMusicUrl"),
   musicStartSec: document.getElementById("musicStartSec"),
@@ -182,6 +183,11 @@ function parseNonNegativeNumber(value) {
 
 function readConfigFromForm() {
   const photos = getGalleryUrls();
+  const storyPhotos = fields.loveStoryPhotos.value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 3);
 
   return {
     brandInitials: fields.brandInitials.value.trim(),
@@ -211,6 +217,7 @@ function readConfigFromForm() {
       venue: fields.resepsiVenue.value.trim(),
       mapUrl: fields.resepsiMapUrl.value.trim()
     },
+    loveStoryPhotos: storyPhotos,
     galleryPhotos: photos
   };
 }
@@ -246,6 +253,7 @@ function fillForm(config) {
   fields.resepsiVenue.value = (config.resepsi && config.resepsi.venue) || "";
   fields.resepsiMapUrl.value = (config.resepsi && config.resepsi.mapUrl) || "";
 
+  fields.loveStoryPhotos.value = Array.isArray(config.loveStoryPhotos) ? config.loveStoryPhotos.slice(0, 3).join("\n") : "";
   fields.galleryPhotos.value = Array.isArray(config.galleryPhotos) ? config.galleryPhotos.join("\n") : "";
   renderGalleryPreview();
 }

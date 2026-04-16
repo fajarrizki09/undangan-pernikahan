@@ -38,6 +38,11 @@ const WEDDING_CONFIG = {
     venue: "Graha Puspita, Surabaya",
     mapUrl: "https://maps.google.com"
   },
+  loveStoryPhotos: [
+    "assets/photos/foto-1.svg",
+    "assets/photos/foto-2.svg",
+    "assets/photos/foto-3.svg"
+  ],
   galleryPhotos: [
     "assets/photos/foto-1.svg",
     "assets/photos/foto-2.svg",

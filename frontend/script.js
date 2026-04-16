@@ -44,6 +44,7 @@ let currentConfig = {
   ...WEDDING_CONFIG,
   akad: { ...(WEDDING_CONFIG.akad || {}) },
   resepsi: { ...(WEDDING_CONFIG.resepsi || {}) },
+  loveStoryPhotos: Array.isArray(WEDDING_CONFIG.loveStoryPhotos) ? [...WEDDING_CONFIG.loveStoryPhotos] : [],
   galleryPhotos: Array.isArray(WEDDING_CONFIG.galleryPhotos) ? [...WEDDING_CONFIG.galleryPhotos] : []
 };
 const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
@@ -141,6 +142,9 @@ function mergeConfig(base, incoming) {
       ...(base.resepsi || {}),
       ...(incoming.resepsi || {})
     },
+    loveStoryPhotos: Array.isArray(incoming.loveStoryPhotos) && incoming.loveStoryPhotos.length
+      ? incoming.loveStoryPhotos
+      : base.loveStoryPhotos,
     galleryPhotos: Array.isArray(incoming.galleryPhotos) && incoming.galleryPhotos.length
       ? incoming.galleryPhotos
       : base.galleryPhotos
@@ -380,6 +384,14 @@ function applyWeddingConfig() {
   if (Array.isArray(currentConfig.galleryPhotos)) {
     currentConfig.galleryPhotos.forEach((src, index) => {
       const img = document.getElementById(`photo${index + 1}`);
+      const normalizedSrc = normalizeGalleryUrl(src);
+      if (img && normalizedSrc) img.src = normalizedSrc;
+    });
+  }
+
+  if (Array.isArray(currentConfig.loveStoryPhotos)) {
+    currentConfig.loveStoryPhotos.slice(0, 3).forEach((src, index) => {
+      const img = document.getElementById(`storyPhoto${index + 1}`);
       const normalizedSrc = normalizeGalleryUrl(src);
       if (img && normalizedSrc) img.src = normalizedSrc;
     });
