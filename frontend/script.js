@@ -11,6 +11,7 @@ const musicToggle = document.getElementById("musicToggle");
 const bgMusic = document.getElementById("bgMusic");
 const leafLayer = document.getElementById("leafLayer");
 const flowerLayer = document.getElementById("flowerLayer");
+const pageLoader = document.getElementById("pageLoader");
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isSmallScreen = window.matchMedia("(max-width: 860px)").matches;
@@ -30,6 +31,8 @@ let currentConfig = {
   resepsi: { ...(WEDDING_CONFIG.resepsi || {}) },
   galleryPhotos: Array.isArray(WEDDING_CONFIG.galleryPhotos) ? [...WEDDING_CONFIG.galleryPhotos] : []
 };
+const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
+const CONFIG_CACHE_TTL_MS = 1000 * 60 * 10;
 
 function setText(id, value) {
   const el = document.getElementById(id);
@@ -107,6 +110,11 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
 }
 
 async function loadServerConfig() {
+  const cachedConfig = readCachedConfig();
+  if (cachedConfig) {
+    currentConfig = mergeConfig(currentConfig, cachedConfig);
+  }
+
   if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
     return;
   }
@@ -114,18 +122,43 @@ async function loadServerConfig() {
   try {
     const url = new URL(RSVP_API_URL);
     url.searchParams.set("action", "config");
-    url.searchParams.set("_ts", String(Date.now()));
 
     const response = await fetchWithTimeout(url.toString(), {
-      cache: "no-store"
-    }, 6000);
+      cache: "force-cache"
+    }, 4500);
     const result = await response.json();
 
     if (response.ok && result.success && result.config) {
       currentConfig = mergeConfig(currentConfig, result.config);
+      writeCachedConfig(result.config);
     }
   } catch (error) {
     // Fallback ke config lokal jika gagal mengambil config server.
+  }
+}
+
+function readCachedConfig() {
+  try {
+    const raw = localStorage.getItem(CONFIG_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+    if (!parsed.savedAt || !parsed.data) return null;
+    if (Date.now() - Number(parsed.savedAt) > CONFIG_CACHE_TTL_MS) return null;
+    return parsed.data;
+  } catch (error) {
+    return null;
+  }
+}
+
+function writeCachedConfig(config) {
+  try {
+    localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      data: config
+    }));
+  } catch (error) {
+    // Abaikan jika storage penuh/terblokir.
   }
 }
 
@@ -417,14 +450,23 @@ if (form) {
 }
 
 async function initPage() {
-  await loadServerConfig();
-  applyWeddingConfig();
-  applyGuestName();
-  updateCountdown();
-  setupRevealAnimation();
-  setupMusicControl();
-  setupVisibilityOptimization();
-  startTimers();
+  try {
+    await loadServerConfig();
+  } finally {
+    applyWeddingConfig();
+    applyGuestName();
+    updateCountdown();
+    setupRevealAnimation();
+    setupMusicControl();
+    setupVisibilityOptimization();
+    startTimers();
+
+    window.requestAnimationFrame(() => {
+      document.body.classList.remove("is-loading");
+      document.body.removeAttribute("aria-busy");
+      if (pageLoader) pageLoader.setAttribute("aria-hidden", "true");
+    });
+  }
 }
 
 initPage();

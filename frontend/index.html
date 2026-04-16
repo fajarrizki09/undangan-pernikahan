@@ -10,12 +10,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="is-loading" aria-busy="true">
   <div class="texture"></div>
   <div class="aura aura-left"></div>
   <div class="aura aura-right"></div>
   <div id="leafLayer" class="leaf-layer" aria-hidden="true"></div>
   <div id="flowerLayer" class="flower-layer" aria-hidden="true"></div>
+  <div id="pageLoader" class="page-loader" role="status" aria-live="polite">
+    <div class="loader-dot"></div>
+    <p>Memuat undangan...</p>
+  </div>
 
   <header class="topbar">
     <a href="#home" class="brand" id="brandInitials">A & F</a>
