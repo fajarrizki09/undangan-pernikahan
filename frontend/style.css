@@ -24,11 +24,9 @@ body {
   color: var(--ink);
   font-family: "Manrope", sans-serif;
   background:
-    radial-gradient(900px 620px at 52% 22%, rgba(225, 215, 206, 0.44) 0%, rgba(225, 215, 206, 0) 72%),
-    radial-gradient(860px 540px at 46% 82%, rgba(238, 230, 222, 0.56) 0%, rgba(238, 230, 222, 0) 74%),
-    radial-gradient(1200px 560px at -10% -12%, #ebe4dd 0%, transparent 55%),
-    radial-gradient(900px 520px at 110% -12%, #f5ebe0 0%, transparent 56%),
-    linear-gradient(168deg, #fcfaf7, #f2ebe4);
+    radial-gradient(980px 640px at 50% 15%, rgba(255, 237, 242, 0.48) 0%, rgba(255, 237, 242, 0) 72%),
+    radial-gradient(860px 560px at 50% 100%, rgba(249, 230, 217, 0.4) 0%, rgba(249, 230, 217, 0) 74%),
+    linear-gradient(170deg, #fffaf8, #f8efe8);
 }
 
 body::before,
@@ -113,8 +111,15 @@ body.invitation-locked .music-toggle {
   inset: 0;
   z-index: -3;
   pointer-events: none;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px);
-  background-size: 4px 4px;
+  opacity: 0.34;
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.1)),
+    url("assets/photos/bg-floral-frame.jpg");
+  background-size: 4px 4px, cover, cover;
+  background-position: 0 0, center, center top;
+  background-repeat: repeat, no-repeat, no-repeat;
+  filter: saturate(1.05);
 }
 
 .invitation-gate {
@@ -1729,6 +1734,11 @@ body.is-loading .page-loader {
 }
 
 @media (max-width: 520px) {
+  .texture {
+    opacity: 0.44;
+    background-position: 0 0, center, center;
+  }
+
   body::before,
   body::after {
     width: 240px;
