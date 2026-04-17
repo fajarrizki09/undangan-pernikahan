@@ -46,6 +46,12 @@ const statusGuests = document.getElementById("statusGuests");
 
 const guestInput = document.getElementById("guestInput");
 const guestSearch = document.getElementById("guestSearch");
+const guestGroupFilter = document.getElementById("guestGroupFilter");
+const guestStatusFilter = document.getElementById("guestStatusFilter");
+const guestPageSize = document.getElementById("guestPageSize");
+const guestPageInfo = document.getElementById("guestPageInfo");
+const btnGuestPrev = document.getElementById("btnGuestPrev");
+const btnGuestNext = document.getElementById("btnGuestNext");
 const guestLinks = document.getElementById("guestLinks");
 const guestTableBody = document.getElementById("guestTableBody");
 const photoFilesInput = document.getElementById("photoFiles");
@@ -67,6 +73,14 @@ document.getElementById("btnExportGuestsCsv").addEventListener("click", exportGu
 
 apiUrlInput.value = RSVP_API_URL;
 let currentGuests = [];
+let guestState = {
+  total: 0,
+  page: 1,
+  pageSize: 20,
+  totalPages: 1,
+  groups: [],
+  statuses: ["active", "vip", "disabled"]
+};
 
 function getDefaultInvitationBaseUrl() {
   const fromConfig = (ADMIN_CONFIG && ADMIN_CONFIG.invitationBaseUrl) || "";
@@ -640,9 +654,20 @@ async function uploadMusicToDrive() {
 
 function parseGuestInput() {
   return guestInput.value
-    .split(/[\n,]+/)
+    .split(/\r?\n+/)
     .map((item) => item.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .map((line) => {
+      const parts = line.split("|").map((part) => part.trim());
+      return {
+        name: parts[0] || "",
+        group: parts[1] || "Umum",
+        phone: parts[2] || "",
+        notes: parts[3] || "",
+        status: "active"
+      };
+    })
+    .filter((item) => item.name);
 }
 
 function buildGuestLink(baseUrl, name) {
@@ -652,12 +677,6 @@ function buildGuestLink(baseUrl, name) {
 function toCsvCell(value) {
   const text = String(value || "");
   return `"${text.replace(/"/g, "\"\"")}"`;
-}
-
-function getFilteredGuests() {
-  const keyword = String((guestSearch && guestSearch.value) || "").trim().toLowerCase();
-  if (!keyword) return [...currentGuests];
-  return currentGuests.filter((item) => String(item.name || "").toLowerCase().includes(keyword));
 }
 
 function renderGuestLinks(guests) {
@@ -672,10 +691,27 @@ function renderGuestLinks(guests) {
     .join("\n");
 }
 
-async function updateGuestName(code, nextName) {
+function renderGuestMeta() {
+  if (guestPageInfo) {
+    guestPageInfo.textContent = `Halaman ${guestState.page} / ${guestState.totalPages} (${guestState.total} tamu)`;
+  }
+
+  if (btnGuestPrev) btnGuestPrev.disabled = guestState.page <= 1;
+  if (btnGuestNext) btnGuestNext.disabled = guestState.page >= guestState.totalPages;
+}
+
+function renderGuestFilterOptions() {
+  if (!guestGroupFilter) return;
+  const current = guestGroupFilter.value || "all";
+  const groups = Array.isArray(guestState.groups) ? guestState.groups : [];
+  guestGroupFilter.innerHTML = `<option value="all">Semua Group</option>${groups.map((group) => `<option value="${group}">${group}</option>`).join("")}`;
+  guestGroupFilter.value = groups.includes(current) ? current : "all";
+}
+
+async function updateGuestName(code, payload) {
   try {
     const adminKey = getAdminKeyOrThrow();
-    const cleanName = String(nextName || "").trim();
+    const cleanName = String((payload && payload.name) || "").trim();
     if (!cleanName) throw new Error("Nama tamu tidak boleh kosong");
 
     setStatus(statusGuests, "Menyimpan perubahan tamu...");
@@ -683,9 +719,13 @@ async function updateGuestName(code, nextName) {
       action: "updateGuest",
       adminKey,
       code,
-      name: cleanName
+      name: cleanName,
+      group: String((payload && payload.group) || "Umum").trim() || "Umum",
+      status: String((payload && payload.status) || "active").trim() || "active",
+      phone: String((payload && payload.phone) || "").trim(),
+      notes: String((payload && payload.notes) || "").trim()
     });
-    setStatus(statusGuests, "Nama tamu berhasil diperbarui");
+    setStatus(statusGuests, "Data tamu berhasil diperbarui");
     await loadGuests();
   } catch (error) {
     setStatus(statusGuests, `Error: ${error.message}`);
@@ -717,7 +757,7 @@ function renderGuestTable(guests) {
   if (!guests.length) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
-    cell.colSpan = 4;
+    cell.colSpan = 7;
     cell.textContent = "Belum ada data tamu.";
     row.appendChild(cell);
     guestTableBody.appendChild(row);
@@ -737,6 +777,32 @@ function renderGuestTable(guests) {
     nameInput.type = "text";
     nameInput.value = guest.name || "";
     nameCell.appendChild(nameInput);
+
+    const groupCell = document.createElement("td");
+    const groupInput = document.createElement("input");
+    groupInput.className = "guest-inline-input";
+    groupInput.type = "text";
+    groupInput.value = guest.group || "Umum";
+    groupCell.appendChild(groupInput);
+
+    const statusCell = document.createElement("td");
+    const statusSelect = document.createElement("select");
+    statusSelect.className = "guest-inline-input";
+    ["active", "vip", "disabled"].forEach((statusValue) => {
+      const option = document.createElement("option");
+      option.value = statusValue;
+      option.textContent = statusValue.toUpperCase();
+      if ((guest.status || "active") === statusValue) option.selected = true;
+      statusSelect.appendChild(option);
+    });
+    statusCell.appendChild(statusSelect);
+
+    const phoneCell = document.createElement("td");
+    const phoneInput = document.createElement("input");
+    phoneInput.className = "guest-inline-input";
+    phoneInput.type = "text";
+    phoneInput.value = guest.phone || "";
+    phoneCell.appendChild(phoneInput);
 
     const linkCell = document.createElement("td");
     if (baseUrl && guest.name) {
@@ -759,7 +825,12 @@ function renderGuestTable(guests) {
     saveBtn.type = "button";
     saveBtn.className = "btn-mini";
     saveBtn.textContent = "Simpan";
-    saveBtn.addEventListener("click", () => updateGuestName(guest.code, nameInput.value));
+    saveBtn.addEventListener("click", () => updateGuestName(guest.code, {
+      name: nameInput.value,
+      group: groupInput.value,
+      status: statusSelect.value,
+      phone: phoneInput.value
+    }));
 
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
@@ -773,6 +844,9 @@ function renderGuestTable(guests) {
 
     row.appendChild(codeCell);
     row.appendChild(nameCell);
+    row.appendChild(groupCell);
+    row.appendChild(statusCell);
+    row.appendChild(phoneCell);
     row.appendChild(linkCell);
     row.appendChild(actionCell);
     guestTableBody.appendChild(row);
@@ -780,13 +854,13 @@ function renderGuestTable(guests) {
 }
 
 function refreshGuestViews() {
-  const filteredGuests = getFilteredGuests();
-  renderGuestTable(filteredGuests);
-  renderGuestLinks(filteredGuests);
+  renderGuestTable(currentGuests);
+  renderGuestLinks(currentGuests);
+  renderGuestMeta();
 }
 
 function exportGuestsCsv() {
-  const guests = getFilteredGuests();
+  const guests = [...currentGuests];
   if (!guests.length) {
     setStatus(statusGuests, "Belum ada data tamu untuk diexport.");
     return;
@@ -794,10 +868,17 @@ function exportGuestsCsv() {
 
   const baseUrl = normalizeBaseUrl(invitationBaseUrlInput.value);
   const lines = [
-    "code,nama,link_undangan",
+    "code,nama,group,status,telepon,link_undangan",
     ...guests.map((guest) => {
       const link = baseUrl ? buildGuestLink(baseUrl, guest.name || "") : "";
-      return [toCsvCell(guest.code), toCsvCell(guest.name), toCsvCell(link)].join(",");
+      return [
+        toCsvCell(guest.code),
+        toCsvCell(guest.name),
+        toCsvCell(guest.group || "Umum"),
+        toCsvCell(guest.status || "active"),
+        toCsvCell(guest.phone || ""),
+        toCsvCell(link)
+      ].join(",");
     })
   ];
 
@@ -839,10 +920,25 @@ async function loadGuests() {
     const adminKey = getAdminKeyOrThrow();
 
     setStatus(statusGuests, "Memuat daftar tamu...");
-    const result = await postApi({ action: "listGuests", adminKey });
+    const result = await postApi({
+      action: "listGuests",
+      adminKey,
+      search: String((guestSearch && guestSearch.value) || "").trim(),
+      group: String((guestGroupFilter && guestGroupFilter.value) || "all").trim(),
+      status: String((guestStatusFilter && guestStatusFilter.value) || "all").trim(),
+      page: guestState.page,
+      pageSize: Number((guestPageSize && guestPageSize.value) || guestState.pageSize || 20)
+    });
     currentGuests = Array.isArray(result.guests) ? result.guests : [];
+    guestState.total = Number(result.total || currentGuests.length);
+    guestState.page = Number(result.page || 1);
+    guestState.pageSize = Number(result.pageSize || guestState.pageSize || 20);
+    guestState.totalPages = Number(result.totalPages || 1);
+    guestState.groups = Array.isArray(result.groups) ? result.groups : [];
+    guestState.statuses = Array.isArray(result.statuses) ? result.statuses : guestState.statuses;
+    renderGuestFilterOptions();
     refreshGuestViews();
-    setStatus(statusGuests, `Berhasil memuat ${currentGuests.length} tamu`);
+    setStatus(statusGuests, `Berhasil memuat ${currentGuests.length} tamu (total ${guestState.total})`);
   } catch (error) {
     setStatus(statusGuests, `Error: ${error.message}`);
   }
@@ -872,8 +968,42 @@ fields.weddingDateTimeLocal.addEventListener("input", updateWeddingIsoPreview);
 fields.weddingTimeOffset.addEventListener("change", updateWeddingIsoPreview);
 fields.galleryPhotos.addEventListener("input", renderGalleryPreview);
 if (guestSearch) {
-  guestSearch.addEventListener("input", refreshGuestViews);
+  guestSearch.addEventListener("input", () => {
+    guestState.page = 1;
+    loadGuests();
+  });
+}
+if (guestGroupFilter) {
+  guestGroupFilter.addEventListener("change", () => {
+    guestState.page = 1;
+    loadGuests();
+  });
+}
+if (guestStatusFilter) {
+  guestStatusFilter.addEventListener("change", () => {
+    guestState.page = 1;
+    loadGuests();
+  });
+}
+if (guestPageSize) {
+  guestPageSize.addEventListener("change", () => {
+    guestState.page = 1;
+    loadGuests();
+  });
+}
+if (btnGuestPrev) {
+  btnGuestPrev.addEventListener("click", () => {
+    guestState.page = Math.max(guestState.page - 1, 1);
+    loadGuests();
+  });
+}
+if (btnGuestNext) {
+  btnGuestNext.addEventListener("click", () => {
+    guestState.page = Math.min(guestState.page + 1, guestState.totalPages || 1);
+    loadGuests();
+  });
 }
 if (RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
   loadConfigFromServer();
+  loadGuests();
 }

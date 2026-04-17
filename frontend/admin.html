@@ -165,8 +165,8 @@
     <section class="card">
       <h2>Import Tamu</h2>
       <label>
-        Daftar Tamu (1 baris 1 nama, atau dipisah koma)
-        <textarea id="guestInput" rows="8" placeholder="Bapak Andi\nIbu Rina\nKeluarga Budi"></textarea>
+        Daftar Tamu (format: Nama|Group|Telepon, 1 baris 1 tamu)
+        <textarea id="guestInput" rows="8" placeholder="Bapak Andi|Keluarga|62812xxxx\nIbu Rina|Teman|62813xxxx"></textarea>
       </label>
       <div class="actions">
         <button id="btnImportGuests" class="btn" type="button">Import Nama Tamu</button>
@@ -178,18 +178,51 @@
         Cari Tamu
         <input id="guestSearch" type="text" placeholder="Ketik nama tamu..." />
       </label>
+      <div class="grid three">
+        <label>
+          Filter Group
+          <select id="guestGroupFilter">
+            <option value="all">Semua Group</option>
+          </select>
+        </label>
+        <label>
+          Filter Status
+          <select id="guestStatusFilter">
+            <option value="all">Semua Status</option>
+            <option value="active">Active</option>
+            <option value="vip">VIP</option>
+            <option value="disabled">Disabled</option>
+          </select>
+        </label>
+        <label>
+          Data per Halaman
+          <select id="guestPageSize">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+          </select>
+        </label>
+      </div>
       <div class="guest-table-wrap">
         <table class="guest-table">
           <thead>
             <tr>
               <th>Kode</th>
               <th>Nama</th>
+              <th>Group</th>
+              <th>Status</th>
+              <th>Telepon</th>
               <th>Link</th>
               <th>Aksi</th>
             </tr>
           </thead>
           <tbody id="guestTableBody"></tbody>
         </table>
+      </div>
+      <div class="pager-row">
+        <button id="btnGuestPrev" class="btn btn-ghost" type="button">Sebelumnya</button>
+        <p id="guestPageInfo">Halaman 1 / 1</p>
+        <button id="btnGuestNext" class="btn btn-ghost" type="button">Berikutnya</button>
       </div>
       <label>
         Hasil Link Undangan Tamu
