@@ -55,6 +55,8 @@ const btnGuestNext = document.getElementById("btnGuestNext");
 const guestLinks = document.getElementById("guestLinks");
 const guestTableBody = document.getElementById("guestTableBody");
 const photoFilesInput = document.getElementById("photoFiles");
+const heroPhotoFileInput = document.getElementById("heroPhotoFile");
+const loveStoryPhotoFilesInput = document.getElementById("loveStoryPhotoFiles");
 const deletePhotoUrlsInput = document.getElementById("deletePhotoUrls");
 const musicFileInput = document.getElementById("musicFile");
 const galleryPreview = document.getElementById("galleryPreview");
@@ -67,6 +69,8 @@ const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
 document.getElementById("btnLoadConfig").addEventListener("click", loadConfigFromServer);
 document.getElementById("btnSaveConfig").addEventListener("click", saveConfigToServer);
 document.getElementById("btnUploadPhotos").addEventListener("click", uploadPhotosToDrive);
+document.getElementById("btnUploadHeroPhoto").addEventListener("click", uploadHeroPhotoToDrive);
+document.getElementById("btnUploadLoveStoryPhotos").addEventListener("click", uploadLoveStoryPhotosToDrive);
 document.getElementById("btnDeletePhotos").addEventListener("click", deletePhotosFromDriveAndGallery);
 document.getElementById("btnUploadMusic").addEventListener("click", uploadMusicToDrive);
 document.getElementById("btnImportGuests").addEventListener("click", importGuests);
@@ -701,6 +705,89 @@ async function uploadPhotosToDrive() {
     if (autoStoryCount > 0) autoNotes.push(`Love Story +${autoStoryCount} foto`);
     const tail = autoNotes.length ? ` (${autoNotes.join(", ")})` : "";
     setStatus(statusConfig, `${uploadedUrls.length} foto berhasil diupload dan konfigurasi galeri otomatis disimpan${tail}`);
+  } catch (error) {
+    setStatus(statusConfig, `Error: ${error.message}`);
+  }
+}
+
+async function uploadHeroPhotoToDrive() {
+  try {
+    const adminKey = getAdminKeyOrThrow();
+    const file = (heroPhotoFileInput && heroPhotoFileInput.files && heroPhotoFileInput.files[0]) || null;
+    if (!file) throw new Error("Pilih 1 foto hero dulu");
+    if (file.size > 8 * 1024 * 1024) throw new Error("Ukuran file hero maksimal 8MB");
+
+    setStatus(statusConfig, "Mengupload foto hero...");
+
+    const result = await postApi({
+      action: "uploadPhotos",
+      adminKey,
+      files: [{
+        name: file.name,
+        mimeType: file.type || "application/octet-stream",
+        contentBase64: await fileToBase64(file)
+      }]
+    });
+
+    const uploadedUrl = (result.files && result.files[0] && result.files[0].publicUrl) || "";
+    if (!uploadedUrl) throw new Error("URL foto hero dari server kosong");
+
+    fields.heroBackgroundPhoto.value = uploadedUrl;
+    appendGalleryUrls([uploadedUrl]);
+
+    await postApi({
+      action: "saveConfig",
+      adminKey,
+      config: readConfigFromForm()
+    });
+
+    if (heroPhotoFileInput) heroPhotoFileInput.value = "";
+    setStatus(statusConfig, "Foto hero berhasil diupload, diset, dan disimpan.");
+  } catch (error) {
+    setStatus(statusConfig, `Error: ${error.message}`);
+  }
+}
+
+async function uploadLoveStoryPhotosToDrive() {
+  try {
+    const adminKey = getAdminKeyOrThrow();
+    const files = Array.from((loveStoryPhotoFilesInput && loveStoryPhotoFilesInput.files) || []);
+    if (!files.length) throw new Error("Pilih foto love story dulu");
+    if (files.length > 3) throw new Error("Maksimal upload 3 foto love story");
+
+    const tooLarge = files.find((file) => file.size > 8 * 1024 * 1024);
+    if (tooLarge) throw new Error(`Ukuran file maksimal 8MB per foto. Terlalu besar: ${tooLarge.name}`);
+
+    setStatus(statusConfig, `Mengupload ${files.length} foto love story...`);
+
+    const payloadFiles = await Promise.all(
+      files.map(async (file) => ({
+        name: file.name,
+        mimeType: file.type || "application/octet-stream",
+        contentBase64: await fileToBase64(file)
+      }))
+    );
+
+    const result = await postApi({
+      action: "uploadPhotos",
+      adminKey,
+      files: payloadFiles
+    });
+
+    const uploadedUrls = (result.files || []).map((item) => item.publicUrl).filter(Boolean).slice(0, 3);
+    if (!uploadedUrls.length) throw new Error("URL foto love story dari server kosong");
+
+    setLoveStoryUrls(uploadedUrls);
+    appendGalleryUrls(uploadedUrls);
+
+    await postApi({
+      action: "saveConfig",
+      adminKey,
+      config: readConfigFromForm()
+    });
+
+    if (loveStoryPhotoFilesInput) loveStoryPhotoFilesInput.value = "";
+    setStatus(statusConfig, `${uploadedUrls.length} foto love story berhasil diupload, diset, dan disimpan.`);
   } catch (error) {
     setStatus(statusConfig, `Error: ${error.message}`);
   }

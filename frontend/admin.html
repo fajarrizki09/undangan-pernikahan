@@ -52,6 +52,13 @@
             <button id="btnHeroFromGallery" class="btn-mini" type="button">Ambil dari Galeri</button>
           </div>
         </label>
+        <label>
+          Upload Foto Hero ke Google Drive
+          <div class="field-row">
+            <input id="heroPhotoFile" type="file" accept="image/*" />
+            <button id="btnUploadHeroPhoto" class="btn-mini" type="button">Upload Hero</button>
+          </div>
+        </label>
         <label>Nama Pendek Mempelai Wanita<input id="brideShortName" type="text" /></label>
         <label>Nama Pendek Mempelai Pria<input id="groomShortName" type="text" /></label>
         <label>Nama Lengkap Mempelai Wanita<input id="brideFullName" type="text" /></label>
@@ -116,6 +123,15 @@
       </label>
       <div class="actions">
         <button id="btnLoveStoryFromGallery" class="btn btn-ghost" type="button">Ambil 3 Foto dari Galeri</button>
+      </div>
+      <div class="grid">
+        <label>
+          Upload Foto Love Story ke Google Drive (maks 3 file)
+          <div class="field-row">
+            <input id="loveStoryPhotoFiles" type="file" accept="image/*" multiple />
+            <button id="btnUploadLoveStoryPhotos" class="btn-mini" type="button">Upload Love Story</button>
+          </div>
+        </label>
       </div>
       <p class="hint-text">Tip: upload foto lewat tombol <b>Upload Foto</b>. Jika Hero/Love Story kosong, sistem akan isi otomatis dari hasil upload terbaru.</p>
 
