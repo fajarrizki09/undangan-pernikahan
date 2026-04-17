@@ -8,6 +8,7 @@ const fields = {
   brideParents: document.getElementById("brideParents"),
   groomParents: document.getElementById("groomParents"),
   heroDatePlace: document.getElementById("heroDatePlace"),
+  heroBackgroundPhoto: document.getElementById("heroBackgroundPhoto"),
   footerNames: document.getElementById("footerNames"),
   weddingDateTimeLocal: document.getElementById("weddingDateTimeLocal"),
   weddingTimeOffset: document.getElementById("weddingTimeOffset"),
@@ -199,6 +200,7 @@ function readConfigFromForm() {
     brideParents: fields.brideParents.value.trim(),
     groomParents: fields.groomParents.value.trim(),
     heroDatePlace: fields.heroDatePlace.value.trim(),
+    heroBackgroundPhoto: fields.heroBackgroundPhoto.value.trim(),
     footerNames: fields.footerNames.value.trim(),
     backgroundMusicUrl: fields.backgroundMusicUrl.value.trim(),
     musicStartSec: parseNonNegativeNumber(fields.musicStartSec.value.trim()),
@@ -255,6 +257,7 @@ function fillForm(config) {
   fields.brideParents.value = safeConfig.brideParents || "";
   fields.groomParents.value = safeConfig.groomParents || "";
   fields.heroDatePlace.value = safeConfig.heroDatePlace || "";
+  fields.heroBackgroundPhoto.value = safeConfig.heroBackgroundPhoto || "";
   fields.footerNames.value = safeConfig.footerNames || "";
   fields.backgroundMusicUrl.value = safeConfig.backgroundMusicUrl || "";
   fields.musicStartSec.value = safeConfig.musicStartSec || "";
