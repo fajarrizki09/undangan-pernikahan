@@ -88,6 +88,31 @@ function setText(id, value) {
   if (el && value) el.textContent = value;
 }
 
+function setBrandMonogram(value) {
+  const el = document.getElementById("brandInitials");
+  if (!el) return;
+
+  const raw = String(value || "").trim();
+  if (!raw) {
+    el.textContent = "";
+    return;
+  }
+
+  const cleaned = raw.replace(/\s+/g, " ").trim();
+  const parts = cleaned.split(/&|dan|\+/i).map((item) => item.trim()).filter(Boolean);
+
+  if (parts.length >= 2) {
+    const left = parts[0].charAt(0).toUpperCase();
+    const right = parts[1].charAt(0).toUpperCase();
+    el.innerHTML = `<span class="brand-letter">${left}</span><span class="brand-sep">&amp;</span><span class="brand-letter">${right}</span>`;
+    el.setAttribute("aria-label", cleaned);
+    return;
+  }
+
+  el.textContent = cleaned;
+  el.setAttribute("aria-label", cleaned);
+}
+
 function setAnimatedName(id, value, baseDelayMs = 0) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -745,7 +770,7 @@ function applyCalendarLink() {
 }
 
 function applyWeddingConfig() {
-  setText("brandInitials", currentConfig.brandInitials);
+  setBrandMonogram(currentConfig.brandInitials);
   setText("heroOverline", currentConfig.heroOverline || "Wedding Invitation");
   setAnimatedName("heroBrideShort", currentConfig.brideShortName, 140);
   setAnimatedName("heroGroomShort", currentConfig.groomShortName, 420);

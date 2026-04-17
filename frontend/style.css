@@ -206,11 +206,35 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  line-height: 1;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(79, 119, 100, 0.24);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(239, 247, 242, 0.65));
   text-decoration: none;
   color: var(--sage);
   font-family: "Cormorant Garamond", serif;
-  font-size: 1.7rem;
+  font-size: 1.45rem;
   font-weight: 700;
+}
+
+.brand-letter {
+  width: 1.12em;
+  height: 1.12em;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #335343;
+}
+
+.brand-sep {
+  color: var(--champagne);
+  font-size: 0.92em;
+  margin-top: -1px;
 }
 
 .topbar nav {
@@ -532,6 +556,25 @@ h2 {
   line-height: 1.8;
 }
 
+.mempelai-intro .section-kicker {
+  font-size: 0.95rem;
+  letter-spacing: 0.09em;
+  margin-bottom: 6px;
+}
+
+.mempelai-intro .bismillah-title {
+  max-width: 28ch;
+  margin-left: auto;
+  margin-right: auto;
+  text-wrap: balance;
+}
+
+.mempelai-intro .lead {
+  max-width: 560px;
+  font-size: 1.08rem;
+  line-height: 1.85;
+}
+
 .couple-grid {
   margin-top: 24px;
   display: grid;
@@ -543,14 +586,23 @@ h2 {
 .profile {
   border-radius: 18px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.62);
+  background:
+    radial-gradient(circle at 50% -34%, rgba(216, 176, 125, 0.2), transparent 62%),
+    rgba(255, 255, 255, 0.68);
   text-align: center;
-  padding: 18px;
+  padding: 20px 18px 18px;
+  box-shadow: 0 10px 24px rgba(42, 66, 54, 0.11);
 }
 
 .profile p {
   color: var(--muted);
   line-height: 1.7;
+}
+
+.profile h3 {
+  font-size: clamp(1.85rem, 2.6vw, 2.3rem);
+  line-height: 1.05;
+  margin-top: 2px;
 }
 
 .avatar {
@@ -1133,10 +1185,11 @@ textarea:focus {
   z-index: 55;
   border: none;
   border-radius: 999px;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: linear-gradient(135deg, #426856, #6f9882);
   color: #fff;
   font-weight: 700;
+  font-size: 0.9rem;
   box-shadow: 0 14px 24px rgba(34, 56, 45, 0.26);
   cursor: pointer;
 }
@@ -1429,8 +1482,9 @@ body.is-loading .page-loader {
   }
 
   .brand {
-    font-size: 1.38rem;
+    font-size: 1.22rem;
     flex: 0 0 auto;
+    padding: 6px 9px;
   }
 
   .topbar nav {
@@ -1443,9 +1497,41 @@ body.is-loading .page-loader {
   }
 
   .bismillah-title {
-    font-size: clamp(1.55rem, 8vw, 2rem);
-    line-height: 1.15;
+    font-size: clamp(1.82rem, 7.2vw, 2.18rem);
+    line-height: 1.2;
     letter-spacing: 0.01em;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .mempelai-intro {
+    padding-top: 22px;
+    padding-bottom: 20px;
+  }
+
+  .mempelai-intro .lead {
+    margin-top: 12px;
+    font-size: 1.02rem;
+    line-height: 1.78;
+  }
+
+  .couple-grid {
+    margin-top: 18px;
+    gap: 12px;
+  }
+
+  .profile {
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  .profile h3 {
+    font-size: 1.95rem;
+  }
+
+  .profile p {
+    line-height: 1.62;
+    font-size: 0.96rem;
   }
 
   .hero {
@@ -1478,7 +1564,9 @@ body.is-loading .page-loader {
 
   .music-toggle {
     right: 12px;
-    bottom: calc(72px + env(safe-area-inset-bottom));
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    padding: 9px 12px;
+    font-size: 0.82rem;
   }
 }
 
