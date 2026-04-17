@@ -230,6 +230,14 @@ function parseNonNegativeNumber(value) {
   return String(num);
 }
 
+function decodeHtmlEntities(value) {
+  const source = String(value || "");
+  if (!source) return "";
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = source;
+  return textarea.value;
+}
+
 function readConfigFromForm() {
   const photos = getGalleryUrls();
   const storyPhotos = fields.loveStoryPhotos.value
@@ -333,7 +341,7 @@ function fillForm(config) {
   fields.resepsiTime.value = (safeConfig.resepsi && safeConfig.resepsi.time) || "";
   fields.resepsiVenue.value = (safeConfig.resepsi && safeConfig.resepsi.venue) || "";
   fields.resepsiMapUrl.value = (safeConfig.resepsi && safeConfig.resepsi.mapUrl) || "";
-  fields.quranVerseArabic.value = safeConfig.quranVerseArabic || "";
+  fields.quranVerseArabic.value = decodeHtmlEntities(safeConfig.quranVerseArabic || "");
   fields.quranVerseTranslation.value = safeConfig.quranVerseTranslation || "";
   fields.quranVerseReference.value = safeConfig.quranVerseReference || "";
   fields.hadithText.value = safeConfig.hadithText || "";
@@ -436,6 +444,19 @@ function appendGalleryUrls(urls) {
 
   fields.galleryPhotos.value = Array.from(unique).join("\n");
   renderGalleryPreview();
+}
+
+function getLoveStoryUrls() {
+  return fields.loveStoryPhotos.value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
+function setLoveStoryUrls(urls) {
+  const clean = Array.isArray(urls) ? urls.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 3) : [];
+  fields.loveStoryPhotos.value = clean.join("\n");
 }
 
 function removeGalleryUrls(urls) {
@@ -587,6 +608,25 @@ async function uploadPhotosToDrive() {
     const uploadedUrls = (result.files || []).map((item) => item.publicUrl).filter(Boolean);
     appendGalleryUrls(uploadedUrls);
 
+    let autoHero = false;
+    let autoStoryCount = 0;
+
+    if (!fields.heroBackgroundPhoto.value.trim() && uploadedUrls[0]) {
+      fields.heroBackgroundPhoto.value = uploadedUrls[0];
+      autoHero = true;
+    }
+
+    const currentStory = getLoveStoryUrls();
+    if (currentStory.length < 3 && uploadedUrls.length) {
+      const mergedStory = [...currentStory];
+      uploadedUrls.forEach((url) => {
+        if (mergedStory.length >= 3) return;
+        if (!mergedStory.includes(url)) mergedStory.push(url);
+      });
+      autoStoryCount = Math.max(mergedStory.length - currentStory.length, 0);
+      setLoveStoryUrls(mergedStory);
+    }
+
     // Auto-save config setelah upload agar galeri publik langsung ikut update.
     await postApi({
       action: "saveConfig",
@@ -595,7 +635,11 @@ async function uploadPhotosToDrive() {
     });
 
     photoFilesInput.value = "";
-    setStatus(statusConfig, `${uploadedUrls.length} foto berhasil diupload dan konfigurasi galeri otomatis disimpan`);
+    const autoNotes = [];
+    if (autoHero) autoNotes.push("Hero background terisi otomatis");
+    if (autoStoryCount > 0) autoNotes.push(`Love Story +${autoStoryCount} foto`);
+    const tail = autoNotes.length ? ` (${autoNotes.join(", ")})` : "";
+    setStatus(statusConfig, `${uploadedUrls.length} foto berhasil diupload dan konfigurasi galeri otomatis disimpan${tail}`);
   } catch (error) {
     setStatus(statusConfig, `Error: ${error.message}`);
   }
