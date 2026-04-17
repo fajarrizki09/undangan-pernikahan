@@ -35,7 +35,11 @@ const CONFIG_COLUMNS = [
   'marriageDoaText',
   'marriageDoaReference',
   'loveStoryPhotos',
-  'galleryPhotos'
+  'galleryPhotos',
+  'galleryMode',
+  'galleryMaxItems',
+  'galleryAutoplaySec',
+  'galleryStyle'
 ];
 
 function doGet(e) {
@@ -591,10 +595,40 @@ function normalizeConfig_(config) {
     marriageDoaText: valueOrDefaultNonEmpty_(source, 'marriageDoaText', defaults.marriageDoaText),
     marriageDoaReference: valueOrDefaultNonEmpty_(source, 'marriageDoaReference', defaults.marriageDoaReference),
     loveStoryPhotos: normalizePhotoList_(source.loveStoryPhotos, defaults.loveStoryPhotos),
-    galleryPhotos: normalizePhotoList_(source.galleryPhotos, defaults.galleryPhotos)
+    galleryPhotos: normalizePhotoList_(source.galleryPhotos, defaults.galleryPhotos),
+    galleryMode: normalizeGalleryMode_(valueOrDefault_(source, 'galleryMode', defaults.galleryMode)),
+    galleryMaxItems: normalizeGalleryMaxItems_(valueOrDefault_(source, 'galleryMaxItems', defaults.galleryMaxItems)),
+    galleryAutoplaySec: normalizeGalleryAutoplaySec_(valueOrDefault_(source, 'galleryAutoplaySec', defaults.galleryAutoplaySec)),
+    galleryStyle: normalizeGalleryStyle_(valueOrDefault_(source, 'galleryStyle', defaults.galleryStyle))
   };
 }
 
+function normalizeGalleryMode_(value) {
+  var clean = sanitize(value).toLowerCase();
+  return clean === 'carousel' ? 'carousel' : 'grid';
+}
+
+function normalizeGalleryStyle_(value) {
+  var clean = sanitize(value).toLowerCase();
+  if (clean === 'soft' || clean === 'polaroid' || clean === 'clean') return clean;
+  return 'elegant';
+}
+
+function normalizeGalleryMaxItems_(value) {
+  var clean = sanitize(value);
+  if (!clean) return '';
+  var num = Number(clean);
+  if (!isFinite(num) || num < 0) return '';
+  return String(Math.floor(num));
+}
+
+function normalizeGalleryAutoplaySec_(value) {
+  var clean = sanitize(value);
+  if (!clean) return '';
+  var num = Number(clean);
+  if (!isFinite(num) || num <= 0) return '';
+  return String(num);
+}
 function normalizePhotoList_(input, fallback) {
   if (input === undefined || input === null) {
     return fallback;
@@ -676,6 +710,10 @@ function defaultConfig_() {
       'assets/photos/foto-2.svg',
       'assets/photos/foto-3.svg'
     ],
+    galleryMode: 'grid',
+    galleryMaxItems: '',
+    galleryAutoplaySec: '3.5',
+    galleryStyle: 'elegant',
     galleryPhotos: [
       'assets/photos/foto-1.svg',
       'assets/photos/foto-2.svg',
@@ -778,7 +816,11 @@ function configToRow_(config) {
     config.marriageDoaText,
     config.marriageDoaReference,
     (config.loveStoryPhotos || []).join('|'),
-    (config.galleryPhotos || []).join('|')
+    (config.galleryPhotos || []).join('|'),
+    config.galleryMode,
+    config.galleryMaxItems,
+    config.galleryAutoplaySec,
+    config.galleryStyle
   ];
 }
 
@@ -822,7 +864,11 @@ function rowToConfig_(headers, row) {
     marriageDoaText: values.marriageDoaText,
     marriageDoaReference: values.marriageDoaReference,
     loveStoryPhotos: values.loveStoryPhotos,
-    galleryPhotos: values.galleryPhotos
+    galleryPhotos: values.galleryPhotos,
+    galleryMode: values.galleryMode,
+    galleryMaxItems: values.galleryMaxItems,
+    galleryAutoplaySec: values.galleryAutoplaySec,
+    galleryStyle: values.galleryStyle
   };
 }
 
@@ -854,6 +900,7 @@ function jsonResponse(obj) {
   output.setMimeType(ContentService.MimeType.JSON);
   return output;
 }
+
 
 
 

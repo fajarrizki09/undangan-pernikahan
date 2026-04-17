@@ -30,6 +30,10 @@ const fields = {
   marriageDoaReference: document.getElementById("marriageDoaReference"),
   loveStoryPhotos: document.getElementById("loveStoryPhotos"),
   galleryPhotos: document.getElementById("galleryPhotos"),
+  galleryMode: document.getElementById("galleryMode"),
+  galleryMaxItems: document.getElementById("galleryMaxItems"),
+  galleryAutoplaySec: document.getElementById("galleryAutoplaySec"),
+  galleryStyle: document.getElementById("galleryStyle"),
   backgroundMusicUrl: document.getElementById("backgroundMusicUrl"),
   musicStartSec: document.getElementById("musicStartSec"),
   musicLoopStartSec: document.getElementById("musicLoopStartSec"),
@@ -236,6 +240,36 @@ function parseNonNegativeNumber(value) {
   return String(num);
 }
 
+function parseNonNegativeInteger(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < 0) return "";
+  return String(Math.floor(num));
+}
+
+function parsePositiveNumber(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return "";
+  return String(num);
+}
+
+function normalizeGalleryMode(value) {
+  return String(value || "").toLowerCase() === "carousel" ? "carousel" : "grid";
+}
+
+function normalizeGalleryStyle(value) {
+  const style = String(value || "").toLowerCase();
+  if (["elegant", "soft", "polaroid", "clean"].includes(style)) return style;
+  return "elegant";
+}
+
+function updateGalleryModeFields() {
+  const isCarousel = normalizeGalleryMode(fields.galleryMode.value) === "carousel";
+  fields.galleryAutoplaySec.disabled = !isCarousel;
+  if (!isCarousel) {
+    fields.galleryAutoplaySec.value = "";
+  }
+}
+
 function decodeHtmlEntities(value) {
   const source = String(value || "");
   if (!source) return "";
@@ -289,7 +323,11 @@ function readConfigFromForm() {
     marriageDoaText: fields.marriageDoaText.value.trim(),
     marriageDoaReference: fields.marriageDoaReference.value.trim(),
     loveStoryPhotos: storyPhotos,
-    galleryPhotos: photos
+    galleryPhotos: photos,
+    galleryMode: normalizeGalleryMode(fields.galleryMode.value),
+    galleryMaxItems: parseNonNegativeInteger(fields.galleryMaxItems.value.trim()),
+    galleryAutoplaySec: parsePositiveNumber(fields.galleryAutoplaySec.value.trim()),
+    galleryStyle: normalizeGalleryStyle(fields.galleryStyle.value)
   };
 }
 
@@ -357,6 +395,11 @@ function fillForm(config) {
 
   fields.loveStoryPhotos.value = Array.isArray(safeConfig.loveStoryPhotos) ? safeConfig.loveStoryPhotos.slice(0, 3).join("\n") : "";
   fields.galleryPhotos.value = Array.isArray(safeConfig.galleryPhotos) ? safeConfig.galleryPhotos.join("\n") : "";
+  fields.galleryMode.value = normalizeGalleryMode(safeConfig.galleryMode || (WEDDING_CONFIG.galleryMode || "grid"));
+  fields.galleryMaxItems.value = safeConfig.galleryMaxItems || "";
+  fields.galleryAutoplaySec.value = safeConfig.galleryAutoplaySec || "";
+  fields.galleryStyle.value = normalizeGalleryStyle(safeConfig.galleryStyle || (WEDDING_CONFIG.galleryStyle || "elegant"));
+  updateGalleryModeFields();
   renderGalleryPreview();
 }
 
@@ -1190,6 +1233,9 @@ invitationBaseUrlInput.addEventListener("input", () => {
 fields.weddingDateTimeLocal.addEventListener("input", updateWeddingIsoPreview);
 fields.weddingTimeOffset.addEventListener("change", updateWeddingIsoPreview);
 fields.galleryPhotos.addEventListener("input", renderGalleryPreview);
+if (fields.galleryMode) {
+  fields.galleryMode.addEventListener("change", updateGalleryModeFields);
+}
 if (guestSearch) {
   guestSearch.addEventListener("input", () => {
     guestState.page = 1;

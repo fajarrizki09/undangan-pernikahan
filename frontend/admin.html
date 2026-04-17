@@ -139,6 +139,33 @@
         Foto Galeri (1 baris = 1 URL/path)
         <textarea id="galleryPhotos" rows="7" placeholder="assets/photos/foto-1.jpg"></textarea>
       </label>
+      <h3>Pengaturan Galeri</h3>
+      <div class="grid two">
+        <label>
+          Mode Galeri
+          <select id="galleryMode">
+            <option value="grid">Grid</option>
+            <option value="carousel">Carousel Otomatis</option>
+          </select>
+        </label>
+        <label>
+          Maksimal Foto Ditampilkan (0 = semua)
+          <input id="galleryMaxItems" type="number" min="0" step="1" placeholder="0" />
+        </label>
+        <label>
+          Interval Carousel (detik)
+          <input id="galleryAutoplaySec" type="number" min="1" step="0.5" placeholder="3.5" />
+        </label>
+        <label>
+          Gaya Galeri
+          <select id="galleryStyle">
+            <option value="elegant">Elegant</option>
+            <option value="soft">Soft</option>
+            <option value="polaroid">Polaroid</option>
+            <option value="clean">Clean</option>
+          </select>
+        </label>
+      </div>
       <div class="row-between">
         <h3>Preview Galeri</h3>
         <label class="inline-check">

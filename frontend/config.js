@@ -48,6 +48,10 @@ const WEDDING_CONFIG = {
     "assets/photos/foto-2.svg",
     "assets/photos/foto-3.svg"
   ],
+  galleryMode: "grid",
+  galleryMaxItems: "",
+  galleryAutoplaySec: "3.5",
+  galleryStyle: "elegant",
   galleryPhotos: [
     "assets/photos/foto-1.svg",
     "assets/photos/foto-2.svg",

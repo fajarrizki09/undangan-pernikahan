@@ -44,6 +44,9 @@ const musicState = {
   loopStartSec: null,
   loopEndSec: null
 };
+const galleryState = {
+  autoplayTimer: null
+};
 let wishesAutoScrollTimer = null;
 let wishesAutoPauseUntil = 0;
 
@@ -179,6 +182,13 @@ function mergeConfig(base, incoming) {
       : base.galleryPhotos
   };
 
+  merged.galleryMode = normalizeGalleryMode(incoming.galleryMode || base.galleryMode || WEDDING_CONFIG.galleryMode);
+  merged.galleryStyle = normalizeGalleryStyle(incoming.galleryStyle || base.galleryStyle || WEDDING_CONFIG.galleryStyle);
+  merged.galleryMaxItems = normalizeCountString(incoming.galleryMaxItems || base.galleryMaxItems || WEDDING_CONFIG.galleryMaxItems);
+  merged.galleryAutoplaySec = normalizePositiveNumberString(
+    incoming.galleryAutoplaySec || base.galleryAutoplaySec || WEDDING_CONFIG.galleryAutoplaySec
+  );
+
   merged.quranVerseArabic = String(merged.quranVerseArabic || "").trim() || String(base.quranVerseArabic || "").trim();
   merged.quranVerseTranslation = String(merged.quranVerseTranslation || "").trim() || String(base.quranVerseTranslation || "").trim();
   merged.quranVerseReference = String(merged.quranVerseReference || "").trim() || String(base.quranVerseReference || "").trim();
@@ -188,6 +198,32 @@ function mergeConfig(base, incoming) {
   merged.marriageDoaReference = String(merged.marriageDoaReference || "").trim() || String(base.marriageDoaReference || "").trim();
 
   return healMisplacedPhotoConfig(merged);
+}
+
+function normalizeGalleryMode(value) {
+  return String(value || "").toLowerCase() === "carousel" ? "carousel" : "grid";
+}
+
+function normalizeGalleryStyle(value) {
+  const style = String(value || "").toLowerCase();
+  if (["elegant", "soft", "polaroid", "clean"].includes(style)) return style;
+  return "elegant";
+}
+
+function normalizeCountString(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const num = Number(text);
+  if (!Number.isFinite(num) || num < 0) return "";
+  return String(Math.floor(num));
+}
+
+function normalizePositiveNumberString(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const num = Number(text);
+  if (!Number.isFinite(num) || num <= 0) return "";
+  return String(num);
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
@@ -470,38 +506,138 @@ function applyImageWithFallback(img, rawUrl, options = {}) {
   applyNext();
 }
 
+function clearGalleryAutoplay() {
+  if (!galleryState.autoplayTimer) return;
+  window.clearInterval(galleryState.autoplayTimer);
+  galleryState.autoplayTimer = null;
+}
+
+function createGalleryCard(src, index) {
+  const card = document.createElement("article");
+  card.className = "gallery-item";
+
+  const img = document.createElement("img");
+  img.alt = `Foto galeri ${index + 1}`;
+  img.decoding = "async";
+  img.loading = index < 4 ? "eager" : "lazy";
+  if (index < 2) img.fetchPriority = "high";
+
+  applyImageWithFallback(img, src, {
+    purpose: "gallery",
+    fallbackSrc: `assets/photos/foto-${(index % 6) + 1}.svg`
+  });
+
+  card.appendChild(img);
+  return card;
+}
+
+function renderGalleryCarousel(photos, autoplaySec) {
+  const carousel = document.createElement("div");
+  carousel.className = "gallery-carousel";
+
+  const track = document.createElement("div");
+  track.className = "gallery-carousel-track";
+  carousel.appendChild(track);
+
+  const dots = document.createElement("div");
+  dots.className = "gallery-dots";
+  carousel.appendChild(dots);
+
+  let activeIndex = 0;
+  const maxIndex = photos.length - 1;
+  const dotButtons = [];
+
+  function updateSlide(nextIndex) {
+    activeIndex = Math.max(0, Math.min(nextIndex, maxIndex));
+    track.style.transform = `translateX(-${activeIndex * 100}%)`;
+    dotButtons.forEach((dot, idx) => dot.classList.toggle("is-active", idx === activeIndex));
+  }
+
+  photos.forEach((src, index) => {
+    const slide = document.createElement("div");
+    slide.className = "gallery-slide";
+    slide.appendChild(createGalleryCard(src, index));
+    track.appendChild(slide);
+
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "gallery-dot";
+    dot.setAttribute("aria-label", `Foto ${index + 1}`);
+    dot.addEventListener("click", () => updateSlide(index));
+    dots.appendChild(dot);
+    dotButtons.push(dot);
+  });
+
+  const prev = document.createElement("button");
+  prev.type = "button";
+  prev.className = "gallery-nav gallery-nav-prev";
+  prev.textContent = "‹";
+  prev.setAttribute("aria-label", "Foto sebelumnya");
+  prev.addEventListener("click", () => updateSlide(activeIndex <= 0 ? maxIndex : activeIndex - 1));
+
+  const next = document.createElement("button");
+  next.type = "button";
+  next.className = "gallery-nav gallery-nav-next";
+  next.textContent = "›";
+  next.setAttribute("aria-label", "Foto berikutnya");
+  next.addEventListener("click", () => updateSlide(activeIndex >= maxIndex ? 0 : activeIndex + 1));
+
+  if (photos.length > 1) {
+    carousel.appendChild(prev);
+    carousel.appendChild(next);
+  }
+
+  updateSlide(0);
+  galleryGrid.appendChild(carousel);
+
+  if (photos.length > 1 && autoplaySec > 0) {
+    galleryState.autoplayTimer = window.setInterval(() => {
+      updateSlide(activeIndex >= maxIndex ? 0 : activeIndex + 1);
+    }, autoplaySec * 1000);
+
+    carousel.addEventListener("mouseenter", clearGalleryAutoplay);
+    carousel.addEventListener("mouseleave", () => {
+      clearGalleryAutoplay();
+      galleryState.autoplayTimer = window.setInterval(() => {
+        updateSlide(activeIndex >= maxIndex ? 0 : activeIndex + 1);
+      }, autoplaySec * 1000);
+    });
+  }
+}
+
 function renderGalleryGrid(photos) {
   if (!galleryGrid) return;
+  clearGalleryAutoplay();
   galleryGrid.innerHTML = "";
 
   const fallbackPhotos = Array.isArray(WEDDING_CONFIG.galleryPhotos) ? WEDDING_CONFIG.galleryPhotos : [];
   const sourcePhotos = Array.isArray(photos) && photos.length ? photos : fallbackPhotos;
-  const cleanPhotos = sourcePhotos
+  const cleanPhotosRaw = sourcePhotos
     .map((item) => String(item || "").trim())
     .filter(Boolean);
+  const maxItems = Number(normalizeCountString(currentConfig.galleryMaxItems));
+  const cleanPhotos = (Number.isFinite(maxItems) && maxItems > 0)
+    ? cleanPhotosRaw.slice(0, maxItems)
+    : cleanPhotosRaw;
+  const mode = normalizeGalleryMode(currentConfig.galleryMode || WEDDING_CONFIG.galleryMode);
+  const style = normalizeGalleryStyle(currentConfig.galleryStyle || WEDDING_CONFIG.galleryStyle);
+
+  galleryGrid.dataset.mode = mode;
+  galleryGrid.dataset.style = style;
 
   if (!cleanPhotos.length) {
     galleryGrid.innerHTML = '<p class="gallery-empty">Belum ada foto galeri.</p>';
     return;
   }
 
+  if (mode === "carousel") {
+    const autoplaySec = Number(normalizePositiveNumberString(currentConfig.galleryAutoplaySec || WEDDING_CONFIG.galleryAutoplaySec || "3.5")) || 3.5;
+    renderGalleryCarousel(cleanPhotos, autoplaySec);
+    return;
+  }
+
   cleanPhotos.forEach((src, index) => {
-    const card = document.createElement("article");
-    card.className = "gallery-item";
-
-    const img = document.createElement("img");
-    img.alt = `Foto galeri ${index + 1}`;
-    img.decoding = "async";
-    img.loading = index < 4 ? "eager" : "lazy";
-    if (index < 2) img.fetchPriority = "high";
-
-    applyImageWithFallback(img, src, {
-      purpose: "gallery",
-      fallbackSrc: `assets/photos/foto-${(index % 6) + 1}.svg`
-    });
-
-    card.appendChild(img);
-    galleryGrid.appendChild(card);
+    galleryGrid.appendChild(createGalleryCard(src, index));
   });
 }
 
@@ -1094,9 +1230,11 @@ function setupVisibilityOptimization() {
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       stopTimers();
+      clearGalleryAutoplay();
     } else {
       updateCountdown();
       startTimers();
+      renderGalleryGrid(currentConfig.galleryPhotos);
     }
   });
 }
