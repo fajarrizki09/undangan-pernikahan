@@ -49,6 +49,9 @@
         </label>
         <label>Judul Atas Hero (contoh: Wedding Invitation)<input id="heroOverline" type="text" /></label>
         <label>Tanggal & Lokasi Hero<input id="heroDatePlace" type="text" /></label>
+        <label>Tanggal Hero Mulai<input id="heroDateStart" type="date" /></label>
+        <label>Tanggal Hero Selesai (opsional)<input id="heroDateEnd" type="date" /></label>
+        <label>Kota/Lokasi Hero<input id="heroDateCity" type="text" placeholder="Bogor" /></label>
         <label>
           Foto Background Hero (URL/path)
           <div class="field-row">
@@ -143,6 +146,9 @@
         Foto Galeri (1 baris = 1 URL/path)
         <textarea id="galleryPhotos" rows="7" placeholder="assets/photos/foto-1.jpg"></textarea>
       </label>
+      <div class="actions">
+        <button id="btnGenerateHeroDate" class="btn btn-ghost" type="button">Generate Tanggal Hero</button>
+      </div>
       <h3>Pengaturan Galeri</h3>
       <div class="grid two">
         <label>
@@ -176,6 +182,9 @@
           <input id="deleteFromDrive" type="checkbox" />
           Hapus juga di Google Drive
         </label>
+      </div>
+      <div class="actions">
+        <button id="btnApplyGallerySelection" class="btn btn-ghost" type="button">Gunakan Hanya Foto Terpilih</button>
       </div>
       <div id="galleryPreview" class="gallery-preview"></div>
       <div class="grid two">

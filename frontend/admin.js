@@ -10,6 +10,9 @@ const fields = {
   brideParents: document.getElementById("brideParents"),
   groomParents: document.getElementById("groomParents"),
   heroDatePlace: document.getElementById("heroDatePlace"),
+  heroDateStart: document.getElementById("heroDateStart"),
+  heroDateEnd: document.getElementById("heroDateEnd"),
+  heroDateCity: document.getElementById("heroDateCity"),
   heroBackgroundPhoto: document.getElementById("heroBackgroundPhoto"),
   footerNames: document.getElementById("footerNames"),
   weddingDateTimeLocal: document.getElementById("weddingDateTimeLocal"),
@@ -82,9 +85,12 @@ document.getElementById("btnUploadMusic").addEventListener("click", uploadMusicT
 document.getElementById("btnImportGuests").addEventListener("click", importGuests);
 document.getElementById("btnLoadGuests").addEventListener("click", loadGuests);
 document.getElementById("btnExportGuestsCsv").addEventListener("click", exportGuestsCsv);
+document.getElementById("btnGenerateHeroDate").addEventListener("click", generateHeroDatePlaceFromInputs);
+document.getElementById("btnApplyGallerySelection").addEventListener("click", applySelectedGalleryUrls);
 
 apiUrlInput.value = RSVP_API_URL;
 let currentGuests = [];
+let selectedGalleryUrls = new Set();
 let guestState = {
   total: 0,
   page: 1,
@@ -236,6 +242,60 @@ function updateWeddingIsoPreview() {
   fields.weddingDateISO.value = buildWeddingIsoFromInputs();
 }
 
+function parseDateInput(value) {
+  const text = String(value || "").trim();
+  if (!text) return null;
+  const date = new Date(`${text}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
+function formatHeroDatePlace(startDate, endDate, city) {
+  const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  const start = startDate;
+  const end = endDate || startDate;
+  const sameDay = (
+    start.getFullYear() === end.getFullYear() &&
+    start.getMonth() === end.getMonth() &&
+    start.getDate() === end.getDate()
+  );
+
+  const location = String(city || "").trim();
+
+  if (sameDay) {
+    const line = `${dayNames[start.getDay()]}, ${start.getDate()} ${monthNames[start.getMonth()]} ${start.getFullYear()}`;
+    return location ? `${line} • ${location}` : line;
+  }
+
+  const dayLine = `${dayNames[start.getDay()]} - ${dayNames[end.getDay()]}`;
+  let dateLine = "";
+  if (start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth()) {
+    dateLine = `${start.getDate()} - ${end.getDate()} ${monthNames[start.getMonth()]} ${start.getFullYear()}`;
+  } else if (start.getFullYear() === end.getFullYear()) {
+    dateLine = `${start.getDate()} ${monthNames[start.getMonth()]} - ${end.getDate()} ${monthNames[end.getMonth()]} ${start.getFullYear()}`;
+  } else {
+    dateLine = `${start.getDate()} ${monthNames[start.getMonth()]} ${start.getFullYear()} - ${end.getDate()} ${monthNames[end.getMonth()]} ${end.getFullYear()}`;
+  }
+
+  const line = `${dayLine}, ${dateLine}`;
+  return location ? `${line} • ${location}` : line;
+}
+
+function generateHeroDatePlaceFromInputs() {
+  const start = parseDateInput(fields.heroDateStart.value);
+  if (!start) {
+    setStatus(statusConfig, "Isi Tanggal Hero Mulai dulu.");
+    return;
+  }
+
+  const endRaw = parseDateInput(fields.heroDateEnd.value);
+  const end = endRaw && endRaw.getTime() >= start.getTime() ? endRaw : start;
+  const result = formatHeroDatePlace(start, end, fields.heroDateCity.value);
+  fields.heroDatePlace.value = result;
+  setStatus(statusConfig, "Tanggal hero berhasil digenerate.");
+}
+
 function parseNonNegativeNumber(value) {
   const num = Number(value);
   if (!Number.isFinite(num) || num < 0) return "";
@@ -281,7 +341,9 @@ function decodeHtmlEntities(value) {
 }
 
 function readConfigFromForm() {
-  const photos = getGalleryUrls();
+  const allPhotos = getGalleryUrls();
+  const photos = allPhotos.filter((url) => selectedGalleryUrls.has(url));
+  const galleryPhotosToSave = photos.length ? photos : allPhotos;
   const storyPhotos = fields.loveStoryPhotos.value
     .split(/\r?\n/)
     .map((item) => item.trim())
@@ -327,7 +389,7 @@ function readConfigFromForm() {
     marriageDoaText: fields.marriageDoaText.value.trim(),
     marriageDoaReference: fields.marriageDoaReference.value.trim(),
     loveStoryPhotos: storyPhotos,
-    galleryPhotos: photos,
+    galleryPhotos: galleryPhotosToSave,
     galleryMode: normalizeGalleryMode(fields.galleryMode.value),
     galleryMaxItems: parseNonNegativeInteger(fields.galleryMaxItems.value.trim()),
     galleryAutoplaySec: parsePositiveNumber(fields.galleryAutoplaySec.value.trim()),
@@ -370,6 +432,9 @@ function fillForm(config) {
   fields.brideParents.value = safeConfig.brideParents || "";
   fields.groomParents.value = safeConfig.groomParents || "";
   fields.heroDatePlace.value = safeConfig.heroDatePlace || "";
+  fields.heroDateCity.value = String(safeConfig.heroDatePlace || "").split("•")[1]?.trim() || "";
+  fields.heroDateStart.value = "";
+  fields.heroDateEnd.value = "";
   fields.heroBackgroundPhoto.value = safeConfig.heroBackgroundPhoto || "";
   fields.footerNames.value = safeConfig.footerNames || "";
   fields.backgroundMusicUrl.value = safeConfig.backgroundMusicUrl || "";
@@ -401,6 +466,7 @@ function fillForm(config) {
 
   fields.loveStoryPhotos.value = Array.isArray(safeConfig.loveStoryPhotos) ? safeConfig.loveStoryPhotos.slice(0, 3).join("\n") : "";
   fields.galleryPhotos.value = Array.isArray(safeConfig.galleryPhotos) ? safeConfig.galleryPhotos.join("\n") : "";
+  syncSelectedGalleryUrls(getGalleryUrls());
   fields.galleryMode.value = normalizeGalleryMode(safeConfig.galleryMode || (WEDDING_CONFIG.galleryMode || "grid"));
   fields.galleryMaxItems.value = safeConfig.galleryMaxItems || "";
   fields.galleryAutoplaySec.value = safeConfig.galleryAutoplaySec || "";
@@ -494,7 +560,10 @@ function appendGalleryUrls(urls) {
 
   const unique = new Set(existing);
   urls.forEach((url) => {
-    if (url) unique.add(url);
+    if (url) {
+      unique.add(url);
+      selectedGalleryUrls.add(url);
+    }
   });
 
   fields.galleryPhotos.value = Array.from(unique).join("\n");
@@ -553,6 +622,7 @@ function removeGalleryUrls(urls) {
   const existing = getGalleryUrls();
 
   const filtered = existing.filter((url) => !targets.has(url));
+  targets.forEach((url) => selectedGalleryUrls.delete(url));
   fields.galleryPhotos.value = filtered.join("\n");
   renderGalleryPreview();
 }
@@ -562,6 +632,35 @@ function getGalleryUrls() {
     .split(/\r?\n/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function syncSelectedGalleryUrls(urls) {
+  const available = Array.isArray(urls) ? urls : [];
+  if (!selectedGalleryUrls.size) {
+    selectedGalleryUrls = new Set(available);
+    return;
+  }
+
+  const next = new Set();
+  available.forEach((url) => {
+    if (selectedGalleryUrls.has(url)) next.add(url);
+  });
+
+  if (!next.size && available.length) {
+    available.forEach((url) => next.add(url));
+  }
+
+  selectedGalleryUrls = next;
+}
+
+function applySelectedGalleryUrls() {
+  const allUrls = getGalleryUrls();
+  const selected = allUrls.filter((url) => selectedGalleryUrls.has(url));
+  const finalUrls = selected.length ? selected : allUrls;
+  fields.galleryPhotos.value = finalUrls.join("\n");
+  syncSelectedGalleryUrls(finalUrls);
+  renderGalleryPreview();
+  setStatus(statusConfig, `${finalUrls.length} foto dipilih untuk ditampilkan di galeri.`);
 }
 
 function normalizePreviewUrl(url) {
@@ -622,6 +721,7 @@ async function deleteSinglePhoto(url) {
 function renderGalleryPreview() {
   if (!galleryPreview) return;
   const urls = getGalleryUrls();
+  syncSelectedGalleryUrls(urls);
 
   galleryPreview.innerHTML = "";
   if (!urls.length) {
@@ -647,6 +747,23 @@ function renderGalleryPreview() {
     const urlText = document.createElement("p");
     urlText.className = "gallery-item-url";
     urlText.textContent = url;
+
+    const selectWrap = document.createElement("label");
+    selectWrap.className = "gallery-item-select";
+    const selectInput = document.createElement("input");
+    selectInput.type = "checkbox";
+    selectInput.checked = selectedGalleryUrls.has(url);
+    selectInput.addEventListener("change", () => {
+      if (selectInput.checked) {
+        selectedGalleryUrls.add(url);
+      } else {
+        selectedGalleryUrls.delete(url);
+      }
+    });
+    const selectText = document.createElement("span");
+    selectText.textContent = "Tampilkan di undangan";
+    selectWrap.appendChild(selectInput);
+    selectWrap.appendChild(selectText);
 
     const actions = document.createElement("div");
     actions.className = "gallery-item-actions";
@@ -686,6 +803,7 @@ function renderGalleryPreview() {
     actions.appendChild(storyBtn);
     actions.appendChild(removeBtn);
 
+    body.appendChild(selectWrap);
     body.appendChild(urlText);
     body.appendChild(actions);
     card.appendChild(img);
@@ -1239,6 +1357,18 @@ invitationBaseUrlInput.addEventListener("input", () => {
 fields.weddingDateTimeLocal.addEventListener("input", updateWeddingIsoPreview);
 fields.weddingTimeOffset.addEventListener("change", updateWeddingIsoPreview);
 fields.galleryPhotos.addEventListener("input", renderGalleryPreview);
+if (fields.heroDateStart) {
+  fields.heroDateStart.addEventListener("change", generateHeroDatePlaceFromInputs);
+}
+if (fields.heroDateEnd) {
+  fields.heroDateEnd.addEventListener("change", generateHeroDatePlaceFromInputs);
+}
+if (fields.heroDateCity) {
+  fields.heroDateCity.addEventListener("input", () => {
+    if (!fields.heroDateStart.value) return;
+    generateHeroDatePlaceFromInputs();
+  });
+}
 if (fields.galleryMode) {
   fields.galleryMode.addEventListener("change", updateGalleryModeFields);
 }
