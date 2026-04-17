@@ -74,6 +74,10 @@ body.is-loading {
   overflow: hidden;
 }
 
+body.gallery-lightbox-open {
+  overflow: hidden;
+}
+
 body.is-loading .topbar,
 body.is-loading .hero,
 body.is-loading main,
@@ -805,6 +809,10 @@ h2 {
   box-shadow: 0 12px 24px rgba(38, 63, 51, 0.12);
 }
 
+.gallery-item.is-clickable {
+  cursor: zoom-in;
+}
+
 .gallery-item::after {
   content: "";
   position: absolute;
@@ -934,6 +942,48 @@ h2 {
   text-align: center;
   color: #5f7468;
   background: rgba(255, 255, 255, 0.6);
+}
+
+.gallery-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 14, 11, 0.78);
+  backdrop-filter: blur(4px);
+  padding: 20px;
+}
+
+.gallery-lightbox.is-open {
+  display: flex;
+}
+
+.gallery-lightbox-image {
+  max-width: min(95vw, 1500px);
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  object-fit: contain;
+  background: rgba(240, 240, 240, 0.12);
+}
+
+.gallery-lightbox-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #203128;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .timeline {

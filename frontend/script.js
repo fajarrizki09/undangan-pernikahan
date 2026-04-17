@@ -26,6 +26,16 @@ const gateNames = document.getElementById("gateNames");
 const gateDatePlace = document.getElementById("gateDatePlace");
 const gateGuestName = document.getElementById("gateGuestName");
 const addToCalendarLink = document.getElementById("addToCalendarLink");
+const lightbox = document.createElement("div");
+lightbox.className = "gallery-lightbox";
+lightbox.setAttribute("aria-hidden", "true");
+lightbox.innerHTML = `
+  <button type="button" class="gallery-lightbox-close" aria-label="Tutup foto">×</button>
+  <img class="gallery-lightbox-image" alt="Foto galeri ukuran besar" />
+`;
+document.body.appendChild(lightbox);
+const lightboxImg = lightbox.querySelector(".gallery-lightbox-image");
+const lightboxCloseBtn = lightbox.querySelector(".gallery-lightbox-close");
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isSmallScreen = window.matchMedia("(max-width: 860px)").matches;
@@ -612,6 +622,7 @@ function normalizeGalleryUrl(url, purpose = "gallery") {
 }
 
 function getImageSizeByPurpose(purpose) {
+  if (purpose === "full") return 2400;
   if (purpose === "hero") return isMobileViewport ? 1280 : 1800;
   if (purpose === "story") return isMobileViewport ? 720 : 980;
   return isMobileViewport ? 960 : 1400;
@@ -673,9 +684,30 @@ function clearGalleryAutoplay() {
   galleryState.autoplayTimer = null;
 }
 
+function openGalleryLightbox(src, index) {
+  if (!lightbox || !lightboxImg) return;
+  const clean = String(src || "").trim();
+  if (!clean) return;
+
+  lightbox.classList.add("is-open");
+  lightbox.setAttribute("aria-hidden", "false");
+  document.body.classList.add("gallery-lightbox-open");
+  lightboxImg.alt = `Foto galeri ${index + 1} ukuran besar`;
+  applyImageWithFallback(lightboxImg, clean, { purpose: "full", fallbackSrc: clean });
+}
+
+function closeGalleryLightbox() {
+  if (!lightbox || !lightboxImg) return;
+  lightbox.classList.remove("is-open");
+  lightbox.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("gallery-lightbox-open");
+  lightboxImg.removeAttribute("src");
+}
+
 function createGalleryCard(src, index) {
   const card = document.createElement("article");
   card.className = "gallery-item";
+  card.classList.add("is-clickable");
 
   const img = document.createElement("img");
   img.alt = `Foto galeri ${index + 1}`;
@@ -683,6 +715,7 @@ function createGalleryCard(src, index) {
   img.loading = index < 4 ? "eager" : "lazy";
   if (index < 2) img.fetchPriority = "high";
   img.style.objectPosition = getGalleryObjectPosition(src);
+  img.addEventListener("click", () => openGalleryLightbox(src, index));
 
   applyImageWithFallback(img, src, {
     purpose: "gallery",
@@ -1413,6 +1446,24 @@ function setupVisibilityOptimization() {
     }
   });
 }
+
+if (lightbox) {
+  lightbox.addEventListener("click", (event) => {
+    if (event.target === lightbox) {
+      closeGalleryLightbox();
+    }
+  });
+}
+
+if (lightboxCloseBtn) {
+  lightboxCloseBtn.addEventListener("click", closeGalleryLightbox);
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && lightbox && lightbox.classList.contains("is-open")) {
+    closeGalleryLightbox();
+  }
+});
 
 if (form) {
   form.addEventListener("submit", async (event) => {
