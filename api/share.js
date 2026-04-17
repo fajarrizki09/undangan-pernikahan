@@ -1,7 +1,7 @@
 const FALLBACK_API_URL = "https://script.google.com/macros/s/AKfycbxzlazLkS5hXUtj4dg7UiZESPEsCx8sBUQawgWlTsS3lXsGuO7W6plCavPqNp6-YQsw/exec";
 const FALLBACK_TITLE = "Undangan Pernikahan";
 const FALLBACK_DESC = "Undangan pernikahan digital dengan RSVP online.";
-const CONFIG_FETCH_TIMEOUT_MS = 2200;
+const CONFIG_FETCH_TIMEOUT_MS = 7000;
 const SEO_CACHE_TTL_MS = 1000 * 60 * 5;
 let seoCache = {
   expiresAt: 0,
@@ -136,10 +136,10 @@ export default async function handler(req, res) {
   <meta property="og:description" content="${desc}" />
   <meta property="og:url" content="${url}" />
   ${imageMeta}
-  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="${imageUrl ? "summary_large_image" : "summary"}" />
   <meta name="twitter:title" content="${title}" />
   <meta name="twitter:description" content="${desc}" />
-  <meta http-equiv="refresh" content="0;url=${url}" />
+  <meta http-equiv="refresh" content="0;url=${escapeHtml(redirectUrl.toString())}" />
 </head>
 <body>
   <script>window.location.replace(${JSON.stringify(redirectUrl.toString())});</script>
