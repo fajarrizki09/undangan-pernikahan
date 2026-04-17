@@ -85,7 +85,14 @@ let guestState = {
 function getDefaultInvitationBaseUrl() {
   const fromConfig = (ADMIN_CONFIG && ADMIN_CONFIG.invitationBaseUrl) || "";
   if (fromConfig.trim()) return fromConfig.trim();
-  return `${window.location.origin}/`;
+  const path = String(window.location.pathname || "/");
+  if (/\/admin\.html?$/i.test(path)) {
+    return `${window.location.origin}${path.replace(/admin\.html?$/i, "")}`;
+  }
+  if (path.endsWith("/")) {
+    return `${window.location.origin}${path}`;
+  }
+  return `${window.location.origin}${path}/`;
 }
 
 function loadSavedInvitationBaseUrl() {
@@ -165,7 +172,27 @@ function setStatus(el, message) {
 function normalizeBaseUrl(value) {
   const clean = (value || "").trim();
   if (!clean) return "";
-  return clean.endsWith("/") ? clean : clean + "/";
+
+  const withProtocol = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
+
+  try {
+    const parsed = new URL(withProtocol, window.location.origin);
+    let pathname = parsed.pathname || "/";
+
+    pathname = pathname.replace(/\/admin\.html?$/i, "/");
+    if (parsed.hostname && pathname.toLowerCase().includes(parsed.hostname.toLowerCase())) {
+      pathname = pathname.replace(new RegExp(`/${parsed.hostname.replace(/\./g, "\\.")}/?`, "ig"), "/");
+    }
+    pathname = pathname.replace(/\/{2,}/g, "/");
+    if (!pathname.endsWith("/")) pathname += "/";
+
+    parsed.pathname = pathname;
+    parsed.search = "";
+    parsed.hash = "";
+    return parsed.toString();
+  } catch (error) {
+    return clean.endsWith("/") ? clean : `${clean}/`;
+  }
 }
 
 function parseWeddingIso(isoString) {
@@ -671,7 +698,11 @@ function parseGuestInput() {
 }
 
 function buildGuestLink(baseUrl, name) {
-  return `${baseUrl}?to=${encodeURIComponent(name)}`;
+  const safeBase = normalizeBaseUrl(baseUrl);
+  if (!safeBase) return "";
+  const url = new URL(safeBase, window.location.origin);
+  url.searchParams.set("to", name || "");
+  return url.toString();
 }
 
 function toCsvCell(value) {
