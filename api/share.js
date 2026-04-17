@@ -22,7 +22,27 @@ function normalizeConfig(config) {
   const source = (config && typeof config === "object") ? config : {};
   const title = String(source.seoTitle || "").trim() || FALLBACK_TITLE;
   const description = String(source.seoDescription || "").trim() || FALLBACK_DESC;
-  return { title, description };
+  const heroBackgroundPhoto = String(source.heroBackgroundPhoto || "").trim();
+  const galleryPhotos = Array.isArray(source.galleryPhotos) ? source.galleryPhotos : [];
+  const fallbackGalleryPhoto = String(galleryPhotos[0] || "").trim();
+  const image = heroBackgroundPhoto || fallbackGalleryPhoto;
+  return { title, description, image };
+}
+
+function resolveImageUrl(raw, origin) {
+  const value = String(raw || "").trim();
+  if (!value) return "";
+
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  if (value.startsWith("/")) {
+    return `${origin}${value}`;
+  }
+
+  // Config frontend biasanya menyimpan path seperti assets/photos/...
+  return `${origin}/frontend/${value.replace(/^\.?\//, "")}`;
 }
 
 async function fetchConfig(apiUrl) {
@@ -47,6 +67,7 @@ export default async function handler(req, res) {
   const apiUrl = process.env.RSVP_API_URL || FALLBACK_API_URL;
   const config = await fetchConfig(apiUrl);
   const seo = normalizeConfig(config);
+  const imageUrl = resolveImageUrl(seo.image, origin || "");
 
   const toRaw = String((req.query && req.query.to) || "").trim();
   const redirectUrl = new URL("/frontend/", origin || "https://example.com");
@@ -55,6 +76,13 @@ export default async function handler(req, res) {
   const title = escapeHtml(seo.title);
   const desc = escapeHtml(seo.description);
   const url = escapeHtml(redirectUrl.toString());
+  const image = escapeHtml(imageUrl);
+  const imageMeta = imageUrl
+    ? `
+  <meta property="og:image" content="${image}" />
+  <meta property="og:image:secure_url" content="${image}" />
+  <meta name="twitter:image" content="${image}" />`
+    : "";
 
   const html = `<!doctype html>
 <html lang="id">
@@ -67,6 +95,7 @@ export default async function handler(req, res) {
   <meta property="og:title" content="${title}" />
   <meta property="og:description" content="${desc}" />
   <meta property="og:url" content="${url}" />
+  ${imageMeta}
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="${title}" />
   <meta name="twitter:description" content="${desc}" />
