@@ -2,6 +2,7 @@ const form = document.getElementById("rsvpForm");
 const statusText = document.getElementById("formStatus");
 const inputNama = document.getElementById("inputNama");
 const submitRsvpBtn = form ? form.querySelector("button[type='submit']") : null;
+const galleryGrid = document.getElementById("galleryGrid");
 const wishesList = document.getElementById("wishesList");
 const wishesMeta = document.getElementById("wishesMeta");
 
@@ -469,6 +470,41 @@ function applyImageWithFallback(img, rawUrl, options = {}) {
   applyNext();
 }
 
+function renderGalleryGrid(photos) {
+  if (!galleryGrid) return;
+  galleryGrid.innerHTML = "";
+
+  const fallbackPhotos = Array.isArray(WEDDING_CONFIG.galleryPhotos) ? WEDDING_CONFIG.galleryPhotos : [];
+  const sourcePhotos = Array.isArray(photos) && photos.length ? photos : fallbackPhotos;
+  const cleanPhotos = sourcePhotos
+    .map((item) => String(item || "").trim())
+    .filter(Boolean);
+
+  if (!cleanPhotos.length) {
+    galleryGrid.innerHTML = '<p class="gallery-empty">Belum ada foto galeri.</p>';
+    return;
+  }
+
+  cleanPhotos.forEach((src, index) => {
+    const card = document.createElement("article");
+    card.className = "gallery-item";
+
+    const img = document.createElement("img");
+    img.alt = `Foto galeri ${index + 1}`;
+    img.decoding = "async";
+    img.loading = index < 4 ? "eager" : "lazy";
+    if (index < 2) img.fetchPriority = "high";
+
+    applyImageWithFallback(img, src, {
+      purpose: "gallery",
+      fallbackSrc: `assets/photos/foto-${(index % 6) + 1}.svg`
+    });
+
+    card.appendChild(img);
+    galleryGrid.appendChild(card);
+  });
+}
+
 function extractDriveFileId(url) {
   const clean = String(url || "").trim();
   if (!clean) return "";
@@ -653,21 +689,7 @@ function applyWeddingConfig() {
     resepsiCard.classList.add("is-hidden");
   }
 
-  if (Array.isArray(currentConfig.galleryPhotos)) {
-    currentConfig.galleryPhotos.forEach((src, index) => {
-      const img = document.getElementById(`photo${index + 1}`);
-      if (!img) return;
-      if (index < 2) {
-        img.loading = "eager";
-        img.fetchPriority = "high";
-      }
-
-      applyImageWithFallback(img, src, {
-        purpose: "gallery",
-        fallbackSrc: `assets/photos/foto-${index + 1}.svg`
-      });
-    });
-  }
+  renderGalleryGrid(currentConfig.galleryPhotos);
 
   if (Array.isArray(currentConfig.loveStoryPhotos)) {
     currentConfig.loveStoryPhotos.slice(0, 3).forEach((src, index) => {
