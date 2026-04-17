@@ -1,7 +1,7 @@
 const FALLBACK_API_URL = "https://script.google.com/macros/s/AKfycbxzlazLkS5hXUtj4dg7UiZESPEsCx8sBUQawgWlTsS3lXsGuO7W6plCavPqNp6-YQsw/exec";
 const FALLBACK_TITLE = "Undangan Pernikahan";
 const FALLBACK_DESC = "Undangan pernikahan digital dengan RSVP online.";
-const CONFIG_FETCH_TIMEOUT_MS = 7000;
+const CONFIG_FETCH_TIMEOUT_MS = 9000;
 const SEO_CACHE_TTL_MS = 1000 * 60 * 5;
 let seoCache = {
   expiresAt: 0,
@@ -55,27 +55,38 @@ async function fetchConfig(apiUrl) {
   const target = String(apiUrl || "").trim();
   if (!target) return null;
 
-  try {
-    const url = new URL(target);
-    url.searchParams.set("action", "config");
-    url.searchParams.set("_ts", String(Date.now()));
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), CONFIG_FETCH_TIMEOUT_MS);
-    let response;
-    try {
-      response = await fetch(url.toString(), {
-        cache: "no-store",
-        signal: controller.signal
-      });
-    } finally {
-      clearTimeout(timeoutId);
+  const url = new URL(target);
+  url.searchParams.set("action", "config");
+  url.searchParams.set("_ts", String(Date.now()));
+
+  async function tryFetch(withTimeout) {
+    const options = {
+      cache: "no-store",
+      headers: { Accept: "application/json" }
+    };
+
+    let timeoutId = null;
+    if (withTimeout) {
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), CONFIG_FETCH_TIMEOUT_MS);
+      options.signal = controller.signal;
     }
-    const json = await response.json();
-    if (!response.ok || !json || !json.success) return null;
-    return json.config || null;
-  } catch (error) {
-    return null;
+
+    try {
+      const response = await fetch(url.toString(), options);
+      const json = await response.json();
+      if (!response.ok || !json || !json.success) return null;
+      return json.config || null;
+    } catch (error) {
+      return null;
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+    }
   }
+
+  const fastAttempt = await tryFetch(true);
+  if (fastAttempt) return fastAttempt;
+  return tryFetch(false);
 }
 
 async function getSeoConfig(apiUrl) {
