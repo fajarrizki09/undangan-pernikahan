@@ -230,6 +230,31 @@ function mergeConfig(base, incoming) {
   return healMisplacedPhotoConfig(merged);
 }
 
+function formatStoryDateDisplay(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric" }).format(value);
+  }
+
+  const text = String(value || "").trim();
+  if (!text) return "";
+
+  const date = new Date(text);
+  if (!Number.isNaN(date.getTime())) {
+    return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric" }).format(date);
+  }
+
+  return text;
+}
+
+function cleanStoryDescription(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (/^InvalidA1\s*:/i.test(text)) {
+    return text.replace(/^InvalidA1\s*:\s*/i, "").trim();
+  }
+  return text;
+}
+
 function setMetaDescription(content) {
   const text = String(content || "").trim();
   if (!text) return;
@@ -885,9 +910,9 @@ function applyWeddingConfig() {
     : (Array.isArray(WEDDING_CONFIG.loveStoryItems) ? WEDDING_CONFIG.loveStoryItems : []);
   storyItems.slice(0, 3).forEach((item, index) => {
     const i = index + 1;
-    setText(`storyYear${i}`, item && item.date);
+    setText(`storyYear${i}`, formatStoryDateDisplay(item && item.date));
     setText(`storyTitle${i}`, item && item.title);
-    setText(`storyDesc${i}`, item && item.description);
+    setText(`storyDesc${i}`, cleanStoryDescription(item && item.description));
   });
 
   applyHeroCloudPhoto();

@@ -303,6 +303,8 @@ function generateHeroDatePlaceFromInputs() {
   const end = endRaw && endRaw.getTime() >= start.getTime() ? endRaw : start;
   const result = formatHeroDatePlace(start, end, fields.heroDateCity.value);
   fields.heroDatePlace.value = result;
+  const dateOnly = result.split("•")[0].trim();
+  fields.resepsiDate.value = dateOnly;
   setStatus(statusConfig, "Tanggal hero berhasil digenerate.");
 }
 
