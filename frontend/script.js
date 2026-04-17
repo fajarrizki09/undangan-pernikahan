@@ -57,7 +57,8 @@ let currentConfig = {
   resepsi: { ...(WEDDING_CONFIG.resepsi || {}) },
   loveStoryPhotos: Array.isArray(WEDDING_CONFIG.loveStoryPhotos) ? [...WEDDING_CONFIG.loveStoryPhotos] : [],
   loveStoryItems: Array.isArray(WEDDING_CONFIG.loveStoryItems) ? [...WEDDING_CONFIG.loveStoryItems] : [],
-  galleryPhotos: Array.isArray(WEDDING_CONFIG.galleryPhotos) ? [...WEDDING_CONFIG.galleryPhotos] : []
+  galleryPhotos: Array.isArray(WEDDING_CONFIG.galleryPhotos) ? [...WEDDING_CONFIG.galleryPhotos] : [],
+  galleryPhotoFocus: {}
 };
 const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
 const CONFIG_CACHE_TTL_MS = 1000 * 60 * 10;
@@ -209,6 +210,46 @@ function getGuestNameFromUrl() {
   return raw.replace(/\+/g, " ").trim() || "Bapak/Ibu/Saudara/i";
 }
 
+function clampPercent(value, fallback = 50) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return fallback;
+  return Math.max(0, Math.min(100, num));
+}
+
+function normalizeGalleryPhotoFocusMap(input) {
+  let source = input;
+  if (typeof source === "string") {
+    try {
+      source = JSON.parse(source);
+    } catch (error) {
+      source = {};
+    }
+  }
+  if (!source || typeof source !== "object" || Array.isArray(source)) return {};
+
+  const normalized = {};
+  Object.keys(source).forEach((rawKey) => {
+    const key = String(rawKey || "").trim();
+    if (!key) return;
+    const item = source[rawKey];
+    if (!item || typeof item !== "object") return;
+    normalized[key] = {
+      x: clampPercent(item.x, 50),
+      y: clampPercent(item.y, 50)
+    };
+  });
+
+  return normalized;
+}
+
+function getGalleryObjectPosition(photoUrl) {
+  const key = String(photoUrl || "").trim();
+  const map = normalizeGalleryPhotoFocusMap(currentConfig.galleryPhotoFocus);
+  const item = map[key];
+  if (!item) return "50% 50%";
+  return `${clampPercent(item.x, 50)}% ${clampPercent(item.y, 50)}%`;
+}
+
 function mergeConfig(base, incoming) {
   if (!incoming || typeof incoming !== "object") return base;
 
@@ -234,7 +275,10 @@ function mergeConfig(base, incoming) {
       : base.loveStoryItems,
     galleryPhotos: Array.isArray(incoming.galleryPhotos) && incoming.galleryPhotos.length
       ? incoming.galleryPhotos
-      : base.galleryPhotos
+      : base.galleryPhotos,
+    galleryPhotoFocus: normalizeGalleryPhotoFocusMap(
+      incoming.galleryPhotoFocus || base.galleryPhotoFocus || WEDDING_CONFIG.galleryPhotoFocus || {}
+    )
   };
 
   merged.galleryMode = normalizeGalleryMode(incoming.galleryMode || base.galleryMode || WEDDING_CONFIG.galleryMode);
@@ -638,6 +682,7 @@ function createGalleryCard(src, index) {
   img.decoding = "async";
   img.loading = index < 4 ? "eager" : "lazy";
   if (index < 2) img.fetchPriority = "high";
+  img.style.objectPosition = getGalleryObjectPosition(src);
 
   applyImageWithFallback(img, src, {
     purpose: "gallery",

@@ -111,6 +111,7 @@ apiUrlInput.value = RSVP_API_URL;
 let currentGuests = [];
 let currentRsvps = [];
 let selectedGalleryUrls = new Set();
+let galleryPhotoFocusMap = {};
 let guestState = {
   total: 0,
   page: 1,
@@ -353,6 +354,57 @@ function normalizeGalleryStyle(value) {
   return "elegant";
 }
 
+function clampPercent(value, fallback = 50) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return fallback;
+  return Math.max(0, Math.min(100, num));
+}
+
+function normalizeGalleryPhotoFocusMap(input) {
+  let source = input;
+  if (typeof source === "string") {
+    try {
+      source = JSON.parse(source);
+    } catch (error) {
+      source = {};
+    }
+  }
+  if (!source || typeof source !== "object" || Array.isArray(source)) return {};
+
+  const normalized = {};
+  Object.keys(source).forEach((rawKey) => {
+    const key = String(rawKey || "").trim();
+    if (!key) return;
+    const item = source[rawKey];
+    if (!item || typeof item !== "object") return;
+    normalized[key] = {
+      x: clampPercent(item.x, 50),
+      y: clampPercent(item.y, 50)
+    };
+  });
+
+  return normalized;
+}
+
+function getGalleryPhotoFocus(url) {
+  const key = String(url || "").trim();
+  const item = galleryPhotoFocusMap[key];
+  if (!item) return { x: 50, y: 50 };
+  return {
+    x: clampPercent(item.x, 50),
+    y: clampPercent(item.y, 50)
+  };
+}
+
+function setGalleryPhotoFocus(url, x, y) {
+  const key = String(url || "").trim();
+  if (!key) return;
+  galleryPhotoFocusMap[key] = {
+    x: clampPercent(x, 50),
+    y: clampPercent(y, 50)
+  };
+}
+
 function updateGalleryModeFields() {
   const isCarousel = normalizeGalleryMode(fields.galleryMode.value) === "carousel";
   fields.galleryAutoplaySec.disabled = !isCarousel;
@@ -373,6 +425,13 @@ function readConfigFromForm() {
   const allPhotos = getGalleryUrls();
   const photos = allPhotos.filter((url) => selectedGalleryUrls.has(url));
   const galleryPhotosToSave = photos.length ? photos : allPhotos;
+  const sanitizedFocusMap = {};
+  galleryPhotosToSave.forEach((url) => {
+    const focus = getGalleryPhotoFocus(url);
+    if (focus.x !== 50 || focus.y !== 50) {
+      sanitizedFocusMap[url] = focus;
+    }
+  });
   const storyPhotos = fields.loveStoryPhotos.value
     .split(/\r?\n/)
     .map((item) => item.trim())
@@ -428,7 +487,8 @@ function readConfigFromForm() {
     galleryMode: normalizeGalleryMode(fields.galleryMode.value),
     galleryMaxItems: parseNonNegativeInteger(fields.galleryMaxItems.value.trim()),
     galleryAutoplaySec: parsePositiveNumber(fields.galleryAutoplaySec.value.trim()),
-    galleryStyle: normalizeGalleryStyle(fields.galleryStyle.value)
+    galleryStyle: normalizeGalleryStyle(fields.galleryStyle.value),
+    galleryPhotoFocus: sanitizedFocusMap
   };
 }
 
@@ -455,6 +515,9 @@ function healMisplacedPhotoConfig(config) {
 
 function fillForm(config) {
   const safeConfig = healMisplacedPhotoConfig(config || {});
+  galleryPhotoFocusMap = normalizeGalleryPhotoFocusMap(
+    safeConfig.galleryPhotoFocus || (WEDDING_CONFIG && WEDDING_CONFIG.galleryPhotoFocus) || {}
+  );
 
   fields.brandInitials.value = safeConfig.brandInitials || "";
   fields.seoTitle.value = safeConfig.seoTitle || "";
@@ -669,6 +732,11 @@ function removeGalleryUrls(urls) {
 
   const filtered = existing.filter((url) => !targets.has(url));
   targets.forEach((url) => selectedGalleryUrls.delete(url));
+  targets.forEach((url) => {
+    const key = String(url || "").trim();
+    if (!key) return;
+    delete galleryPhotoFocusMap[key];
+  });
   fields.galleryPhotos.value = filtered.join("\n");
   renderGalleryPreview();
 }
@@ -703,6 +771,12 @@ function applySelectedGalleryUrls() {
   const allUrls = getGalleryUrls();
   const selected = allUrls.filter((url) => selectedGalleryUrls.has(url));
   const finalUrls = selected.length ? selected : allUrls;
+  const nextFocusMap = {};
+  finalUrls.forEach((url) => {
+    const focus = galleryPhotoFocusMap[String(url || "").trim()];
+    if (focus) nextFocusMap[String(url || "").trim()] = focus;
+  });
+  galleryPhotoFocusMap = nextFocusMap;
   fields.galleryPhotos.value = finalUrls.join("\n");
   syncSelectedGalleryUrls(finalUrls);
   renderGalleryPreview();
@@ -871,6 +945,8 @@ function renderGalleryPreview() {
     card.className = "gallery-item";
 
     const img = document.createElement("img");
+    const focus = getGalleryPhotoFocus(url);
+    img.style.objectPosition = `${focus.x}% ${focus.y}%`;
     img.alt = "Preview foto galeri";
     img.loading = "lazy";
     img.decoding = "async";
@@ -927,6 +1003,34 @@ function renderGalleryPreview() {
       }
     });
 
+    const editPosBtn = document.createElement("button");
+    editPosBtn.type = "button";
+    editPosBtn.className = "btn-mini";
+    editPosBtn.textContent = "Edit Posisi";
+    editPosBtn.addEventListener("click", () => {
+      const current = getGalleryPhotoFocus(url);
+      const input = window.prompt(
+        "Atur posisi foto (X,Y) 0-100. Contoh: 50,35",
+        `${current.x},${current.y}`
+      );
+      if (input === null) return;
+      const parts = String(input).split(",").map((item) => item.trim());
+      if (parts.length !== 2) {
+        setStatus(statusConfig, "Format posisi harus X,Y. Contoh: 50,35");
+        return;
+      }
+      const x = Number(parts[0]);
+      const y = Number(parts[1]);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        setStatus(statusConfig, "Nilai posisi harus angka 0 sampai 100.");
+        return;
+      }
+      setGalleryPhotoFocus(url, x, y);
+      const next = getGalleryPhotoFocus(url);
+      img.style.objectPosition = `${next.x}% ${next.y}%`;
+      setStatus(statusConfig, `Posisi foto diatur ke X:${next.x}% Y:${next.y}%. Klik Simpan Konfigurasi untuk permanen.`);
+    });
+
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "btn-mini";
@@ -937,6 +1041,7 @@ function renderGalleryPreview() {
 
     actions.appendChild(heroBtn);
     actions.appendChild(storyBtn);
+    actions.appendChild(editPosBtn);
     actions.appendChild(removeBtn);
 
     body.appendChild(selectWrap);

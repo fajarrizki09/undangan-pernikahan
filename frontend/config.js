@@ -71,6 +71,7 @@ const WEDDING_CONFIG = {
   galleryMaxItems: "",
   galleryAutoplaySec: "3.5",
   galleryStyle: "elegant",
+  galleryPhotoFocus: {},
   galleryPhotos: [
     "assets/photos/foto-1.svg",
     "assets/photos/foto-2.svg",
