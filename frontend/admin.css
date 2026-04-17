@@ -108,6 +108,13 @@ textarea:focus {
   gap: 12px;
 }
 
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
 .inline-check {
   display: inline-flex;
   align-items: center;
@@ -147,6 +154,12 @@ textarea:focus {
   gap: 8px;
 }
 
+.gallery-item-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
 .gallery-item-url {
   margin: 0;
   color: var(--muted);
@@ -164,6 +177,7 @@ textarea:focus {
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .preview-empty {
@@ -291,5 +305,13 @@ textarea:focus {
 
   .pager-row {
     justify-content: stretch;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-item-actions {
+    grid-template-columns: 1fr;
   }
 }

@@ -59,6 +59,8 @@ const deletePhotoUrlsInput = document.getElementById("deletePhotoUrls");
 const musicFileInput = document.getElementById("musicFile");
 const galleryPreview = document.getElementById("galleryPreview");
 const deleteFromDriveInput = document.getElementById("deleteFromDrive");
+const btnHeroFromGallery = document.getElementById("btnHeroFromGallery");
+const btnLoveStoryFromGallery = document.getElementById("btnLoveStoryFromGallery");
 const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
 
@@ -459,6 +461,35 @@ function setLoveStoryUrls(urls) {
   fields.loveStoryPhotos.value = clean.join("\n");
 }
 
+function setHeroFromGallery(url) {
+  const target = String(url || "").trim();
+  if (!target) return false;
+  fields.heroBackgroundPhoto.value = target;
+  return true;
+}
+
+function appendOneLoveStoryUrl(url) {
+  const target = String(url || "").trim();
+  if (!target) return false;
+  const current = getLoveStoryUrls();
+  if (current.includes(target)) return false;
+  if (current.length >= 3) return false;
+  current.push(target);
+  setLoveStoryUrls(current);
+  return true;
+}
+
+function fillLoveStoryFromGallery() {
+  const galleryUrls = getGalleryUrls();
+  if (!galleryUrls.length) return 0;
+  const merged = [];
+  galleryUrls.forEach((url) => {
+    if (merged.length < 3) merged.push(url);
+  });
+  setLoveStoryUrls(merged);
+  return merged.length;
+}
+
 function removeGalleryUrls(urls) {
   const targets = new Set(
     (urls || [])
@@ -564,6 +595,32 @@ function renderGalleryPreview() {
     urlText.className = "gallery-item-url";
     urlText.textContent = url;
 
+    const actions = document.createElement("div");
+    actions.className = "gallery-item-actions";
+
+    const heroBtn = document.createElement("button");
+    heroBtn.type = "button";
+    heroBtn.className = "btn-mini";
+    heroBtn.textContent = "Set Hero";
+    heroBtn.addEventListener("click", () => {
+      if (setHeroFromGallery(url)) {
+        setStatus(statusConfig, "Foto dipilih untuk background hero.");
+      }
+    });
+
+    const storyBtn = document.createElement("button");
+    storyBtn.type = "button";
+    storyBtn.className = "btn-mini";
+    storyBtn.textContent = "Set Love Story";
+    storyBtn.addEventListener("click", () => {
+      const ok = appendOneLoveStoryUrl(url);
+      if (ok) {
+        setStatus(statusConfig, "Foto ditambahkan ke Love Story.");
+      } else {
+        setStatus(statusConfig, "Love Story sudah penuh (maksimal 3) atau foto sudah ada.");
+      }
+    });
+
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "btn-mini";
@@ -572,8 +629,12 @@ function renderGalleryPreview() {
       deleteSinglePhoto(url);
     });
 
+    actions.appendChild(heroBtn);
+    actions.appendChild(storyBtn);
+    actions.appendChild(removeBtn);
+
     body.appendChild(urlText);
-    body.appendChild(removeBtn);
+    body.appendChild(actions);
     card.appendChild(img);
     card.appendChild(body);
     galleryPreview.appendChild(card);
@@ -1076,6 +1137,27 @@ if (btnGuestNext) {
   btnGuestNext.addEventListener("click", () => {
     guestState.page = Math.min(guestState.page + 1, guestState.totalPages || 1);
     loadGuests();
+  });
+}
+if (btnHeroFromGallery) {
+  btnHeroFromGallery.addEventListener("click", () => {
+    const galleryUrls = getGalleryUrls();
+    if (!galleryUrls.length) {
+      setStatus(statusConfig, "Galeri kosong. Upload foto dulu.");
+      return;
+    }
+    setHeroFromGallery(galleryUrls[0]);
+    setStatus(statusConfig, "Hero background diisi dari foto galeri pertama.");
+  });
+}
+if (btnLoveStoryFromGallery) {
+  btnLoveStoryFromGallery.addEventListener("click", () => {
+    const count = fillLoveStoryFromGallery();
+    if (!count) {
+      setStatus(statusConfig, "Galeri kosong. Upload foto dulu.");
+      return;
+    }
+    setStatus(statusConfig, `${count} foto Love Story diisi dari galeri.`);
   });
 }
 if (RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {

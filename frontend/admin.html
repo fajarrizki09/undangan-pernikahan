@@ -45,7 +45,13 @@
         <label>Inisial Brand<input id="brandInitials" type="text" /></label>
         <label>Judul Atas Hero (contoh: Wedding Invitation)<input id="heroOverline" type="text" /></label>
         <label>Tanggal & Lokasi Hero<input id="heroDatePlace" type="text" /></label>
-        <label>Foto Background Hero (URL/path)<input id="heroBackgroundPhoto" type="text" placeholder="https://.../foto-hero.jpg" /></label>
+        <label>
+          Foto Background Hero (URL/path)
+          <div class="field-row">
+            <input id="heroBackgroundPhoto" type="text" placeholder="https://.../foto-hero.jpg" />
+            <button id="btnHeroFromGallery" class="btn-mini" type="button">Ambil dari Galeri</button>
+          </div>
+        </label>
         <label>Nama Pendek Mempelai Wanita<input id="brideShortName" type="text" /></label>
         <label>Nama Pendek Mempelai Pria<input id="groomShortName" type="text" /></label>
         <label>Nama Lengkap Mempelai Wanita<input id="brideFullName" type="text" /></label>
@@ -108,6 +114,9 @@
         Foto Love Story (1 baris = 1 URL, maksimal 3)
         <textarea id="loveStoryPhotos" rows="4" placeholder="https://.../foto-love-story-1.jpg"></textarea>
       </label>
+      <div class="actions">
+        <button id="btnLoveStoryFromGallery" class="btn btn-ghost" type="button">Ambil 3 Foto dari Galeri</button>
+      </div>
       <p class="hint-text">Tip: upload foto lewat tombol <b>Upload Foto</b>. Jika Hero/Love Story kosong, sistem akan isi otomatis dari hasil upload terbaru.</p>
 
       <label>
