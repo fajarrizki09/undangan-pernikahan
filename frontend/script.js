@@ -918,15 +918,39 @@ function extractDriveFileId(url) {
 }
 
 function normalizeAudioUrl(url) {
+  const candidates = getAudioSourceCandidates(url);
+  return candidates[0] || "";
+}
+
+function getAudioSourceCandidates(url) {
   const clean = String(url || "").trim();
-  if (!clean) return "";
+  if (!clean) return [];
 
   const fileId = extractDriveFileId(clean);
-  if (clean.includes("drive.google.com") && fileId) {
-    return `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
+  const isDriveHost = /(?:^|\/\/)(?:drive|docs)\.google\.com/i.test(clean)
+    || /(?:^|\/\/)drive\.usercontent\.google\.com/i.test(clean);
+
+  if (isDriveHost && fileId) {
+    const candidates = [
+      clean,
+      `https://drive.google.com/uc?export=download&id=${fileId}`,
+      `https://docs.google.com/uc?export=download&id=${fileId}`,
+      `https://drive.google.com/uc?export=view&id=${fileId}`,
+      `https://drive.usercontent.google.com/download?id=${fileId}&export=download`
+    ];
+
+    const unique = [];
+    const seen = new Set();
+    candidates.forEach((item) => {
+      const value = String(item || "").trim();
+      if (!value || seen.has(value)) return;
+      seen.add(value);
+      unique.push(value);
+    });
+    return unique;
   }
 
-  return clean;
+  return [clean];
 }
 
 function applyHeroCloudPhoto() {
@@ -1463,9 +1487,18 @@ function setupRevealAnimation() {
 function setupMusicControl() {
   if (!musicToggle || !bgMusic) return;
 
-  const primaryMusicUrl = normalizeAudioUrl(currentConfig.backgroundMusicUrl);
-  const fallbackMusicUrl = normalizeAudioUrl(WEDDING_CONFIG.backgroundMusicUrl);
-  const resolvedMusicUrl = primaryMusicUrl || fallbackMusicUrl;
+  const primaryMusicCandidates = getAudioSourceCandidates(currentConfig.backgroundMusicUrl);
+  const fallbackMusicCandidates = getAudioSourceCandidates(WEDDING_CONFIG.backgroundMusicUrl);
+  const allMusicCandidates = [];
+  const seenCandidate = new Set();
+  [...primaryMusicCandidates, ...fallbackMusicCandidates].forEach((item) => {
+    const value = String(item || "").trim();
+    if (!value || seenCandidate.has(value)) return;
+    seenCandidate.add(value);
+    allMusicCandidates.push(value);
+  });
+  const resolvedMusicUrl = allMusicCandidates[0] || "";
+  let currentMusicCandidateIndex = -1;
 
   if (resolvedMusicUrl && !bgMusic.src) {
     bgMusic.src = resolvedMusicUrl;
@@ -1481,6 +1514,31 @@ function setupMusicControl() {
   function setPlayingState(isPlaying) {
     musicToggle.textContent = isPlaying ? "Pause Music" : "Play Music";
     musicToggle.classList.toggle("is-playing", isPlaying);
+  }
+
+  function useMusicCandidate(index) {
+    if (index < 0 || index >= allMusicCandidates.length) return false;
+    const target = allMusicCandidates[index];
+    if (!target) return false;
+
+    currentMusicCandidateIndex = index;
+    if (bgMusic.src !== target) {
+      bgMusic.src = target;
+      bgMusic.load();
+    }
+
+    if (index >= primaryMusicCandidates.length) {
+      musicToggle.textContent = "Play Music (Sumber Cadangan)";
+    }
+    return true;
+  }
+
+  const currentAttrSrc = String(bgMusic.getAttribute("src") || "").trim();
+  if (currentAttrSrc) {
+    currentMusicCandidateIndex = allMusicCandidates.findIndex((item) => item === currentAttrSrc || item === bgMusic.src);
+  }
+  if (currentMusicCandidateIndex < 0 && resolvedMusicUrl) {
+    currentMusicCandidateIndex = 0;
   }
 
   async function startMusicFromGesture() {
@@ -1572,14 +1630,9 @@ function setupMusicControl() {
 
   bgMusic.addEventListener("ended", () => setPlayingState(false));
   bgMusic.addEventListener("error", () => {
-    const fallback = normalizeAudioUrl(WEDDING_CONFIG.backgroundMusicUrl);
-    if (fallback && bgMusic.src !== fallback) {
-      bgMusic.src = fallback;
-      bgMusic.load();
-      musicToggle.textContent = "Play Music (Sumber Cadangan)";
-    } else {
-      musicToggle.textContent = "Musik gagal dimuat";
-    }
+    const nextIndex = currentMusicCandidateIndex + 1;
+    const switched = useMusicCandidate(nextIndex);
+    musicToggle.textContent = switched ? musicToggle.textContent : "Musik gagal dimuat";
   });
 }
 

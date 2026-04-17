@@ -30,7 +30,7 @@ const WEDDING_CONFIG = {
   hadithReference: "HR. Tirmidzi",
   marriageDoaText: "\"Barakallahu laka, wa baraka 'alaika, wa jama'a bainakuma fii khair.\"",
   marriageDoaReference: "Semoga Allah memberkahimu, memberkahi atasmu, dan mengumpulkan kalian berdua dalam kebaikan.",
-  backgroundMusicUrl: "assets/music/akad-payung-teduh.mp3",
+  backgroundMusicUrl: "https://drive.google.com/uc?export=view&id=1KqqNbJHmI4Qnhksh1Whoiuh0WTHAXZo_",
   musicStartSec: "",
   musicLoopStartSec: "",
   musicLoopEndSec: "",
