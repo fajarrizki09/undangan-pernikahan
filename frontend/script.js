@@ -178,6 +178,14 @@ function mergeConfig(base, incoming) {
       : base.galleryPhotos
   };
 
+  merged.quranVerseArabic = String(merged.quranVerseArabic || "").trim() || String(base.quranVerseArabic || "").trim();
+  merged.quranVerseTranslation = String(merged.quranVerseTranslation || "").trim() || String(base.quranVerseTranslation || "").trim();
+  merged.quranVerseReference = String(merged.quranVerseReference || "").trim() || String(base.quranVerseReference || "").trim();
+  merged.hadithText = String(merged.hadithText || "").trim() || String(base.hadithText || "").trim();
+  merged.hadithReference = String(merged.hadithReference || "").trim() || String(base.hadithReference || "").trim();
+  merged.marriageDoaText = String(merged.marriageDoaText || "").trim() || String(base.marriageDoaText || "").trim();
+  merged.marriageDoaReference = String(merged.marriageDoaReference || "").trim() || String(base.marriageDoaReference || "").trim();
+
   return healMisplacedPhotoConfig(merged);
 }
 

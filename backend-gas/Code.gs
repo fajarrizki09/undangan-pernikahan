@@ -466,13 +466,13 @@ function normalizeConfig_(config) {
       venue: valueOrDefault_(resepsiSource, 'venue', valueOrDefault_(source, 'resepsiVenue', defaults.resepsi.venue)),
       mapUrl: valueOrDefault_(resepsiSource, 'mapUrl', valueOrDefault_(source, 'resepsiMapUrl', defaults.resepsi.mapUrl))
     },
-    quranVerseArabic: valueOrDefault_(source, 'quranVerseArabic', defaults.quranVerseArabic),
-    quranVerseTranslation: valueOrDefault_(source, 'quranVerseTranslation', defaults.quranVerseTranslation),
-    quranVerseReference: valueOrDefault_(source, 'quranVerseReference', defaults.quranVerseReference),
-    hadithText: valueOrDefault_(source, 'hadithText', defaults.hadithText),
-    hadithReference: valueOrDefault_(source, 'hadithReference', defaults.hadithReference),
-    marriageDoaText: valueOrDefault_(source, 'marriageDoaText', defaults.marriageDoaText),
-    marriageDoaReference: valueOrDefault_(source, 'marriageDoaReference', defaults.marriageDoaReference),
+    quranVerseArabic: valueOrDefaultNonEmpty_(source, 'quranVerseArabic', defaults.quranVerseArabic),
+    quranVerseTranslation: valueOrDefaultNonEmpty_(source, 'quranVerseTranslation', defaults.quranVerseTranslation),
+    quranVerseReference: valueOrDefaultNonEmpty_(source, 'quranVerseReference', defaults.quranVerseReference),
+    hadithText: valueOrDefaultNonEmpty_(source, 'hadithText', defaults.hadithText),
+    hadithReference: valueOrDefaultNonEmpty_(source, 'hadithReference', defaults.hadithReference),
+    marriageDoaText: valueOrDefaultNonEmpty_(source, 'marriageDoaText', defaults.marriageDoaText),
+    marriageDoaReference: valueOrDefaultNonEmpty_(source, 'marriageDoaReference', defaults.marriageDoaReference),
     loveStoryPhotos: normalizePhotoList_(source.loveStoryPhotos, defaults.loveStoryPhotos),
     galleryPhotos: normalizePhotoList_(source.galleryPhotos, defaults.galleryPhotos)
   };
@@ -510,6 +510,11 @@ function valueOrDefault_(obj, key, fallback) {
   }
 
   return sanitize(value);
+}
+
+function valueOrDefaultNonEmpty_(obj, key, fallback) {
+  var value = valueOrDefault_(obj, key, fallback);
+  return sanitize(value) || sanitize(fallback);
 }
 
 function defaultConfig_() {

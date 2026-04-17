@@ -994,7 +994,7 @@ textarea:focus {
 .music-toggle {
   position: fixed;
   right: 18px;
-  bottom: 18px;
+  bottom: calc(22px + env(safe-area-inset-bottom));
   z-index: 55;
   border: none;
   border-radius: 999px;
@@ -1083,7 +1083,7 @@ body.is-loading .page-loader {
 .footer {
   text-align: center;
   color: var(--muted);
-  padding-bottom: 90px;
+  padding-bottom: 150px;
 }
 
 .footer-names {
@@ -1298,7 +1298,7 @@ body.is-loading .page-loader {
 
   .music-toggle {
     right: 12px;
-    bottom: 12px;
+    bottom: calc(72px + env(safe-area-inset-bottom));
   }
 }
 
