@@ -375,14 +375,66 @@ function normalizeGalleryUrl(url, purpose = "gallery") {
   const fileId = extractDriveFileId(clean);
 
   if (clean.includes("drive.google.com") && fileId) {
-    let size = 1400;
-    if (purpose === "hero") size = isMobileViewport ? 1280 : 1800;
-    if (purpose === "story") size = isMobileViewport ? 720 : 980;
-    if (purpose === "gallery") size = isMobileViewport ? 960 : 1400;
-    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`;
+    return getDriveImageCandidates(fileId, purpose)[0];
   }
 
   return clean;
+}
+
+function getImageSizeByPurpose(purpose) {
+  if (purpose === "hero") return isMobileViewport ? 1280 : 1800;
+  if (purpose === "story") return isMobileViewport ? 720 : 980;
+  return isMobileViewport ? 960 : 1400;
+}
+
+function getDriveImageCandidates(fileId, purpose = "gallery") {
+  const size = getImageSizeByPurpose(purpose);
+  return [
+    `https://lh3.googleusercontent.com/d/${fileId}=w${size}`,
+    `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`,
+    `https://drive.google.com/uc?export=view&id=${fileId}`
+  ];
+}
+
+function applyImageWithFallback(img, rawUrl, options = {}) {
+  if (!img) return;
+
+  const fallbackSrc = options.fallbackSrc || "";
+  const purpose = options.purpose || "gallery";
+  const cleanUrl = String(rawUrl || "").trim();
+  if (!cleanUrl) {
+    if (fallbackSrc) img.src = fallbackSrc;
+    return;
+  }
+
+  const fileId = extractDriveFileId(cleanUrl);
+  const candidates = (cleanUrl.includes("drive.google.com") && fileId)
+    ? getDriveImageCandidates(fileId, purpose)
+    : [cleanUrl];
+
+  let index = 0;
+  const applyNext = () => {
+    const nextUrl = String(candidates[index] || "").trim();
+    if (!nextUrl) {
+      img.onerror = null;
+      if (fallbackSrc) img.src = fallbackSrc;
+      return;
+    }
+
+    index += 1;
+    img.src = nextUrl;
+  };
+
+  img.onerror = () => {
+    if (index >= candidates.length) {
+      img.onerror = null;
+      if (fallbackSrc) img.src = fallbackSrc;
+      return;
+    }
+    applyNext();
+  };
+
+  applyNext();
 }
 
 function extractDriveFileId(url) {
@@ -525,22 +577,26 @@ function applyWeddingConfig() {
   if (Array.isArray(currentConfig.galleryPhotos)) {
     currentConfig.galleryPhotos.forEach((src, index) => {
       const img = document.getElementById(`photo${index + 1}`);
-      const normalizedSrc = normalizeGalleryUrl(src, "gallery");
-      if (img && normalizedSrc) {
-        if (index < 2) {
-          img.loading = "eager";
-          img.fetchPriority = "high";
-        }
-        img.src = normalizedSrc;
+      if (!img) return;
+      if (index < 2) {
+        img.loading = "eager";
+        img.fetchPriority = "high";
       }
+
+      applyImageWithFallback(img, src, {
+        purpose: "gallery",
+        fallbackSrc: `assets/photos/foto-${index + 1}.svg`
+      });
     });
   }
 
   if (Array.isArray(currentConfig.loveStoryPhotos)) {
     currentConfig.loveStoryPhotos.slice(0, 3).forEach((src, index) => {
       const img = document.getElementById(`storyPhoto${index + 1}`);
-      const normalizedSrc = normalizeGalleryUrl(src, "story");
-      if (img && normalizedSrc) img.src = normalizedSrc;
+      applyImageWithFallback(img, src, {
+        purpose: "story",
+        fallbackSrc: `assets/photos/foto-${index + 1}.svg`
+      });
     });
   }
 
