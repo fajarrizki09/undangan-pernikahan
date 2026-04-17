@@ -578,36 +578,85 @@ h2 {
 .event-grid {
   margin-top: 22px;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
-  max-width: 640px;
+  max-width: 920px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .event-item {
-  border: 1px dashed rgba(79, 119, 100, 0.34);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.62);
-  padding: 18px;
+  position: relative;
+  border: 1px solid rgba(79, 119, 100, 0.22);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 10% -4%, rgba(212, 228, 217, 0.55), transparent 35%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.84), rgba(247, 241, 233, 0.7));
+  padding: 18px 18px 16px;
+  box-shadow: 0 14px 24px rgba(41, 62, 52, 0.1);
+}
+
+.event-item::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 0;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6f9882, #d8b07d);
+  opacity: 0.82;
 }
 
 .event-tag {
   display: inline-block;
-  margin: 0 0 8px;
-  padding: 5px 10px;
+  margin: 0 0 10px;
+  padding: 5px 11px;
   border-radius: 999px;
-  background: #e3efe6;
-  color: #466655;
+  background: #e7f1ea;
+  color: #456453;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 
-.event-item p {
+.event-item h3 {
+  font-size: clamp(1.55rem, 3.1vw, 2rem);
+  line-height: 1.08;
+  margin-bottom: 12px;
+}
+
+.event-meta {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.event-meta p {
+  margin: 0;
+  display: grid;
+  gap: 2px;
   color: var(--muted);
-  line-height: 1.7;
+  line-height: 1.5;
+}
+
+.event-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #5f756a;
+  font-weight: 700;
+}
+
+.event-meta p span:last-child {
+  color: #4d6157;
+  font-size: 1.04rem;
+  font-weight: 600;
+}
+
+.event-item.is-hidden {
+  display: none;
 }
 
 .map-grid {
@@ -637,7 +686,7 @@ h2 {
 
 .text-link {
   display: inline-block;
-  margin-top: 4px;
+  margin-top: 12px;
   color: var(--sage);
   font-weight: 700;
   text-decoration: none;

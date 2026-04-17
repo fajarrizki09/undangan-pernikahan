@@ -580,6 +580,9 @@ function applyWeddingConfig() {
     bgMusic.src = resolvedMusicUrl;
   }
 
+  const akadCard = document.getElementById("akadCard");
+  const resepsiCard = document.getElementById("resepsiCard");
+
   if (currentConfig.akad) {
     setText("akadDate", currentConfig.akad.date);
     setText("akadTime", currentConfig.akad.time);
@@ -587,6 +590,15 @@ function applyWeddingConfig() {
     setLink("akadMap", currentConfig.akad.mapUrl);
     setLink("akadMapOpen", currentConfig.akad.mapUrl);
     setIframeSrc("akadMapEmbed", buildEmbedUrl(currentConfig.akad.mapUrl, currentConfig.akad.venue));
+
+    const hasAkadValue = Boolean(
+      String(currentConfig.akad.date || "").trim() ||
+      String(currentConfig.akad.time || "").trim() ||
+      String(currentConfig.akad.venue || "").trim()
+    );
+    if (akadCard) akadCard.classList.toggle("is-hidden", !hasAkadValue);
+  } else if (akadCard) {
+    akadCard.classList.add("is-hidden");
   }
 
   if (currentConfig.resepsi) {
@@ -596,6 +608,15 @@ function applyWeddingConfig() {
     setLink("resepsiMap", currentConfig.resepsi.mapUrl);
     setLink("resepsiMapOpen", currentConfig.resepsi.mapUrl);
     setIframeSrc("resepsiMapEmbed", buildEmbedUrl(currentConfig.resepsi.mapUrl, currentConfig.resepsi.venue));
+
+    const hasResepsiValue = Boolean(
+      String(currentConfig.resepsi.date || "").trim() ||
+      String(currentConfig.resepsi.time || "").trim() ||
+      String(currentConfig.resepsi.venue || "").trim()
+    );
+    if (resepsiCard) resepsiCard.classList.toggle("is-hidden", !hasResepsiValue);
+  } else if (resepsiCard) {
+    resepsiCard.classList.add("is-hidden");
   }
 
   if (Array.isArray(currentConfig.galleryPhotos)) {
