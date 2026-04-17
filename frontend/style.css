@@ -731,6 +731,140 @@ h2 {
   margin-top: 18px;
   display: grid;
   gap: 12px;
+  border: 1px solid rgba(79, 119, 100, 0.2);
+  border-radius: 18px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.8), rgba(245, 238, 228, 0.65));
+  padding: 16px;
+}
+
+.rsvp-pill-row {
+  margin: 14px auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.rsvp-pill-row span {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(79, 119, 100, 0.24);
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #4f665a;
+}
+
+.rsvp-layout {
+  margin-top: 14px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  align-items: start;
+}
+
+.rsvp-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rsvp-grid label:last-child {
+  grid-column: 1 / -1;
+}
+
+.rsvp-submit {
+  width: 100%;
+}
+
+.wishes-panel {
+  border: 1px solid rgba(79, 119, 100, 0.2);
+  border-radius: 18px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.82), rgba(238, 248, 243, 0.62));
+  padding: 14px;
+}
+
+.wishes-head h3 {
+  margin: 0;
+  font-size: clamp(1.2rem, 2.6vw, 1.6rem);
+}
+
+.wishes-head p {
+  margin: 4px 0 0;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.wishes-list {
+  margin-top: 10px;
+  max-height: 380px;
+  overflow: auto;
+  scroll-behavior: smooth;
+  padding-right: 4px;
+  display: grid;
+  gap: 10px;
+}
+
+.wishes-item {
+  border: 1px solid rgba(79, 119, 100, 0.2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 10px 12px;
+}
+
+.wishes-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wishes-item-head strong {
+  color: #365444;
+  font-size: 0.96rem;
+}
+
+.wish-presence {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 4px 8px;
+  border: 1px solid rgba(79, 119, 100, 0.2);
+  color: #476454;
+  background: #edf5ef;
+}
+
+.wish-presence.absent {
+  color: #8c3f3f;
+  background: #f9ecec;
+  border-color: rgba(140, 63, 63, 0.2);
+}
+
+.wish-text {
+  margin: 8px 0 0;
+  color: #42574d;
+  line-height: 1.65;
+}
+
+.wish-time {
+  margin: 8px 0 0;
+  font-size: 0.73rem;
+  color: #708579;
+}
+
+.wishes-empty {
+  margin: 0;
+  border: 1px dashed rgba(79, 119, 100, 0.26);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  color: #607569;
+  background: rgba(255, 255, 255, 0.68);
 }
 
 label {
@@ -851,6 +985,28 @@ body.is-loading .page-loader {
   margin-top: 8px;
   min-height: 1.3rem;
   color: var(--muted);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(79, 119, 100, 0.18);
+}
+
+.status.is-success {
+  color: #2f5b48;
+  border-color: rgba(47, 91, 72, 0.35);
+  background: rgba(218, 238, 226, 0.78);
+}
+
+.status.is-error {
+  color: #8c3f3f;
+  border-color: rgba(140, 63, 63, 0.28);
+  background: rgba(248, 225, 225, 0.78);
+}
+
+.status.is-loading {
+  color: #55695f;
+  border-color: rgba(85, 105, 95, 0.22);
+  background: rgba(237, 243, 239, 0.74);
 }
 
 .footer {
@@ -997,6 +1153,14 @@ body.is-loading .page-loader {
   .topbar,
   .card {
     backdrop-filter: none;
+  }
+
+  .rsvp-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rsvp-layout {
+    grid-template-columns: 1fr;
   }
 
   .hero-cloud-photo {

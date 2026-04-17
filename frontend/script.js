@@ -1,6 +1,9 @@
 const form = document.getElementById("rsvpForm");
 const statusText = document.getElementById("formStatus");
 const inputNama = document.getElementById("inputNama");
+const submitRsvpBtn = form ? form.querySelector("button[type='submit']") : null;
+const wishesList = document.getElementById("wishesList");
+const wishesMeta = document.getElementById("wishesMeta");
 
 const cdDays = document.getElementById("cdDays");
 const cdHours = document.getElementById("cdHours");
@@ -26,6 +29,7 @@ const addToCalendarLink = document.getElementById("addToCalendarLink");
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isSmallScreen = window.matchMedia("(max-width: 860px)").matches;
 const isLowPowerDevice = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || isSmallScreen;
+const isMobileViewport = window.matchMedia("(max-width: 768px)").matches;
 
 const particleState = {
   leafTimer: null,
@@ -39,6 +43,8 @@ const musicState = {
   loopStartSec: null,
   loopEndSec: null
 };
+let wishesAutoScrollTimer = null;
+let wishesAutoPauseUntil = 0;
 
 let currentConfig = {
   ...WEDDING_CONFIG,
@@ -231,14 +237,149 @@ function setLoaderMessage(message, allowRetry) {
   if (loaderRetry) loaderRetry.hidden = !allowRetry;
 }
 
-function normalizeGalleryUrl(url) {
+function setFormStatus(message, type) {
+  if (!statusText) return;
+  statusText.textContent = message || "";
+  statusText.classList.remove("is-loading", "is-success", "is-error");
+  if (type) statusText.classList.add(type);
+}
+
+function stopWishesAutoScroll() {
+  if (!wishesAutoScrollTimer) return;
+  clearInterval(wishesAutoScrollTimer);
+  wishesAutoScrollTimer = null;
+}
+
+function startWishesAutoScroll() {
+  if (!wishesList || prefersReducedMotion) return;
+  stopWishesAutoScroll();
+
+  const maxScroll = wishesList.scrollHeight - wishesList.clientHeight;
+  if (maxScroll <= 10) return;
+
+  wishesAutoScrollTimer = window.setInterval(() => {
+    if (!wishesList || document.hidden) return;
+    if (Date.now() < wishesAutoPauseUntil) return;
+    if (wishesList.matches(":hover")) return;
+
+    const max = wishesList.scrollHeight - wishesList.clientHeight;
+    if (max <= 10) return;
+
+    const next = wishesList.scrollTop + 1;
+    wishesList.scrollTop = next >= max ? 0 : next;
+  }, 46);
+}
+
+function refreshWishesAutoScroll() {
+  stopWishesAutoScroll();
+  window.setTimeout(startWishesAutoScroll, 380);
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function formatWishTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  try {
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(date);
+  } catch (error) {
+    return "";
+  }
+}
+
+function renderWishes(wishes) {
+  if (!wishesList) return;
+
+  const rows = Array.isArray(wishes) ? wishes : [];
+  if (!rows.length) {
+    wishesList.innerHTML = '<p class="wishes-empty">Belum ada ucapan. Jadilah yang pertama mengirim doa terbaik.</p>';
+    if (wishesMeta) wishesMeta.textContent = "0 ucapan ditampilkan";
+    stopWishesAutoScroll();
+    return;
+  }
+
+  wishesList.innerHTML = rows.map((wish) => {
+    const name = escapeHtml(wish.nama || "Tamu Undangan");
+    const ucapan = escapeHtml(wish.ucapan || "-");
+    const hadir = String(wish.kehadiran || "").toLowerCase() === "hadir";
+    const hadirText = hadir ? "Hadir" : "Tidak Hadir";
+    const hadirClass = hadir ? "" : " absent";
+    const waktu = formatWishTime(wish.waktu);
+
+    return `
+      <article class="wishes-item">
+        <div class="wishes-item-head">
+          <strong>${name}</strong>
+          <span class="wish-presence${hadirClass}">${hadirText}</span>
+        </div>
+        <p class="wish-text">${ucapan}</p>
+        ${waktu ? `<p class="wish-time">${escapeHtml(waktu)}</p>` : ""}
+      </article>
+    `;
+  }).join("");
+
+  if (wishesMeta) wishesMeta.textContent = `${rows.length} ucapan terbaru`;
+  refreshWishesAutoScroll();
+}
+
+async function loadWishes() {
+  if (!wishesList) return;
+
+  if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
+    renderWishes([]);
+    if (wishesMeta) wishesMeta.textContent = "Sambungkan backend untuk menampilkan ucapan";
+    return;
+  }
+
+  if (wishesMeta) wishesMeta.textContent = "Memuat ucapan...";
+
+  try {
+    const url = new URL(RSVP_API_URL);
+    url.searchParams.set("action", "wishes");
+    url.searchParams.set("limit", "8");
+    url.searchParams.set("_ts", String(Date.now()));
+
+    const response = await fetchWithTimeout(url.toString(), { cache: "no-store" }, 9000);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Gagal memuat ucapan");
+    }
+
+    renderWishes(result.wishes || []);
+  } catch (error) {
+    renderWishes([]);
+    if (wishesMeta) wishesMeta.textContent = "Ucapan belum bisa dimuat saat ini";
+  }
+}
+
+function normalizeGalleryUrl(url, purpose = "gallery") {
   const clean = String(url || "").trim();
   if (!clean) return "";
 
   const fileId = extractDriveFileId(clean);
 
   if (clean.includes("drive.google.com") && fileId) {
-    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`;
+    let size = 1400;
+    if (purpose === "hero") size = isMobileViewport ? 1280 : 1800;
+    if (purpose === "story") size = isMobileViewport ? 720 : 980;
+    if (purpose === "gallery") size = isMobileViewport ? 960 : 1400;
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`;
   }
 
   return clean;
@@ -269,7 +410,7 @@ function applyHeroCloudPhoto() {
 
   const gallerySource = Array.isArray(currentConfig.galleryPhotos) ? currentConfig.galleryPhotos[0] : "";
   const rawSource = String(currentConfig.heroBackgroundPhoto || gallerySource || "assets/photos/foto-1.svg").trim();
-  const source = normalizeGalleryUrl(rawSource);
+  const source = normalizeGalleryUrl(rawSource, "hero");
   if (!source) return;
 
   const safeUrl = source.replace(/"/g, '\\"');
@@ -384,15 +525,21 @@ function applyWeddingConfig() {
   if (Array.isArray(currentConfig.galleryPhotos)) {
     currentConfig.galleryPhotos.forEach((src, index) => {
       const img = document.getElementById(`photo${index + 1}`);
-      const normalizedSrc = normalizeGalleryUrl(src);
-      if (img && normalizedSrc) img.src = normalizedSrc;
+      const normalizedSrc = normalizeGalleryUrl(src, "gallery");
+      if (img && normalizedSrc) {
+        if (index < 2) {
+          img.loading = "eager";
+          img.fetchPriority = "high";
+        }
+        img.src = normalizedSrc;
+      }
     });
   }
 
   if (Array.isArray(currentConfig.loveStoryPhotos)) {
     currentConfig.loveStoryPhotos.slice(0, 3).forEach((src, index) => {
       const img = document.getElementById(`storyPhoto${index + 1}`);
-      const normalizedSrc = normalizeGalleryUrl(src);
+      const normalizedSrc = normalizeGalleryUrl(src, "story");
       if (img && normalizedSrc) img.src = normalizedSrc;
     });
   }
@@ -792,7 +939,7 @@ if (form) {
     event.preventDefault();
 
     if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
-      statusText.textContent = "URL backend belum diisi pada config.js";
+      setFormStatus("URL backend belum diisi pada config.js", "is-error");
       return;
     }
 
@@ -804,7 +951,8 @@ if (form) {
       ucapan: formData.get("ucapan")?.toString().trim() || "-"
     };
 
-    statusText.textContent = "Mengirim RSVP...";
+    setFormStatus("Mengirim RSVP...", "is-loading");
+    if (submitRsvpBtn) submitRsvpBtn.disabled = true;
 
     try {
       const response = await fetchWithTimeout(RSVP_API_URL, {
@@ -823,11 +971,24 @@ if (form) {
 
       form.reset();
       applyGuestName();
-      statusText.textContent = "RSVP berhasil dikirim. Terima kasih.";
+      setFormStatus("RSVP berhasil dikirim. Terima kasih.", "is-success");
+      loadWishes();
     } catch (error) {
-      statusText.textContent = `Terjadi kesalahan: ${error.message}`;
+      setFormStatus(`Terjadi kesalahan: ${error.message}`, "is-error");
+    } finally {
+      if (submitRsvpBtn) submitRsvpBtn.disabled = false;
     }
   });
+}
+
+if (wishesList) {
+  const pauseAutoScroll = () => {
+    wishesAutoPauseUntil = Date.now() + 4500;
+  };
+
+  wishesList.addEventListener("wheel", pauseAutoScroll, { passive: true });
+  wishesList.addEventListener("touchstart", pauseAutoScroll, { passive: true });
+  wishesList.addEventListener("touchmove", pauseAutoScroll, { passive: true });
 }
 
 async function initPage() {
@@ -847,6 +1008,7 @@ async function initPage() {
 
     applyWeddingConfig();
     applyGuestName();
+    loadWishes();
     updateCountdown();
     setupRevealAnimation();
     setupMusicControl();

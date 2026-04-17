@@ -7,6 +7,8 @@
   <meta name="description" content="Undangan pernikahan digital dengan RSVP online." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://drive.google.com" crossorigin>
+  <link rel="preconnect" href="https://drive.usercontent.google.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -137,8 +139,8 @@
       <h2>Galeri Momen</h2>
       <p class="lead">Potret perjalanan kami menuju hari istimewa.</p>
       <div class="gallery-grid">
-        <img id="photo1" src="assets/photos/foto-1.svg" alt="Foto pasangan 1" loading="lazy" decoding="async" />
-        <img id="photo2" src="assets/photos/foto-2.svg" alt="Foto pasangan 2" loading="lazy" decoding="async" />
+        <img id="photo1" src="assets/photos/foto-1.svg" alt="Foto pasangan 1" loading="eager" fetchpriority="high" decoding="async" />
+        <img id="photo2" src="assets/photos/foto-2.svg" alt="Foto pasangan 2" loading="eager" fetchpriority="high" decoding="async" />
         <img id="photo3" src="assets/photos/foto-3.svg" alt="Foto pasangan 3" loading="lazy" decoding="async" />
         <img id="photo4" src="assets/photos/foto-4.svg" alt="Foto pasangan 4" loading="lazy" decoding="async" />
         <img id="photo5" src="assets/photos/foto-5.svg" alt="Foto pasangan 5" loading="lazy" decoding="async" />
@@ -188,29 +190,49 @@
     <section id="rsvp" class="section card reveal">
       <h2>RSVP & Ucapan</h2>
       <p class="lead">Mohon konfirmasi kehadiran Anda melalui form berikut.</p>
-      <form id="rsvpForm" class="rsvp-form">
-        <label>
-          Nama
-          <input type="text" id="inputNama" name="nama" required />
-        </label>
-        <label>
-          Jumlah Tamu
-          <input type="number" name="jumlah" min="1" max="10" required />
-        </label>
-        <label>
-          Kehadiran
-          <select name="kehadiran" required>
-            <option value="Hadir">Hadir</option>
-            <option value="Tidak Hadir">Tidak Hadir</option>
-          </select>
-        </label>
-        <label>
-          Ucapan
-          <textarea name="ucapan" rows="4" placeholder="Tulis doa dan ucapan..."></textarea>
-        </label>
-        <button type="submit" class="btn">Kirim RSVP</button>
-      </form>
-      <p id="formStatus" class="status" aria-live="polite"></p>
+      <div class="rsvp-pill-row" aria-hidden="true">
+        <span>Konfirmasi cepat</span>
+        <span>Ucapan & doa</span>
+        <span>Data aman tersimpan</span>
+      </div>
+      <div class="rsvp-layout">
+        <form id="rsvpForm" class="rsvp-form">
+          <div class="rsvp-grid">
+            <label>
+              Nama Tamu
+              <input type="text" id="inputNama" name="nama" required />
+            </label>
+            <label>
+              Jumlah Tamu
+              <input type="number" name="jumlah" min="1" max="10" required />
+            </label>
+            <label>
+              Kehadiran
+              <select name="kehadiran" required>
+                <option value="Hadir">Hadir</option>
+                <option value="Tidak Hadir">Tidak Hadir</option>
+              </select>
+            </label>
+            <label>
+              Ucapan & Doa
+              <textarea name="ucapan" rows="4" placeholder="Tulis doa dan ucapan terbaik..."></textarea>
+            </label>
+          </div>
+          <button type="submit" class="btn rsvp-submit">Kirim RSVP</button>
+          <p id="formStatus" class="status" aria-live="polite"></p>
+        </form>
+
+        <aside class="wishes-panel">
+          <div class="wishes-head">
+            <h3>Ucapan Terbaru</h3>
+            <p id="wishesMeta">Memuat ucapan...</p>
+          </div>
+          <div id="wishesList" class="wishes-list" aria-live="polite">
+            <p class="wishes-empty">Belum ada ucapan.</p>
+          </div>
+        </aside>
+
+      </div>
     </section>
   </main>
 
