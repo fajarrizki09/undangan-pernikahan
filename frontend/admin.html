@@ -317,6 +317,58 @@
         <textarea id="guestLinks" rows="8" readonly></textarea>
       </label>
     </section>
+
+    <section class="card">
+      <h2>RSVP & Ucapan Masuk</h2>
+      <div class="actions">
+        <button id="btnLoadRsvps" class="btn" type="button">Muat RSVP</button>
+      </div>
+      <p class="status" id="statusRsvps"></p>
+      <div class="grid two">
+        <label>
+          Cari RSVP / Ucapan
+          <input id="rsvpSearch" type="text" placeholder="Ketik nama atau isi ucapan..." />
+        </label>
+        <label>
+          Filter Kehadiran
+          <select id="rsvpKehadiranFilter">
+            <option value="all">Semua</option>
+            <option value="Hadir">Hadir</option>
+            <option value="Tidak Hadir">Tidak Hadir</option>
+          </select>
+        </label>
+      </div>
+      <div class="grid two">
+        <label>
+          Data per Halaman
+          <select id="rsvpPageSize">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+          </select>
+        </label>
+      </div>
+      <div class="guest-table-wrap">
+        <table class="guest-table">
+          <thead>
+            <tr>
+              <th>Waktu</th>
+              <th>Nama</th>
+              <th>Jumlah</th>
+              <th>Kehadiran</th>
+              <th>Ucapan</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="rsvpTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pager-row">
+        <button id="btnRsvpPrev" class="btn btn-ghost" type="button">Sebelumnya</button>
+        <p id="rsvpPageInfo">Halaman 1 / 1</p>
+        <button id="btnRsvpNext" class="btn btn-ghost" type="button">Berikutnya</button>
+      </div>
+    </section>
   </main>
 
   <script src="config.js"></script>

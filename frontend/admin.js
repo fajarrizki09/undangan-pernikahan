@@ -61,6 +61,7 @@ const invitationBaseUrlInput = document.getElementById("invitationBaseUrl");
 const statusConn = document.getElementById("statusConn");
 const statusConfig = document.getElementById("statusConfig");
 const statusGuests = document.getElementById("statusGuests");
+const statusRsvps = document.getElementById("statusRsvps");
 
 const guestInput = document.getElementById("guestInput");
 const guestSearch = document.getElementById("guestSearch");
@@ -72,6 +73,13 @@ const btnGuestPrev = document.getElementById("btnGuestPrev");
 const btnGuestNext = document.getElementById("btnGuestNext");
 const guestLinks = document.getElementById("guestLinks");
 const guestTableBody = document.getElementById("guestTableBody");
+const rsvpSearch = document.getElementById("rsvpSearch");
+const rsvpKehadiranFilter = document.getElementById("rsvpKehadiranFilter");
+const rsvpPageSize = document.getElementById("rsvpPageSize");
+const rsvpPageInfo = document.getElementById("rsvpPageInfo");
+const btnRsvpPrev = document.getElementById("btnRsvpPrev");
+const btnRsvpNext = document.getElementById("btnRsvpNext");
+const rsvpTableBody = document.getElementById("rsvpTableBody");
 const photoFilesInput = document.getElementById("photoFiles");
 const heroPhotoFileInput = document.getElementById("heroPhotoFile");
 const loveStoryPhotoFilesInput = document.getElementById("loveStoryPhotoFiles");
@@ -95,11 +103,13 @@ document.getElementById("btnUploadMusic").addEventListener("click", uploadMusicT
 document.getElementById("btnImportGuests").addEventListener("click", importGuests);
 document.getElementById("btnLoadGuests").addEventListener("click", loadGuests);
 document.getElementById("btnExportGuestsCsv").addEventListener("click", exportGuestsCsv);
+document.getElementById("btnLoadRsvps").addEventListener("click", loadRsvps);
 document.getElementById("btnGenerateHeroDate").addEventListener("click", generateHeroDatePlaceFromInputs);
 document.getElementById("btnApplyGallerySelection").addEventListener("click", applySelectedGalleryUrls);
 
 apiUrlInput.value = RSVP_API_URL;
 let currentGuests = [];
+let currentRsvps = [];
 let selectedGalleryUrls = new Set();
 let guestState = {
   total: 0,
@@ -109,6 +119,13 @@ let guestState = {
   groups: [],
   statuses: ["active", "vip", "disabled"]
 };
+let rsvpState = {
+  total: 0,
+  page: 1,
+  pageSize: 20,
+  totalPages: 1
+};
+let rsvpFullMode = true;
 
 function getDefaultInvitationBaseUrl() {
   const fromConfig = (ADMIN_CONFIG && ADMIN_CONFIG.invitationBaseUrl) || "";
@@ -1453,6 +1470,165 @@ async function loadGuests() {
   }
 }
 
+function formatDateTime(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  try {
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(date);
+  } catch (error) {
+    return String(value);
+  }
+}
+
+function renderRsvpMeta() {
+  if (!rsvpPageInfo) return;
+  rsvpPageInfo.textContent = `Halaman ${rsvpState.page} / ${rsvpState.totalPages} (${rsvpState.total} RSVP)`;
+  if (btnRsvpPrev) btnRsvpPrev.disabled = rsvpState.page <= 1;
+  if (btnRsvpNext) btnRsvpNext.disabled = rsvpState.page >= rsvpState.totalPages;
+}
+
+async function deleteRsvpByRow(rowNumber) {
+  try {
+    if (!rsvpFullMode) {
+      throw new Error("Hapus RSVP butuh update Code.gs terbaru terlebih dahulu");
+    }
+    const adminKey = getAdminKeyOrThrow();
+    if (!window.confirm("Hapus data RSVP ini?")) return;
+
+    setStatus(statusRsvps, "Menghapus RSVP...");
+    await postApi({
+      action: "deleteRsvp",
+      adminKey,
+      rowNumber
+    });
+
+    setStatus(statusRsvps, "RSVP berhasil dihapus");
+    await loadRsvps();
+  } catch (error) {
+    setStatus(statusRsvps, `Error: ${error.message}`);
+  }
+}
+
+function renderRsvpTable(rows) {
+  if (!rsvpTableBody) return;
+  rsvpTableBody.innerHTML = "";
+
+  if (!rows.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 6;
+    cell.textContent = "Belum ada data RSVP.";
+    row.appendChild(cell);
+    rsvpTableBody.appendChild(row);
+    return;
+  }
+
+  rows.forEach((item) => {
+    const row = document.createElement("tr");
+
+    const waktuCell = document.createElement("td");
+    waktuCell.textContent = formatDateTime(item.waktu);
+
+    const namaCell = document.createElement("td");
+    namaCell.textContent = item.nama || "-";
+
+    const jumlahCell = document.createElement("td");
+    jumlahCell.textContent = String(item.jumlah || 0);
+
+    const kehadiranCell = document.createElement("td");
+    kehadiranCell.textContent = item.kehadiran || "-";
+
+    const ucapanCell = document.createElement("td");
+    ucapanCell.textContent = item.ucapan || "-";
+
+    const actionCell = document.createElement("td");
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn-mini";
+    deleteBtn.textContent = rsvpFullMode ? "Hapus" : "Read Only";
+    deleteBtn.disabled = !rsvpFullMode;
+    if (rsvpFullMode) {
+      deleteBtn.addEventListener("click", () => deleteRsvpByRow(item.rowNumber));
+    }
+    actionCell.appendChild(deleteBtn);
+
+    row.appendChild(waktuCell);
+    row.appendChild(namaCell);
+    row.appendChild(jumlahCell);
+    row.appendChild(kehadiranCell);
+    row.appendChild(ucapanCell);
+    row.appendChild(actionCell);
+    rsvpTableBody.appendChild(row);
+  });
+}
+
+function refreshRsvpViews() {
+  renderRsvpTable(currentRsvps);
+  renderRsvpMeta();
+}
+
+async function loadRsvps() {
+  try {
+    rsvpFullMode = true;
+    const adminKey = getAdminKeyOrThrow();
+    setStatus(statusRsvps, "Memuat RSVP...");
+
+    const result = await postApi({
+      action: "listRsvps",
+      adminKey,
+      search: String((rsvpSearch && rsvpSearch.value) || "").trim(),
+      kehadiran: String((rsvpKehadiranFilter && rsvpKehadiranFilter.value) || "all").trim(),
+      page: rsvpState.page,
+      pageSize: Number((rsvpPageSize && rsvpPageSize.value) || rsvpState.pageSize || 20)
+    });
+
+    currentRsvps = Array.isArray(result.rsvps) ? result.rsvps : [];
+    rsvpState.total = Number(result.total || currentRsvps.length);
+    rsvpState.page = Number(result.page || 1);
+    rsvpState.pageSize = Number(result.pageSize || rsvpState.pageSize || 20);
+    rsvpState.totalPages = Number(result.totalPages || 1);
+    refreshRsvpViews();
+    setStatus(statusRsvps, `Berhasil memuat ${currentRsvps.length} data RSVP (total ${rsvpState.total})`);
+  } catch (error) {
+    try {
+      const fallbackUrl = new URL(RSVP_API_URL);
+      fallbackUrl.searchParams.set("action", "wishes");
+      fallbackUrl.searchParams.set("limit", String(Number((rsvpPageSize && rsvpPageSize.value) || 20)));
+      fallbackUrl.searchParams.set("_ts", String(Date.now()));
+
+      const response = await fetch(fallbackUrl.toString(), { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Gagal memuat fallback ucapan");
+      }
+
+      currentRsvps = (result.wishes || []).map((item, index) => ({
+        rowNumber: index + 2,
+        waktu: item.waktu,
+        nama: item.nama,
+        jumlah: "-",
+        kehadiran: item.kehadiran || "-",
+        ucapan: item.ucapan || "-"
+      }));
+      rsvpState.total = currentRsvps.length;
+      rsvpState.page = 1;
+      rsvpState.totalPages = 1;
+      rsvpFullMode = false;
+      refreshRsvpViews();
+      setStatus(statusRsvps, "Mode fallback aktif: menampilkan data ucapan. Update Code.gs untuk manajemen RSVP penuh.");
+    } catch (fallbackError) {
+      setStatus(statusRsvps, `Error: ${error.message}`);
+    }
+  }
+}
+
 if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
   setStatus(statusConn, "Isi RSVP_API_URL di config.js agar admin panel aktif.");
 } else {
@@ -1529,6 +1705,36 @@ if (btnGuestNext) {
     loadGuests();
   });
 }
+if (rsvpSearch) {
+  rsvpSearch.addEventListener("input", () => {
+    rsvpState.page = 1;
+    loadRsvps();
+  });
+}
+if (rsvpKehadiranFilter) {
+  rsvpKehadiranFilter.addEventListener("change", () => {
+    rsvpState.page = 1;
+    loadRsvps();
+  });
+}
+if (rsvpPageSize) {
+  rsvpPageSize.addEventListener("change", () => {
+    rsvpState.page = 1;
+    loadRsvps();
+  });
+}
+if (btnRsvpPrev) {
+  btnRsvpPrev.addEventListener("click", () => {
+    rsvpState.page = Math.max(rsvpState.page - 1, 1);
+    loadRsvps();
+  });
+}
+if (btnRsvpNext) {
+  btnRsvpNext.addEventListener("click", () => {
+    rsvpState.page = Math.min(rsvpState.page + 1, rsvpState.totalPages || 1);
+    loadRsvps();
+  });
+}
 if (btnHeroFromGallery) {
   btnHeroFromGallery.addEventListener("click", () => {
     const galleryUrls = getGalleryUrls();
@@ -1553,4 +1759,5 @@ if (btnLoveStoryFromGallery) {
 if (RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
   loadConfigFromServer();
   loadGuests();
+  loadRsvps();
 }

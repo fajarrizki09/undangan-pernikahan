@@ -49,6 +49,7 @@ const galleryState = {
 };
 let wishesAutoScrollTimer = null;
 let wishesAutoPauseUntil = 0;
+let wishesRefreshTimer = null;
 
 let currentConfig = {
   ...WEDDING_CONFIG,
@@ -510,23 +511,47 @@ async function loadWishes() {
   if (wishesMeta) wishesMeta.textContent = "Memuat ucapan...";
 
   try {
-    const url = new URL(RSVP_API_URL);
-    url.searchParams.set("action", "wishes");
-    url.searchParams.set("limit", "8");
-    url.searchParams.set("_ts", String(Date.now()));
+    const timeouts = [9000, 16000, 26000];
+    let result = null;
+    let loaded = false;
 
-    const response = await fetchWithTimeout(url.toString(), { cache: "no-store" }, 9000);
-    const result = await response.json();
+    for (let i = 0; i < timeouts.length; i += 1) {
+      const url = new URL(RSVP_API_URL);
+      url.searchParams.set("action", "wishes");
+      url.searchParams.set("limit", "8");
+      url.searchParams.set("_ts", String(Date.now()));
 
-    if (!response.ok || !result.success) {
-      throw new Error(result.message || "Gagal memuat ucapan");
+      try {
+        const response = await fetchWithTimeout(url.toString(), { cache: "no-store" }, timeouts[i]);
+        const json = await response.json();
+        if (!response.ok || !json.success) {
+          throw new Error(json.message || "Gagal memuat ucapan");
+        }
+        result = json;
+        loaded = true;
+        break;
+      } catch (error) {
+        if (i === timeouts.length - 1) throw error;
+      }
     }
 
-    renderWishes(result.wishes || []);
+    if (loaded) {
+      renderWishes((result && result.wishes) || []);
+    }
   } catch (error) {
-    renderWishes([]);
     if (wishesMeta) wishesMeta.textContent = "Ucapan belum bisa dimuat saat ini";
   }
+}
+
+function startWishesRefresh() {
+  if (wishesRefreshTimer) {
+    clearInterval(wishesRefreshTimer);
+    wishesRefreshTimer = null;
+  }
+  wishesRefreshTimer = window.setInterval(() => {
+    if (document.hidden) return;
+    loadWishes();
+  }, 45000);
 }
 
 function normalizeGalleryUrl(url, purpose = "gallery") {
@@ -1425,6 +1450,7 @@ async function initPage() {
     setupVisibilityOptimization();
     setupInvitationGate();
     startTimers();
+    startWishesRefresh();
 
     window.requestAnimationFrame(() => {
       document.body.classList.remove("is-loading");
