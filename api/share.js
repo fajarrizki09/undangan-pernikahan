@@ -31,7 +31,11 @@ function normalizeConfig(config) {
   const heroBackgroundPhoto = String(source.heroBackgroundPhoto || "").trim();
   const galleryPhotos = Array.isArray(source.galleryPhotos) ? source.galleryPhotos : [];
   const fallbackGalleryPhoto = String(galleryPhotos[0] || "").trim();
-  const image = heroBackgroundPhoto || fallbackGalleryPhoto || String(process.env.SHARE_DEFAULT_IMAGE || "").trim();
+  const image =
+    heroBackgroundPhoto ||
+    fallbackGalleryPhoto ||
+    String(process.env.SHARE_DEFAULT_IMAGE || "").trim() ||
+    "/frontend/assets/photos/foto-1.svg";
   return { title, description, image };
 }
 
@@ -123,11 +127,15 @@ export default async function handler(req, res) {
   const seo = await getSeoConfig(apiUrl);
   const imageUrl = resolveImageUrl(seo.image, origin);
 
-  const toRaw = String((req.query && req.query.to) || "").trim();
+  const toRaw = String((req.query && req.query.to) || "")
+    .replace(/\+/g, " ")
+    .trim();
   const redirectUrl = new URL("/frontend/", origin || "https://example.com");
-  if (toRaw) redirectUrl.searchParams.set("to", toRaw);
+  if (toRaw) {
+    redirectUrl.search = `?to=${encodeURIComponent(toRaw)}`;
+  }
+  // Samakan URL share untuk semua link tamu agar metadata preview konsisten.
   const shareUrl = new URL("/", origin || "https://example.com");
-  if (toRaw) shareUrl.searchParams.set("to", toRaw);
 
   const title = escapeHtml(seo.title);
   const desc = escapeHtml(seo.description);
