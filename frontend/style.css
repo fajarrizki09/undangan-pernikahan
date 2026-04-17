@@ -29,6 +29,47 @@ body {
     linear-gradient(165deg, #fcfaf7, var(--bg));
 }
 
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  width: 340px;
+  height: 340px;
+  opacity: 0.34;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+body::before {
+  left: -72px;
+  top: -78px;
+  transform: rotate(-12deg);
+  background-image:
+    radial-gradient(circle at 26% 28%, rgba(255, 255, 255, 0.92) 0 10px, rgba(255, 255, 255, 0) 11px),
+    radial-gradient(ellipse at 30% 30%, rgba(255, 213, 233, 0.85) 0 18px, rgba(255, 213, 233, 0) 19px),
+    radial-gradient(ellipse at 41% 21%, rgba(255, 226, 240, 0.88) 0 14px, rgba(255, 226, 240, 0) 15px),
+    radial-gradient(ellipse at 18% 41%, rgba(245, 201, 222, 0.84) 0 16px, rgba(245, 201, 222, 0) 17px),
+    radial-gradient(circle at 38% 44%, rgba(230, 187, 209, 0.52) 0 8px, rgba(230, 187, 209, 0) 9px),
+    radial-gradient(ellipse at 56% 53%, rgba(214, 231, 214, 0.75) 0 20px, rgba(214, 231, 214, 0) 21px),
+    radial-gradient(ellipse at 68% 60%, rgba(191, 218, 193, 0.68) 0 16px, rgba(191, 218, 193, 0) 17px);
+}
+
+body::after {
+  right: -86px;
+  bottom: -92px;
+  transform: rotate(18deg);
+  background-image:
+    radial-gradient(circle at 72% 66%, rgba(255, 255, 255, 0.9) 0 10px, rgba(255, 255, 255, 0) 11px),
+    radial-gradient(ellipse at 70% 64%, rgba(255, 215, 235, 0.86) 0 20px, rgba(255, 215, 235, 0) 21px),
+    radial-gradient(ellipse at 59% 73%, rgba(255, 225, 241, 0.86) 0 16px, rgba(255, 225, 241, 0) 17px),
+    radial-gradient(ellipse at 82% 77%, rgba(246, 204, 224, 0.84) 0 14px, rgba(246, 204, 224, 0) 15px),
+    radial-gradient(circle at 62% 58%, rgba(224, 184, 206, 0.48) 0 8px, rgba(224, 184, 206, 0) 9px),
+    radial-gradient(ellipse at 34% 30%, rgba(216, 233, 216, 0.74) 0 24px, rgba(216, 233, 216, 0) 25px),
+    radial-gradient(ellipse at 24% 39%, rgba(188, 217, 191, 0.7) 0 18px, rgba(188, 217, 191, 0) 19px);
+}
+
 body.is-loading {
   overflow: hidden;
 }
@@ -1474,6 +1515,25 @@ body.is-loading .page-loader {
 }
 
 @media (max-width: 520px) {
+  body::before,
+  body::after {
+    width: 220px;
+    height: 220px;
+    opacity: 0.34;
+  }
+
+  body::before {
+    left: -28px;
+    top: 48px;
+    transform: rotate(-10deg);
+  }
+
+  body::after {
+    right: -34px;
+    bottom: 26px;
+    transform: rotate(14deg);
+  }
+
   .topbar {
     width: calc(100vw - 14px);
     top: 7px;
@@ -1505,11 +1565,13 @@ body.is-loading .page-loader {
   }
 
   .bismillah-title {
-    font-size: clamp(1.82rem, 7.2vw, 2.18rem);
-    line-height: 1.2;
-    letter-spacing: 0.01em;
-    overflow-wrap: anywhere;
-    word-break: normal;
+    font-size: clamp(1.62rem, 6.4vw, 2rem);
+    line-height: 1.18;
+    letter-spacing: 0;
+    overflow-wrap: normal;
+    word-break: keep-all;
+    hyphens: none;
+    text-wrap: balance;
   }
 
   .mempelai-intro {
@@ -1575,6 +1637,53 @@ body.is-loading .page-loader {
     bottom: calc(12px + env(safe-area-inset-bottom));
     padding: 9px 12px;
     font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .topbar {
+    width: calc(100vw - 10px);
+    padding: 9px 7px 8px;
+    gap: 5px;
+  }
+
+  .brand {
+    font-size: 1.08rem;
+    padding: 5px 7px;
+  }
+
+  .topbar nav {
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow: hidden;
+    width: 100%;
+    padding-bottom: 0;
+  }
+
+  .topbar nav a {
+    font-size: 0.72rem;
+    flex: 0 0 auto;
+    letter-spacing: 0.01em;
+  }
+}
+
+@media (max-width: 400px) {
+  .mempelai-intro .bismillah-title {
+    max-width: none;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    font-size: clamp(1.56rem, 6vw, 1.86rem);
+  }
+
+  .mempelai-intro .lead {
+    max-width: 27ch;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    text-wrap: pretty;
   }
 }
 
