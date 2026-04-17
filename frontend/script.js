@@ -838,14 +838,14 @@ function renderGalleryCarousel(photos, autoplaySec) {
   const prev = document.createElement("button");
   prev.type = "button";
   prev.className = "gallery-nav gallery-nav-prev";
-  prev.textContent = "â€¹";
+  prev.textContent = "<";
   prev.setAttribute("aria-label", "Foto sebelumnya");
   prev.addEventListener("click", () => updateSlide(activeIndex <= 0 ? maxIndex : activeIndex - 1));
 
   const next = document.createElement("button");
   next.type = "button";
   next.className = "gallery-nav gallery-nav-next";
-  next.textContent = "â€º";
+  next.textContent = ">";
   next.setAttribute("aria-label", "Foto berikutnya");
   next.addEventListener("click", () => updateSlide(activeIndex >= maxIndex ? 0 : activeIndex + 1));
 
@@ -953,7 +953,7 @@ function formatGoogleCalendarDate(ms) {
 
 function buildCalendarEndTime(startMs) {
   const resepsiTime = String((currentConfig.resepsi && currentConfig.resepsi.time) || "").trim();
-  const rangeMatch = resepsiTime.match(/(\d{1,2})[.:](\d{2})\s*[-â€“]\s*(\d{1,2})[.:](\d{2})/);
+  const rangeMatch = resepsiTime.match(/(\d{1,2})[.:](\d{2})\s*[-\u2013]\s*(\d{1,2})[.:](\d{2})/);
   if (!rangeMatch) return startMs + (2 * 60 * 60 * 1000);
 
   const startHour = Number(rangeMatch[1]);
