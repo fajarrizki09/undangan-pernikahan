@@ -1015,11 +1015,18 @@ function renderGiftSection() {
   }
 
   giftSection.style.display = "";
+  let sectionTitleText = String(currentConfig.giftSectionTitle || "Wedding Gift").trim() || "Wedding Gift";
+  let sectionSubtitleText = String(currentConfig.giftSectionSubtitle || "").trim();
+  if (sectionTitleText.length > 60 && !sectionSubtitleText) {
+    sectionSubtitleText = sectionTitleText;
+    sectionTitleText = "Wedding Gift";
+  }
+
   if (giftSectionTitle) {
-    giftSectionTitle.textContent = String(currentConfig.giftSectionTitle || "Wedding Gift").trim() || "Wedding Gift";
+    giftSectionTitle.textContent = sectionTitleText;
   }
   if (giftSectionSubtitle) {
-    giftSectionSubtitle.textContent = String(currentConfig.giftSectionSubtitle || "").trim() || "Doa restu Anda adalah hadiah terindah.";
+    giftSectionSubtitle.textContent = sectionSubtitleText || "Doa restu Anda adalah hadiah terindah.";
   }
 
   giftAccountsList.innerHTML = "";

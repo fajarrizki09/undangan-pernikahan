@@ -1219,6 +1219,25 @@ h2 {
 .gift-section {
   display: grid;
   gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.gift-section h2 {
+  margin: 0 auto;
+  max-width: 18ch;
+  font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+  line-height: 1.08;
+  text-align: center;
+}
+
+.gift-section .lead {
+  margin: 0 auto;
+  max-width: 40ch;
+  text-align: center;
+  color: #63776c;
+  font-size: clamp(0.94rem, 2.6vw, 1.05rem);
+  line-height: 1.72;
 }
 
 .gift-accounts-list {
@@ -1230,11 +1249,21 @@ h2 {
 
 .gift-account-card {
   border: 1px solid rgba(79, 119, 100, 0.22);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.74);
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(242, 248, 244, 0.82));
   padding: 14px;
   display: grid;
-  gap: 8px;
+  gap: 9px;
+  box-shadow: 0 10px 26px rgba(45, 71, 58, 0.12);
+}
+
+.gift-account-card::before {
+  content: "";
+  display: block;
+  width: 54px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7ca38f, #c2d8c9);
 }
 
 .gift-bank-row {
@@ -1269,31 +1298,39 @@ h2 {
   margin: 0;
   font-weight: 700;
   color: #2f4239;
+  line-height: 1.15;
 }
 
 .gift-account-number {
-  margin: 0;
+  margin: 2px 0 0;
   font-weight: 700;
-  font-size: 1.12rem;
-  letter-spacing: 0.03em;
+  font-size: 1.14rem;
+  letter-spacing: 0.04em;
   word-break: break-word;
+  color: #20382d;
 }
 
 .gift-account-holder {
   margin: 0;
   color: #5d7367;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
 }
 
 .gift-copy-btn {
   width: fit-content;
-  border: 1px solid rgba(79, 119, 100, 0.32);
+  border: 1px solid rgba(79, 119, 100, 0.28);
   border-radius: 999px;
-  background: #fff;
+  background: #fffdf8;
   color: #345544;
-  padding: 7px 12px;
+  padding: 8px 14px;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gift-copy-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(50, 83, 68, 0.18);
 }
 
 label {
@@ -1641,6 +1678,33 @@ body.is-loading .page-loader {
 
   .hero-title-block {
     backdrop-filter: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .gift-section h2 {
+    font-size: clamp(1.5rem, 7.2vw, 2rem);
+    max-width: 22ch;
+  }
+
+  .gift-section .lead {
+    max-width: 34ch;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .gift-accounts-list {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .gift-account-card {
+    padding: 12px;
+  }
+
+  .gift-copy-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
