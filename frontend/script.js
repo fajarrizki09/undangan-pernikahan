@@ -153,6 +153,14 @@ function setLink(id, value) {
   if (el && value) el.href = value;
 }
 
+function setInternalAnchorLink(id, hashTarget) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.href = hashTarget || "#";
+  el.removeAttribute("target");
+  el.removeAttribute("rel");
+}
+
 function setHtml(id, value) {
   const el = document.getElementById(id);
   if (el && value) el.innerHTML = value;
@@ -165,8 +173,24 @@ function setIframeSrc(id, value) {
 
 function buildEmbedUrl(mapUrl, venue) {
   const cleanMapUrl = (mapUrl || "").trim();
-  if (cleanMapUrl.includes("google.com/maps/embed")) {
+  if (cleanMapUrl.includes("google.com/maps/embed") || cleanMapUrl.includes("output=embed")) {
     return cleanMapUrl;
+  }
+
+  const coordMatch = cleanMapUrl.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+  if (coordMatch && coordMatch[1] && coordMatch[2]) {
+    const q = `${coordMatch[1]},${coordMatch[2]}`;
+    return `https://maps.google.com/maps?q=${encodeURIComponent(q)}&t=&z=17&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  const queryFromUrlMatch = cleanMapUrl.match(/[?&](?:q|query)=(-?\d+(?:\.\d+)?(?:%2C|,)-?\d+(?:\.\d+)?)/i);
+  if (queryFromUrlMatch && queryFromUrlMatch[1]) {
+    const q = decodeURIComponent(queryFromUrlMatch[1]);
+    return `https://maps.google.com/maps?q=${encodeURIComponent(q)}&t=&z=17&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  if (cleanMapUrl) {
+    return `https://maps.google.com/maps?q=${encodeURIComponent(cleanMapUrl)}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
   }
 
   const query = encodeURIComponent((venue || "").trim());
@@ -879,7 +903,7 @@ function applyWeddingConfig() {
     setText("resepsiDate", currentConfig.resepsi.date);
     setText("resepsiTime", currentConfig.resepsi.time);
     setText("resepsiVenue", currentConfig.resepsi.venue);
-    setLink("resepsiMap", currentConfig.resepsi.mapUrl);
+    setInternalAnchorLink("resepsiMap", "#peta");
     setLink("resepsiMapOpen", currentConfig.resepsi.mapUrl);
     setIframeSrc("resepsiMapEmbed", buildEmbedUrl(currentConfig.resepsi.mapUrl, currentConfig.resepsi.venue));
 
