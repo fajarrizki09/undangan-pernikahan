@@ -35,9 +35,26 @@ function normalizeConfig(config) {
   return { title, description, image };
 }
 
+function extractDriveFileId(url) {
+  const clean = String(url || "").trim();
+  if (!clean) return "";
+
+  const idFromQuery = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (idFromQuery && idFromQuery[1]) return idFromQuery[1];
+
+  const idFromPath = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (idFromPath && idFromPath[1]) return idFromPath[1];
+
+  return "";
+}
+
 function resolveImageUrl(raw, origin) {
   const value = String(raw || "").trim();
   if (!value) return "";
+  const driveFileId = extractDriveFileId(value);
+  if (value.includes("drive.google.com") && driveFileId) {
+    return `https://lh3.googleusercontent.com/d/${driveFileId}=w1400`;
+  }
   if (/^https?:\/\//i.test(value)) return value;
   if (!origin) return "";
   if (value.startsWith("/")) return `${origin}${value}`;
@@ -130,7 +147,9 @@ export default async function handler(req, res) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${title}</title>
   <meta name="description" content="${desc}" />
+  <link rel="canonical" href="${url}" />
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Undangan Pernikahan" />
   <meta property="og:title" content="${title}" />
   <meta property="og:description" content="${desc}" />
   <meta property="og:url" content="${url}" />
@@ -138,10 +157,17 @@ export default async function handler(req, res) {
   <meta name="twitter:card" content="${imageUrl ? "summary_large_image" : "summary"}" />
   <meta name="twitter:title" content="${title}" />
   <meta name="twitter:description" content="${desc}" />
-  <meta http-equiv="refresh" content="0;url=${escapeHtml(redirectUrl.toString())}" />
 </head>
 <body>
-  <script>window.location.replace(${JSON.stringify(redirectUrl.toString())});</script>
+  <p>Sedang membuka undangan...</p>
+  <script>
+    setTimeout(function () {
+      window.location.replace(${JSON.stringify(redirectUrl.toString())});
+    }, 120);
+  </script>
+  <noscript>
+    <a href="${escapeHtml(redirectUrl.toString())}">Buka undangan</a>
+  </noscript>
 </body>
 </html>`;
 
