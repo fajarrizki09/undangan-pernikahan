@@ -692,18 +692,68 @@ function applySelectedGalleryUrls() {
   setStatus(statusConfig, `${finalUrls.length} foto dipilih untuk ditampilkan di galeri.`);
 }
 
-function normalizePreviewUrl(url) {
+function extractDriveFileId(url) {
   const clean = String(url || "").trim();
   if (!clean) return "";
 
   const idFromQuery = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (idFromQuery && idFromQuery[1]) return idFromQuery[1];
+
   const idFromPath = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  const fileId = (idFromQuery && idFromQuery[1]) || (idFromPath && idFromPath[1]);
+  if (idFromPath && idFromPath[1]) return idFromPath[1];
+
+  return "";
+}
+
+function getDrivePreviewCandidates(fileId) {
+  return [
+    `https://lh3.googleusercontent.com/d/${fileId}=w1200`,
+    `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`,
+    `https://drive.google.com/uc?export=view&id=${fileId}`
+  ];
+}
+
+function getPreviewCandidates(url) {
+  const clean = String(url || "").trim();
+  if (!clean) return [];
+
+  const fileId = extractDriveFileId(clean);
   if (clean.includes("drive.google.com") && fileId) {
-    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+    return getDrivePreviewCandidates(fileId);
   }
 
-  return clean;
+  return [clean];
+}
+
+function applyPreviewImageWithFallback(img, rawUrl) {
+  if (!img) return;
+
+  const candidates = getPreviewCandidates(rawUrl);
+  if (!candidates.length) {
+    img.removeAttribute("src");
+    return;
+  }
+
+  let index = 0;
+  const applyNext = () => {
+    const next = String(candidates[index] || "").trim();
+    if (!next) {
+      img.onerror = null;
+      return;
+    }
+    index += 1;
+    img.src = next;
+  };
+
+  img.onerror = () => {
+    if (index >= candidates.length) {
+      img.onerror = null;
+      return;
+    }
+    applyNext();
+  };
+
+  applyNext();
 }
 
 function getLoveStoryPreviewUrls() {
@@ -733,9 +783,11 @@ function renderLoveStoryPreview() {
     item.className = "story-preview-item";
 
     const img = document.createElement("img");
-    img.src = normalizePreviewUrl(url);
     img.alt = `Preview Love Story ${index + 1}`;
     img.loading = "lazy";
+    img.decoding = "async";
+    img.referrerPolicy = "no-referrer";
+    applyPreviewImageWithFallback(img, url);
 
     item.appendChild(img);
     loveStoryPreview.appendChild(item);
@@ -802,9 +854,11 @@ function renderGalleryPreview() {
     card.className = "gallery-item";
 
     const img = document.createElement("img");
-    img.src = normalizePreviewUrl(url);
     img.alt = "Preview foto galeri";
     img.loading = "lazy";
+    img.decoding = "async";
+    img.referrerPolicy = "no-referrer";
+    applyPreviewImageWithFallback(img, url);
 
     const body = document.createElement("div");
     body.className = "gallery-item-body";
