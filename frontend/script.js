@@ -917,6 +917,13 @@ function extractDriveFileId(url) {
   return (queryIdMatch && queryIdMatch[1]) || (pathIdMatch && pathIdMatch[1]) || "";
 }
 
+function extractDriveResourceKey(url) {
+  const clean = String(url || "").trim();
+  if (!clean) return "";
+  const keyMatch = clean.match(/[?&]resourcekey=([a-zA-Z0-9._-]+)/i);
+  return (keyMatch && keyMatch[1]) || "";
+}
+
 function normalizeAudioUrl(url) {
   const candidates = getAudioSourceCandidates(url);
   return candidates[0] || "";
@@ -927,16 +934,18 @@ function getAudioSourceCandidates(url) {
   if (!clean) return [];
 
   const fileId = extractDriveFileId(clean);
+  const resourceKey = extractDriveResourceKey(clean);
+  const resourceKeySuffix = resourceKey ? `&resourcekey=${encodeURIComponent(resourceKey)}` : "";
   const isDriveHost = /(?:^|\/\/)(?:drive|docs)\.google\.com/i.test(clean)
     || /(?:^|\/\/)drive\.usercontent\.google\.com/i.test(clean);
 
   if (isDriveHost && fileId) {
     const candidates = [
       clean,
-      `https://drive.google.com/uc?export=download&id=${fileId}`,
-      `https://docs.google.com/uc?export=download&id=${fileId}`,
-      `https://drive.google.com/uc?export=view&id=${fileId}`,
-      `https://drive.usercontent.google.com/download?id=${fileId}&export=download`
+      `https://drive.google.com/uc?export=download&id=${fileId}${resourceKeySuffix}`,
+      `https://docs.google.com/uc?export=download&id=${fileId}${resourceKeySuffix}`,
+      `https://drive.google.com/uc?export=view&id=${fileId}${resourceKeySuffix}`,
+      `https://drive.usercontent.google.com/download?id=${fileId}&export=download${resourceKey ? `&resourcekey=${encodeURIComponent(resourceKey)}` : ""}`
     ];
 
     const unique = [];
@@ -1487,11 +1496,16 @@ function setupRevealAnimation() {
 function setupMusicControl() {
   if (!musicToggle || !bgMusic) return;
 
-  const primaryMusicCandidates = getAudioSourceCandidates(currentConfig.backgroundMusicUrl);
+  const configuredMusicUrl = String(currentConfig.backgroundMusicUrl || "").trim();
+  const hasConfiguredMusic = Boolean(configuredMusicUrl);
+  const primaryMusicCandidates = getAudioSourceCandidates(configuredMusicUrl);
   const fallbackMusicCandidates = getAudioSourceCandidates(WEDDING_CONFIG.backgroundMusicUrl);
   const allMusicCandidates = [];
   const seenCandidate = new Set();
-  [...primaryMusicCandidates, ...fallbackMusicCandidates].forEach((item) => {
+  const candidateSource = hasConfiguredMusic
+    ? primaryMusicCandidates
+    : [...primaryMusicCandidates, ...fallbackMusicCandidates];
+  candidateSource.forEach((item) => {
     const value = String(item || "").trim();
     if (!value || seenCandidate.has(value)) return;
     seenCandidate.add(value);

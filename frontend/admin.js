@@ -1528,7 +1528,15 @@ async function uploadMusicToDrive() {
       }]
     });
 
-    const uploadedUrl = (result.files && result.files[0] && result.files[0].publicUrl) || "";
+    const uploadedUrl = (
+      result.files &&
+      result.files[0] &&
+      (
+        result.files[0].audioStreamUrl ||
+        result.files[0].downloadUrl ||
+        result.files[0].publicUrl
+      )
+    ) || "";
     if (!uploadedUrl) throw new Error("URL musik dari server kosong");
 
     fields.backgroundMusicUrl.value = uploadedUrl;
