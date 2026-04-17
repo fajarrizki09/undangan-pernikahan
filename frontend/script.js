@@ -1497,14 +1497,11 @@ function setupMusicControl() {
   if (!musicToggle || !bgMusic) return;
 
   const configuredMusicUrl = String(currentConfig.backgroundMusicUrl || "").trim();
-  const hasConfiguredMusic = Boolean(configuredMusicUrl);
   const primaryMusicCandidates = getAudioSourceCandidates(configuredMusicUrl);
   const fallbackMusicCandidates = getAudioSourceCandidates(WEDDING_CONFIG.backgroundMusicUrl);
   const allMusicCandidates = [];
   const seenCandidate = new Set();
-  const candidateSource = hasConfiguredMusic
-    ? primaryMusicCandidates
-    : [...primaryMusicCandidates, ...fallbackMusicCandidates];
+  const candidateSource = [...primaryMusicCandidates, ...fallbackMusicCandidates];
   candidateSource.forEach((item) => {
     const value = String(item || "").trim();
     if (!value || seenCandidate.has(value)) return;
@@ -1514,11 +1511,7 @@ function setupMusicControl() {
   const resolvedMusicUrl = allMusicCandidates[0] || "";
   let currentMusicCandidateIndex = -1;
 
-  if (resolvedMusicUrl && !bgMusic.src) {
-    bgMusic.src = resolvedMusicUrl;
-  }
-
-  const hasMusic = Boolean(resolvedMusicUrl || bgMusic.src);
+  const hasMusic = Boolean(resolvedMusicUrl || bgMusic.src || allMusicCandidates.length);
   if (!hasMusic) {
     musicToggle.disabled = true;
     musicToggle.textContent = "Musik belum diatur";
@@ -1547,15 +1540,23 @@ function setupMusicControl() {
     return true;
   }
 
-  const currentAttrSrc = String(bgMusic.getAttribute("src") || "").trim();
-  if (currentAttrSrc) {
-    currentMusicCandidateIndex = allMusicCandidates.findIndex((item) => item === currentAttrSrc || item === bgMusic.src);
-  }
-  if (currentMusicCandidateIndex < 0 && resolvedMusicUrl) {
-    currentMusicCandidateIndex = 0;
+  if (!String(bgMusic.getAttribute("src") || "").trim() && allMusicCandidates.length) {
+    useMusicCandidate(0);
+  } else {
+    const currentAttrSrc = String(bgMusic.getAttribute("src") || "").trim();
+    if (currentAttrSrc) {
+      currentMusicCandidateIndex = allMusicCandidates.findIndex((item) => item === currentAttrSrc || item === bgMusic.src);
+    }
+    if (currentMusicCandidateIndex < 0 && resolvedMusicUrl) {
+      currentMusicCandidateIndex = 0;
+    }
   }
 
-  async function startMusicFromGesture() {
+  async function startMusicFromGesture(recursionDepth = 0) {
+    if (!bgMusic.src && allMusicCandidates.length) {
+      useMusicCandidate(0);
+    }
+
     if (!bgMusic.paused) {
       setPlayingState(true);
       return true;
@@ -1569,7 +1570,12 @@ function setupMusicControl() {
       setPlayingState(true);
       return true;
     } catch (error) {
+      const switched = useMusicCandidate(currentMusicCandidateIndex + 1);
+      if (switched && recursionDepth < allMusicCandidates.length) {
+        return startMusicFromGesture(recursionDepth + 1);
+      }
       setPlayingState(false);
+      musicToggle.textContent = "Musik gagal dimuat";
       return false;
     }
   }
