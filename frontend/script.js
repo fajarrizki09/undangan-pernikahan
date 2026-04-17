@@ -74,6 +74,7 @@ const musicState = {
 const galleryState = {
   autoplayTimer: null
 };
+let attemptMusicStartFromGesture = async () => false;
 let wishesAutoScrollTimer = null;
 let wishesAutoPauseUntil = 0;
 let wishesRefreshTimer = null;
@@ -1236,6 +1237,7 @@ function setupInvitationGate() {
   }
 
   openInvitationBtn.addEventListener("click", () => {
+    attemptMusicStartFromGesture().catch(() => {});
     invitationGate.classList.add("is-opening");
     openInvitationBtn.disabled = true;
 
@@ -1481,6 +1483,25 @@ function setupMusicControl() {
     musicToggle.classList.toggle("is-playing", isPlaying);
   }
 
+  async function startMusicFromGesture() {
+    if (!bgMusic.paused) {
+      setPlayingState(true);
+      return true;
+    }
+
+    try {
+      await bgMusic.play();
+      if ((bgMusic.currentTime || 0) <= 0.25 && musicState.startSec > 0) {
+        seekAudio(musicState.startSec);
+      }
+      setPlayingState(true);
+      return true;
+    } catch (error) {
+      setPlayingState(false);
+      return false;
+    }
+  }
+
   function parseAudioSecond(value) {
     const num = Number(value);
     if (!Number.isFinite(num) || num < 0) return null;
@@ -1538,17 +1559,11 @@ function setupMusicControl() {
 
   setPlayingState(false);
 
+  attemptMusicStartFromGesture = startMusicFromGesture;
+
   musicToggle.addEventListener("click", async () => {
     if (bgMusic.paused) {
-      try {
-        await bgMusic.play();
-        if ((bgMusic.currentTime || 0) <= 0.25 && musicState.startSec > 0) {
-          seekAudio(musicState.startSec);
-        }
-        setPlayingState(true);
-      } catch (error) {
-        setPlayingState(false);
-      }
+      await startMusicFromGesture();
     } else {
       bgMusic.pause();
       setPlayingState(false);
