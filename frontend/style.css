@@ -1123,30 +1123,41 @@ body.is-loading .page-loader {
 
 .flower {
   position: absolute;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 45% 45%, #fff6fa 15%, #ffc4de 58%, #f08ab4 100%);
-  box-shadow: 0 0 8px rgba(240, 138, 180, 0.45);
+  width: 15px;
+  height: 11px;
+  border-radius: 84% 16% 76% 24% / 78% 22% 70% 30%;
+  transform-origin: 48% 62%;
+  background:
+    radial-gradient(circle at 26% 32%, rgba(255, 255, 255, 0.95) 0 18%, transparent 19%),
+    linear-gradient(135deg, #ffd8ea 0%, #ffb6d2 45%, #f08ab4 100%);
+  box-shadow:
+    inset -1px -2px 0 rgba(219, 111, 151, 0.24),
+    0 0 8px rgba(240, 138, 180, 0.42);
   animation: flower-fall linear forwards;
   will-change: transform, opacity;
+  opacity: 0.94;
 }
 
 .flower::before,
 .flower::after {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: 50%;
+  width: 88%;
+  height: 88%;
+  border-radius: 84% 16% 76% 24% / 78% 22% 70% 30%;
   background: inherit;
 }
 
 .flower::before {
-  transform: translate(-35%, 12%) scale(0.72);
+  left: -48%;
+  top: 10%;
+  transform: rotate(-22deg) scale(0.78);
 }
 
 .flower::after {
-  transform: translate(35%, -12%) scale(0.72);
+  left: 42%;
+  top: -10%;
+  transform: rotate(28deg) scale(0.72);
 }
 
 @keyframes leaf-fall {
@@ -1167,16 +1178,36 @@ body.is-loading .page-loader {
 
 @keyframes flower-fall {
   0% {
-    transform: translateY(-15vh) rotate(0deg);
+    transform: translateY(-15vh) translateX(0) rotate(0deg) scale(var(--petal-scale, 1));
     opacity: 0;
   }
 
-  12% {
+  10% {
     opacity: 0.95;
   }
 
+  35% {
+    transform:
+      translateY(28vh)
+      translateX(calc(var(--drift-x, 22px) * -0.45))
+      rotate(calc(var(--spin-deg, 320deg) * 0.32))
+      scale(var(--petal-scale, 1));
+  }
+
+  68% {
+    transform:
+      translateY(68vh)
+      translateX(var(--drift-x, 22px))
+      rotate(calc(var(--spin-deg, 320deg) * 0.78))
+      scale(var(--petal-scale, 1));
+  }
+
   100% {
-    transform: translateY(110vh) translateX(24px) rotate(300deg);
+    transform:
+      translateY(112vh)
+      translateX(calc(var(--drift-x, 22px) * -0.2))
+      rotate(var(--spin-deg, 320deg))
+      scale(var(--petal-scale, 1));
     opacity: 0;
   }
 }

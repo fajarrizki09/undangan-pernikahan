@@ -1009,20 +1009,30 @@ function createLeaf() {
 function createFlower() {
   if (!flowerLayer || flowerLayer.childElementCount >= particleState.maxFlowers) return;
 
-  const flower = document.createElement("span");
-  flower.className = "flower";
-  const left = Math.random() * 100;
-  const duration = (isLowPowerDevice ? 8 : 7) + Math.random() * (isLowPowerDevice ? 5 : 7);
-  const delay = Math.random() * 1.2;
-  const scale = 0.65 + Math.random() * 0.9;
+  const petalCount = isLowPowerDevice ? 1 : (Math.random() < 0.45 ? 2 : 1);
 
-  flower.style.left = `${left}%`;
-  flower.style.animationDuration = `${duration}s`;
-  flower.style.animationDelay = `${delay}s`;
-  flower.style.transform = `scale(${scale})`;
+  for (let i = 0; i < petalCount; i += 1) {
+    if (flowerLayer.childElementCount >= particleState.maxFlowers) break;
 
-  flowerLayer.appendChild(flower);
-  setTimeout(() => flower.remove(), (duration + delay) * 1000 + 200);
+    const flower = document.createElement("span");
+    flower.className = "flower";
+    const left = Math.random() * 100;
+    const duration = (isLowPowerDevice ? 9 : 7.5) + Math.random() * (isLowPowerDevice ? 4.5 : 6);
+    const delay = Math.random() * 1.1;
+    const scale = 0.6 + Math.random() * 0.85;
+    const driftX = (Math.random() < 0.5 ? -1 : 1) * (16 + Math.random() * 44);
+    const spinDeg = (Math.random() < 0.5 ? -1 : 1) * (220 + Math.random() * 240);
+
+    flower.style.left = `${left}%`;
+    flower.style.animationDuration = `${duration}s`;
+    flower.style.animationDelay = `${delay}s`;
+    flower.style.setProperty("--petal-scale", scale.toFixed(3));
+    flower.style.setProperty("--drift-x", `${driftX.toFixed(2)}px`);
+    flower.style.setProperty("--spin-deg", `${spinDeg.toFixed(1)}deg`);
+
+    flowerLayer.appendChild(flower);
+    setTimeout(() => flower.remove(), (duration + delay) * 1000 + 220);
+  }
 }
 
 function startTimers() {
