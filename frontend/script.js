@@ -200,6 +200,19 @@ function mergeConfig(base, incoming) {
   return healMisplacedPhotoConfig(merged);
 }
 
+function setMetaDescription(content) {
+  const text = String(content || "").trim();
+  if (!text) return;
+
+  let meta = document.querySelector('meta[name="description"]');
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute("name", "description");
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute("content", text);
+}
+
 function normalizeGalleryMode(value) {
   return String(value || "").toLowerCase() === "carousel" ? "carousel" : "grid";
 }
@@ -841,7 +854,10 @@ function applyWeddingConfig() {
   applyCalendarLink();
 
   const titleNames = `${currentConfig.brideShortName || "Mempelai"} & ${currentConfig.groomShortName || "Mempelai"}`;
-  document.title = `Undangan Pernikahan | ${titleNames}`;
+  const seoTitle = String(currentConfig.seoTitle || "").trim();
+  const seoDescription = String(currentConfig.seoDescription || "").trim();
+  document.title = seoTitle || `Undangan Pernikahan | ${titleNames}`;
+  setMetaDescription(seoDescription || "Undangan pernikahan digital dengan RSVP online.");
 }
 
 function setupInvitationGate() {

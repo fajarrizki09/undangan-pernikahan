@@ -39,7 +39,9 @@ const CONFIG_COLUMNS = [
   'galleryMode',
   'galleryMaxItems',
   'galleryAutoplaySec',
-  'galleryStyle'
+  'galleryStyle',
+  'seoTitle',
+  'seoDescription'
 ];
 
 function doGet(e) {
@@ -599,7 +601,9 @@ function normalizeConfig_(config) {
     galleryMode: normalizeGalleryMode_(valueOrDefault_(source, 'galleryMode', defaults.galleryMode)),
     galleryMaxItems: normalizeGalleryMaxItems_(valueOrDefault_(source, 'galleryMaxItems', defaults.galleryMaxItems)),
     galleryAutoplaySec: normalizeGalleryAutoplaySec_(valueOrDefault_(source, 'galleryAutoplaySec', defaults.galleryAutoplaySec)),
-    galleryStyle: normalizeGalleryStyle_(valueOrDefault_(source, 'galleryStyle', defaults.galleryStyle))
+    galleryStyle: normalizeGalleryStyle_(valueOrDefault_(source, 'galleryStyle', defaults.galleryStyle)),
+    seoTitle: valueOrDefault_(source, 'seoTitle', defaults.seoTitle),
+    seoDescription: valueOrDefault_(source, 'seoDescription', defaults.seoDescription)
   };
 }
 
@@ -714,6 +718,8 @@ function defaultConfig_() {
     galleryMaxItems: '',
     galleryAutoplaySec: '3.5',
     galleryStyle: 'elegant',
+    seoTitle: 'Undangan Pernikahan',
+    seoDescription: 'Undangan pernikahan digital dengan RSVP online.',
     galleryPhotos: [
       'assets/photos/foto-1.svg',
       'assets/photos/foto-2.svg',
@@ -820,7 +826,9 @@ function configToRow_(config) {
     config.galleryMode,
     config.galleryMaxItems,
     config.galleryAutoplaySec,
-    config.galleryStyle
+    config.galleryStyle,
+    config.seoTitle,
+    config.seoDescription
   ];
 }
 
@@ -868,7 +876,9 @@ function rowToConfig_(headers, row) {
     galleryMode: values.galleryMode,
     galleryMaxItems: values.galleryMaxItems,
     galleryAutoplaySec: values.galleryAutoplaySec,
-    galleryStyle: values.galleryStyle
+    galleryStyle: values.galleryStyle,
+    seoTitle: values.seoTitle,
+    seoDescription: values.seoDescription
   };
 }
 
@@ -900,6 +910,7 @@ function jsonResponse(obj) {
   output.setMimeType(ContentService.MimeType.JSON);
   return output;
 }
+
 
 
 

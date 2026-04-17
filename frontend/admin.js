@@ -1,5 +1,7 @@
 const fields = {
   brandInitials: document.getElementById("brandInitials"),
+  seoTitle: document.getElementById("seoTitle"),
+  seoDescription: document.getElementById("seoDescription"),
   heroOverline: document.getElementById("heroOverline"),
   brideShortName: document.getElementById("brideShortName"),
   groomShortName: document.getElementById("groomShortName"),
@@ -288,6 +290,8 @@ function readConfigFromForm() {
 
   return {
     brandInitials: fields.brandInitials.value.trim(),
+    seoTitle: fields.seoTitle.value.trim(),
+    seoDescription: fields.seoDescription.value.trim(),
     heroOverline: fields.heroOverline.value.trim(),
     brideShortName: fields.brideShortName.value.trim(),
     groomShortName: fields.groomShortName.value.trim(),
@@ -356,6 +360,8 @@ function fillForm(config) {
   const safeConfig = healMisplacedPhotoConfig(config || {});
 
   fields.brandInitials.value = safeConfig.brandInitials || "";
+  fields.seoTitle.value = safeConfig.seoTitle || "";
+  fields.seoDescription.value = safeConfig.seoDescription || "";
   fields.heroOverline.value = safeConfig.heroOverline || "";
   fields.brideShortName.value = safeConfig.brideShortName || "";
   fields.groomShortName.value = safeConfig.groomShortName || "";

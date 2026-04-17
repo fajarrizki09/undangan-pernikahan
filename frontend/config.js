@@ -9,6 +9,8 @@ const ADMIN_CONFIG = {
 // Konfigurasi fallback (dipakai jika server belum punya data config).
 const WEDDING_CONFIG = {
   brandInitials: "A & F",
+  seoTitle: "Undangan Pernikahan",
+  seoDescription: "Undangan pernikahan digital dengan RSVP online.",
   heroOverline: "Wedding Invitation",
   brideShortName: "Alya",
   groomShortName: "Fajar",
