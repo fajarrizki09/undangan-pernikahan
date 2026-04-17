@@ -222,39 +222,62 @@ function readConfigFromForm() {
   };
 }
 
-function fillForm(config) {
-  fields.brandInitials.value = config.brandInitials || "";
-  fields.heroOverline.value = config.heroOverline || "";
-  fields.brideShortName.value = config.brideShortName || "";
-  fields.groomShortName.value = config.groomShortName || "";
-  fields.brideFullName.value = config.brideFullName || "";
-  fields.groomFullName.value = config.groomFullName || "";
-  fields.brideParents.value = config.brideParents || "";
-  fields.groomParents.value = config.groomParents || "";
-  fields.heroDatePlace.value = config.heroDatePlace || "";
-  fields.footerNames.value = config.footerNames || "";
-  fields.backgroundMusicUrl.value = config.backgroundMusicUrl || "";
-  fields.musicStartSec.value = config.musicStartSec || "";
-  fields.musicLoopStartSec.value = config.musicLoopStartSec || "";
-  fields.musicLoopEndSec.value = config.musicLoopEndSec || "";
+function cleanPhotoArray(input) {
+  if (!Array.isArray(input)) return [];
+  return input.map((item) => String(item || "").trim()).filter(Boolean);
+}
 
-  const parsedWeddingDate = parseWeddingIso(config.weddingDateISO || "");
+function healMisplacedPhotoConfig(config) {
+  const source = (config && typeof config === "object") ? config : {};
+  const storyRaw = cleanPhotoArray(source.loveStoryPhotos);
+  const galleryRaw = cleanPhotoArray(source.galleryPhotos);
+  const defaultStory = cleanPhotoArray((WEDDING_CONFIG && WEDDING_CONFIG.loveStoryPhotos) || []).slice(0, 3);
+
+  const likelyShiftedColumn = galleryRaw.length === 0 && storyRaw.length > 3;
+  if (!likelyShiftedColumn) return source;
+
+  return {
+    ...source,
+    loveStoryPhotos: defaultStory.length ? defaultStory : storyRaw.slice(0, 3),
+    galleryPhotos: storyRaw
+  };
+}
+
+function fillForm(config) {
+  const safeConfig = healMisplacedPhotoConfig(config || {});
+
+  fields.brandInitials.value = safeConfig.brandInitials || "";
+  fields.heroOverline.value = safeConfig.heroOverline || "";
+  fields.brideShortName.value = safeConfig.brideShortName || "";
+  fields.groomShortName.value = safeConfig.groomShortName || "";
+  fields.brideFullName.value = safeConfig.brideFullName || "";
+  fields.groomFullName.value = safeConfig.groomFullName || "";
+  fields.brideParents.value = safeConfig.brideParents || "";
+  fields.groomParents.value = safeConfig.groomParents || "";
+  fields.heroDatePlace.value = safeConfig.heroDatePlace || "";
+  fields.footerNames.value = safeConfig.footerNames || "";
+  fields.backgroundMusicUrl.value = safeConfig.backgroundMusicUrl || "";
+  fields.musicStartSec.value = safeConfig.musicStartSec || "";
+  fields.musicLoopStartSec.value = safeConfig.musicLoopStartSec || "";
+  fields.musicLoopEndSec.value = safeConfig.musicLoopEndSec || "";
+
+  const parsedWeddingDate = parseWeddingIso(safeConfig.weddingDateISO || "");
   fields.weddingDateTimeLocal.value = parsedWeddingDate.localDateTime;
   fields.weddingTimeOffset.value = parsedWeddingDate.offset;
   updateWeddingIsoPreview();
 
-  fields.akadDate.value = (config.akad && config.akad.date) || "";
-  fields.akadTime.value = (config.akad && config.akad.time) || "";
-  fields.akadVenue.value = (config.akad && config.akad.venue) || "";
-  fields.akadMapUrl.value = (config.akad && config.akad.mapUrl) || "";
+  fields.akadDate.value = (safeConfig.akad && safeConfig.akad.date) || "";
+  fields.akadTime.value = (safeConfig.akad && safeConfig.akad.time) || "";
+  fields.akadVenue.value = (safeConfig.akad && safeConfig.akad.venue) || "";
+  fields.akadMapUrl.value = (safeConfig.akad && safeConfig.akad.mapUrl) || "";
 
-  fields.resepsiDate.value = (config.resepsi && config.resepsi.date) || "";
-  fields.resepsiTime.value = (config.resepsi && config.resepsi.time) || "";
-  fields.resepsiVenue.value = (config.resepsi && config.resepsi.venue) || "";
-  fields.resepsiMapUrl.value = (config.resepsi && config.resepsi.mapUrl) || "";
+  fields.resepsiDate.value = (safeConfig.resepsi && safeConfig.resepsi.date) || "";
+  fields.resepsiTime.value = (safeConfig.resepsi && safeConfig.resepsi.time) || "";
+  fields.resepsiVenue.value = (safeConfig.resepsi && safeConfig.resepsi.venue) || "";
+  fields.resepsiMapUrl.value = (safeConfig.resepsi && safeConfig.resepsi.mapUrl) || "";
 
-  fields.loveStoryPhotos.value = Array.isArray(config.loveStoryPhotos) ? config.loveStoryPhotos.slice(0, 3).join("\n") : "";
-  fields.galleryPhotos.value = Array.isArray(config.galleryPhotos) ? config.galleryPhotos.join("\n") : "";
+  fields.loveStoryPhotos.value = Array.isArray(safeConfig.loveStoryPhotos) ? safeConfig.loveStoryPhotos.slice(0, 3).join("\n") : "";
+  fields.galleryPhotos.value = Array.isArray(safeConfig.galleryPhotos) ? safeConfig.galleryPhotos.join("\n") : "";
   renderGalleryPreview();
 }
 

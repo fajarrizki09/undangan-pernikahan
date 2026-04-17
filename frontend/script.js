@@ -56,6 +56,29 @@ let currentConfig = {
 const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
 const CONFIG_CACHE_TTL_MS = 1000 * 60 * 10;
 
+function cleanPhotoArray(input) {
+  if (!Array.isArray(input)) return [];
+  return input.map((item) => String(item || "").trim()).filter(Boolean);
+}
+
+function healMisplacedPhotoConfig(config) {
+  const fallbackStory = cleanPhotoArray(WEDDING_CONFIG.loveStoryPhotos).slice(0, 3);
+  const source = (config && typeof config === "object") ? config : {};
+  const loveStory = cleanPhotoArray(source.loveStoryPhotos);
+  const gallery = cleanPhotoArray(source.galleryPhotos);
+
+  const likelyShiftedColumn = gallery.length === 0 && loveStory.length > 3;
+  if (!likelyShiftedColumn) {
+    return source;
+  }
+
+  return {
+    ...source,
+    loveStoryPhotos: fallbackStory.length ? fallbackStory : loveStory.slice(0, 3),
+    galleryPhotos: loveStory
+  };
+}
+
 function setText(id, value) {
   const el = document.getElementById(id);
   if (el && value) el.textContent = value;
@@ -135,8 +158,7 @@ function mergeConfig(base, incoming) {
 
   const incomingMusicUrl = String(incoming.backgroundMusicUrl || "").trim();
   const baseMusicUrl = String(base.backgroundMusicUrl || "").trim();
-
-  return {
+  const merged = {
     ...base,
     ...incoming,
     backgroundMusicUrl: incomingMusicUrl || baseMusicUrl,
@@ -155,6 +177,8 @@ function mergeConfig(base, incoming) {
       ? incoming.galleryPhotos
       : base.galleryPhotos
   };
+
+  return healMisplacedPhotoConfig(merged);
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
