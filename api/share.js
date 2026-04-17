@@ -1,6 +1,12 @@
 const FALLBACK_API_URL = "https://script.google.com/macros/s/AKfycbxzlazLkS5hXUtj4dg7UiZESPEsCx8sBUQawgWlTsS3lXsGuO7W6plCavPqNp6-YQsw/exec";
 const FALLBACK_TITLE = "Undangan Pernikahan";
 const FALLBACK_DESC = "Undangan pernikahan digital dengan RSVP online.";
+const CONFIG_FETCH_TIMEOUT_MS = 2200;
+const SEO_CACHE_TTL_MS = 1000 * 60 * 5;
+let seoCache = {
+  expiresAt: 0,
+  data: null
+};
 
 function escapeHtml(value) {
   return String(value || "")
@@ -53,7 +59,17 @@ async function fetchConfig(apiUrl) {
     const url = new URL(target);
     url.searchParams.set("action", "config");
     url.searchParams.set("_ts", String(Date.now()));
-    const response = await fetch(url.toString(), { cache: "no-store" });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), CONFIG_FETCH_TIMEOUT_MS);
+    let response;
+    try {
+      response = await fetch(url.toString(), {
+        cache: "no-store",
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
     const json = await response.json();
     if (!response.ok || !json || !json.success) return null;
     return json.config || null;
@@ -62,20 +78,44 @@ async function fetchConfig(apiUrl) {
   }
 }
 
+async function getSeoConfig(apiUrl) {
+  const now = Date.now();
+  if (seoCache.data && seoCache.expiresAt > now) {
+    return seoCache.data;
+  }
+
+  const config = await fetchConfig(apiUrl);
+  if (config) {
+    const normalized = normalizeConfig(config);
+    seoCache = {
+      data: normalized,
+      expiresAt: now + SEO_CACHE_TTL_MS
+    };
+    return normalized;
+  }
+
+  if (seoCache.data) {
+    return seoCache.data;
+  }
+
+  return normalizeConfig({});
+}
+
 export default async function handler(req, res) {
   const origin = getOrigin(req);
   const apiUrl = process.env.RSVP_API_URL || FALLBACK_API_URL;
-  const config = await fetchConfig(apiUrl);
-  const seo = normalizeConfig(config);
+  const seo = await getSeoConfig(apiUrl);
   const imageUrl = resolveImageUrl(seo.image, origin || "");
 
   const toRaw = String((req.query && req.query.to) || "").trim();
   const redirectUrl = new URL("/frontend/", origin || "https://example.com");
   if (toRaw) redirectUrl.searchParams.set("to", toRaw);
+  const shareUrl = new URL("/", origin || "https://example.com");
+  if (toRaw) shareUrl.searchParams.set("to", toRaw);
 
   const title = escapeHtml(seo.title);
   const desc = escapeHtml(seo.description);
-  const url = escapeHtml(redirectUrl.toString());
+  const url = escapeHtml(shareUrl.toString());
   const image = escapeHtml(imageUrl);
   const imageMeta = imageUrl
     ? `
