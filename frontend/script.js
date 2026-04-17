@@ -55,6 +55,7 @@ let currentConfig = {
   akad: { ...(WEDDING_CONFIG.akad || {}) },
   resepsi: { ...(WEDDING_CONFIG.resepsi || {}) },
   loveStoryPhotos: Array.isArray(WEDDING_CONFIG.loveStoryPhotos) ? [...WEDDING_CONFIG.loveStoryPhotos] : [],
+  loveStoryItems: Array.isArray(WEDDING_CONFIG.loveStoryItems) ? [...WEDDING_CONFIG.loveStoryItems] : [],
   galleryPhotos: Array.isArray(WEDDING_CONFIG.galleryPhotos) ? [...WEDDING_CONFIG.galleryPhotos] : []
 };
 const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
@@ -85,7 +86,8 @@ function healMisplacedPhotoConfig(config) {
 
 function setText(id, value) {
   const el = document.getElementById(id);
-  if (el && value) el.textContent = value;
+  if (!el) return;
+  el.textContent = String(value || "");
 }
 
 function setBrandMonogram(value) {
@@ -202,6 +204,9 @@ function mergeConfig(base, incoming) {
     loveStoryPhotos: Array.isArray(incoming.loveStoryPhotos) && incoming.loveStoryPhotos.length
       ? incoming.loveStoryPhotos
       : base.loveStoryPhotos,
+    loveStoryItems: Array.isArray(incoming.loveStoryItems) && incoming.loveStoryItems.length
+      ? incoming.loveStoryItems
+      : base.loveStoryItems,
     galleryPhotos: Array.isArray(incoming.galleryPhotos) && incoming.galleryPhotos.length
       ? incoming.galleryPhotos
       : base.galleryPhotos
@@ -874,6 +879,16 @@ function applyWeddingConfig() {
       });
     });
   }
+
+  const storyItems = Array.isArray(currentConfig.loveStoryItems) && currentConfig.loveStoryItems.length
+    ? currentConfig.loveStoryItems
+    : (Array.isArray(WEDDING_CONFIG.loveStoryItems) ? WEDDING_CONFIG.loveStoryItems : []);
+  storyItems.slice(0, 3).forEach((item, index) => {
+    const i = index + 1;
+    setText(`storyYear${i}`, item && item.date);
+    setText(`storyTitle${i}`, item && item.title);
+    setText(`storyDesc${i}`, item && item.description);
+  });
 
   applyHeroCloudPhoto();
   applyCalendarLink();

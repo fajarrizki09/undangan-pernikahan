@@ -33,6 +33,15 @@ const fields = {
   hadithReference: document.getElementById("hadithReference"),
   marriageDoaText: document.getElementById("marriageDoaText"),
   marriageDoaReference: document.getElementById("marriageDoaReference"),
+  storyDate1: document.getElementById("storyDate1"),
+  storyTitle1: document.getElementById("storyTitle1"),
+  storyDesc1: document.getElementById("storyDesc1"),
+  storyDate2: document.getElementById("storyDate2"),
+  storyTitle2: document.getElementById("storyTitle2"),
+  storyDesc2: document.getElementById("storyDesc2"),
+  storyDate3: document.getElementById("storyDate3"),
+  storyTitle3: document.getElementById("storyTitle3"),
+  storyDesc3: document.getElementById("storyDesc3"),
   loveStoryPhotos: document.getElementById("loveStoryPhotos"),
   galleryPhotos: document.getElementById("galleryPhotos"),
   galleryMode: document.getElementById("galleryMode"),
@@ -69,6 +78,7 @@ const loveStoryPhotoFilesInput = document.getElementById("loveStoryPhotoFiles");
 const deletePhotoUrlsInput = document.getElementById("deletePhotoUrls");
 const musicFileInput = document.getElementById("musicFile");
 const galleryPreview = document.getElementById("galleryPreview");
+const loveStoryPreview = document.getElementById("loveStoryPreview");
 const deleteFromDriveInput = document.getElementById("deleteFromDrive");
 const btnHeroFromGallery = document.getElementById("btnHeroFromGallery");
 const btnLoveStoryFromGallery = document.getElementById("btnLoveStoryFromGallery");
@@ -349,6 +359,11 @@ function readConfigFromForm() {
     .map((item) => item.trim())
     .filter(Boolean)
     .slice(0, 3);
+  const loveStoryItems = [1, 2, 3].map((index) => ({
+    date: fields[`storyDate${index}`].value.trim(),
+    title: fields[`storyTitle${index}`].value.trim(),
+    description: fields[`storyDesc${index}`].value.trim()
+  }));
 
   return {
     brandInitials: fields.brandInitials.value.trim(),
@@ -388,6 +403,7 @@ function readConfigFromForm() {
     hadithReference: fields.hadithReference.value.trim(),
     marriageDoaText: fields.marriageDoaText.value.trim(),
     marriageDoaReference: fields.marriageDoaReference.value.trim(),
+    loveStoryItems,
     loveStoryPhotos: storyPhotos,
     galleryPhotos: galleryPhotosToSave,
     galleryMode: normalizeGalleryMode(fields.galleryMode.value),
@@ -463,6 +479,16 @@ function fillForm(config) {
   fields.hadithReference.value = safeConfig.hadithReference || "";
   fields.marriageDoaText.value = safeConfig.marriageDoaText || "";
   fields.marriageDoaReference.value = safeConfig.marriageDoaReference || "";
+  const fallbackStoryItems = Array.isArray(WEDDING_CONFIG.loveStoryItems) ? WEDDING_CONFIG.loveStoryItems : [];
+  const storyItems = Array.isArray(safeConfig.loveStoryItems) && safeConfig.loveStoryItems.length
+    ? safeConfig.loveStoryItems
+    : fallbackStoryItems;
+  [1, 2, 3].forEach((index) => {
+    const item = storyItems[index - 1] || {};
+    fields[`storyDate${index}`].value = String(item.date || "");
+    fields[`storyTitle${index}`].value = String(item.title || "");
+    fields[`storyDesc${index}`].value = String(item.description || "");
+  });
 
   fields.loveStoryPhotos.value = Array.isArray(safeConfig.loveStoryPhotos) ? safeConfig.loveStoryPhotos.slice(0, 3).join("\n") : "";
   fields.galleryPhotos.value = Array.isArray(safeConfig.galleryPhotos) ? safeConfig.galleryPhotos.join("\n") : "";
@@ -581,6 +607,7 @@ function getLoveStoryUrls() {
 function setLoveStoryUrls(urls) {
   const clean = Array.isArray(urls) ? urls.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 3) : [];
   fields.loveStoryPhotos.value = clean.join("\n");
+  renderLoveStoryPreview();
 }
 
 function setHeroFromGallery(url) {
@@ -675,6 +702,42 @@ function normalizePreviewUrl(url) {
   }
 
   return clean;
+}
+
+function getLoveStoryPreviewUrls() {
+  return fields.loveStoryPhotos.value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
+function renderLoveStoryPreview() {
+  if (!loveStoryPreview) return;
+
+  const urls = getLoveStoryPreviewUrls();
+  loveStoryPreview.innerHTML = "";
+
+  if (!urls.length) {
+    const empty = document.createElement("p");
+    empty.className = "preview-empty";
+    empty.textContent = "Preview foto Love Story akan muncul di sini.";
+    loveStoryPreview.appendChild(empty);
+    return;
+  }
+
+  urls.forEach((url, index) => {
+    const item = document.createElement("article");
+    item.className = "story-preview-item";
+
+    const img = document.createElement("img");
+    img.src = normalizePreviewUrl(url);
+    img.alt = `Preview Love Story ${index + 1}`;
+    img.loading = "lazy";
+
+    item.appendChild(img);
+    loveStoryPreview.appendChild(item);
+  });
 }
 
 async function deleteSinglePhoto(url) {
@@ -1344,6 +1407,7 @@ fillForm(WEDDING_CONFIG);
 loadSavedAdminKey();
 loadSavedInvitationBaseUrl();
 renderGalleryPreview();
+renderLoveStoryPreview();
 adminKeyInput.addEventListener("change", () => {
   saveAdminKey(adminKeyInput.value.trim());
 });
@@ -1357,6 +1421,7 @@ invitationBaseUrlInput.addEventListener("input", () => {
 fields.weddingDateTimeLocal.addEventListener("input", updateWeddingIsoPreview);
 fields.weddingTimeOffset.addEventListener("change", updateWeddingIsoPreview);
 fields.galleryPhotos.addEventListener("input", renderGalleryPreview);
+fields.loveStoryPhotos.addEventListener("input", renderLoveStoryPreview);
 if (fields.heroDateStart) {
   fields.heroDateStart.addEventListener("change", generateHeroDatePlaceFromInputs);
 }

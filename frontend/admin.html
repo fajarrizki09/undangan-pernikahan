@@ -128,6 +128,7 @@
         Foto Love Story (1 baris = 1 URL, maksimal 3)
         <textarea id="loveStoryPhotos" rows="4" placeholder="https://.../foto-love-story-1.jpg"></textarea>
       </label>
+      <div id="loveStoryPreview" class="story-preview"></div>
       <div class="actions">
         <button id="btnLoveStoryFromGallery" class="btn btn-ghost" type="button">Ambil 3 Foto dari Galeri</button>
       </div>
@@ -138,6 +139,27 @@
             <input id="loveStoryPhotoFiles" type="file" accept="image/*" multiple />
             <button id="btnUploadLoveStoryPhotos" class="btn-mini" type="button">Upload Love Story</button>
           </div>
+        </label>
+      </div>
+      <h3>Teks Love Story</h3>
+      <div class="grid two">
+        <label>Tanggal/Periode Story 1<input id="storyDate1" type="text" placeholder="2021" /></label>
+        <label>Judul Story 1<input id="storyTitle1" type="text" placeholder="Pertama Bertemu" /></label>
+        <label class="grid" style="grid-column: 1 / -1;">
+          Deskripsi Story 1
+          <textarea id="storyDesc1" rows="2" placeholder="Ceritakan momen awal..."></textarea>
+        </label>
+        <label>Tanggal/Periode Story 2<input id="storyDate2" type="text" placeholder="2023" /></label>
+        <label>Judul Story 2<input id="storyTitle2" type="text" placeholder="Lamaran" /></label>
+        <label class="grid" style="grid-column: 1 / -1;">
+          Deskripsi Story 2
+          <textarea id="storyDesc2" rows="2" placeholder="Ceritakan momen kedua..."></textarea>
+        </label>
+        <label>Tanggal/Periode Story 3<input id="storyDate3" type="text" placeholder="2026" /></label>
+        <label>Judul Story 3<input id="storyTitle3" type="text" placeholder="Hari Pernikahan" /></label>
+        <label class="grid" style="grid-column: 1 / -1;">
+          Deskripsi Story 3
+          <textarea id="storyDesc3" rows="2" placeholder="Ceritakan momen ketiga..."></textarea>
         </label>
       </div>
       <p class="hint-text">Tip: upload foto lewat tombol <b>Upload Foto</b>. Jika Hero/Love Story kosong, sistem akan isi otomatis dari hasil upload terbaru.</p>

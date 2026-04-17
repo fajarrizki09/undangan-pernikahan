@@ -50,6 +50,23 @@ const WEDDING_CONFIG = {
     "assets/photos/foto-2.svg",
     "assets/photos/foto-3.svg"
   ],
+  loveStoryItems: [
+    {
+      date: "2021",
+      title: "Pertama Bertemu",
+      description: "Kami bertemu dalam sebuah kegiatan komunitas dan mulai saling mengenal lebih dekat."
+    },
+    {
+      date: "2023",
+      title: "Lamaran",
+      description: "Dengan restu keluarga, kami melangkah ke tahap yang lebih serius untuk masa depan bersama."
+    },
+    {
+      date: "2026",
+      title: "Hari Pernikahan",
+      description: "InsyaAllah kami menyempurnakan separuh agama dan memulai perjalanan rumah tangga."
+    }
+  ],
   galleryMode: "grid",
   galleryMaxItems: "",
   galleryAutoplaySec: "3.5",
