@@ -1475,10 +1475,14 @@ body.is-loading .page-loader {
 
 @media (max-width: 520px) {
   .topbar {
-    width: calc(100vw - 16px);
+    width: calc(100vw - 14px);
     top: 7px;
-    padding: 10px 12px;
-    gap: 10px;
+    padding: 10px 10px 9px;
+    gap: 8px;
+    border-radius: 22px;
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
   }
 
   .brand {
@@ -1488,12 +1492,16 @@ body.is-loading .page-loader {
   }
 
   .topbar nav {
-    flex: 1 1 auto;
-    gap: 10px;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    overflow: visible;
   }
 
   .topbar nav a {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
+    line-height: 1.15;
   }
 
   .bismillah-title {
