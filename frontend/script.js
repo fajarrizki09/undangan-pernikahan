@@ -572,6 +572,32 @@ function applyWeddingConfig() {
   setHtml("quranAyatArab", currentConfig.quranVerseArabic);
   setText("quranAyatTrans", currentConfig.quranVerseTranslation);
   setText("quranAyatRef", currentConfig.quranVerseReference);
+  setText("hadithText", currentConfig.hadithText);
+  setText("hadithReference", currentConfig.hadithReference);
+  setText("marriageDoaText", currentConfig.marriageDoaText);
+  setText("marriageDoaReference", currentConfig.marriageDoaReference);
+
+  const quranBlock = document.getElementById("quranBlock");
+  const hadithBlock = document.getElementById("hadithBlock");
+  const doaBlock = document.getElementById("doaBlock");
+
+  const hasQuran = Boolean(
+    String(currentConfig.quranVerseArabic || "").trim() ||
+    String(currentConfig.quranVerseTranslation || "").trim() ||
+    String(currentConfig.quranVerseReference || "").trim()
+  );
+  const hasHadith = Boolean(
+    String(currentConfig.hadithText || "").trim() ||
+    String(currentConfig.hadithReference || "").trim()
+  );
+  const hasDoa = Boolean(
+    String(currentConfig.marriageDoaText || "").trim() ||
+    String(currentConfig.marriageDoaReference || "").trim()
+  );
+
+  if (quranBlock) quranBlock.style.display = hasQuran ? "" : "none";
+  if (hadithBlock) hadithBlock.style.display = hasHadith ? "" : "none";
+  if (doaBlock) doaBlock.style.display = hasDoa ? "" : "none";
 
   const primaryMusicUrl = normalizeAudioUrl(currentConfig.backgroundMusicUrl);
   const fallbackMusicUrl = normalizeAudioUrl(WEDDING_CONFIG.backgroundMusicUrl);

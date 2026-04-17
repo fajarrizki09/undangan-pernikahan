@@ -21,6 +21,13 @@ const fields = {
   resepsiTime: document.getElementById("resepsiTime"),
   resepsiVenue: document.getElementById("resepsiVenue"),
   resepsiMapUrl: document.getElementById("resepsiMapUrl"),
+  quranVerseArabic: document.getElementById("quranVerseArabic"),
+  quranVerseTranslation: document.getElementById("quranVerseTranslation"),
+  quranVerseReference: document.getElementById("quranVerseReference"),
+  hadithText: document.getElementById("hadithText"),
+  hadithReference: document.getElementById("hadithReference"),
+  marriageDoaText: document.getElementById("marriageDoaText"),
+  marriageDoaReference: document.getElementById("marriageDoaReference"),
   loveStoryPhotos: document.getElementById("loveStoryPhotos"),
   galleryPhotos: document.getElementById("galleryPhotos"),
   backgroundMusicUrl: document.getElementById("backgroundMusicUrl"),
@@ -219,6 +226,13 @@ function readConfigFromForm() {
       venue: fields.resepsiVenue.value.trim(),
       mapUrl: fields.resepsiMapUrl.value.trim()
     },
+    quranVerseArabic: fields.quranVerseArabic.value.trim(),
+    quranVerseTranslation: fields.quranVerseTranslation.value.trim(),
+    quranVerseReference: fields.quranVerseReference.value.trim(),
+    hadithText: fields.hadithText.value.trim(),
+    hadithReference: fields.hadithReference.value.trim(),
+    marriageDoaText: fields.marriageDoaText.value.trim(),
+    marriageDoaReference: fields.marriageDoaReference.value.trim(),
     loveStoryPhotos: storyPhotos,
     galleryPhotos: photos
   };
@@ -278,6 +292,13 @@ function fillForm(config) {
   fields.resepsiTime.value = (safeConfig.resepsi && safeConfig.resepsi.time) || "";
   fields.resepsiVenue.value = (safeConfig.resepsi && safeConfig.resepsi.venue) || "";
   fields.resepsiMapUrl.value = (safeConfig.resepsi && safeConfig.resepsi.mapUrl) || "";
+  fields.quranVerseArabic.value = safeConfig.quranVerseArabic || "";
+  fields.quranVerseTranslation.value = safeConfig.quranVerseTranslation || "";
+  fields.quranVerseReference.value = safeConfig.quranVerseReference || "";
+  fields.hadithText.value = safeConfig.hadithText || "";
+  fields.hadithReference.value = safeConfig.hadithReference || "";
+  fields.marriageDoaText.value = safeConfig.marriageDoaText || "";
+  fields.marriageDoaReference.value = safeConfig.marriageDoaReference || "";
 
   fields.loveStoryPhotos.value = Array.isArray(safeConfig.loveStoryPhotos) ? safeConfig.loveStoryPhotos.slice(0, 3).join("\n") : "";
   fields.galleryPhotos.value = Array.isArray(safeConfig.galleryPhotos) ? safeConfig.galleryPhotos.join("\n") : "";
