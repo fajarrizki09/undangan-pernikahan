@@ -224,6 +224,35 @@ textarea:focus {
   font-size: 0.9rem;
 }
 
+.gift-editor-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.gift-account-editor-item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.gift-account-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.gift-account-editor-title {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6f554b;
+  font-weight: 700;
+}
+
 .guest-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--line);

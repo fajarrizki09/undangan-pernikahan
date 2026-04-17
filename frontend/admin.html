@@ -84,6 +84,19 @@
         <label>Format ISO (otomatis)
           <input id="weddingDateISO" type="text" readonly />
         </label>
+        <label>Target Countdown (Hari Pertama Acara)
+          <input id="eventStartDateTimeLocal" type="datetime-local" />
+        </label>
+        <label>Zona Waktu Countdown
+          <select id="eventStartOffset">
+            <option value="+07:00">WIB (+07:00)</option>
+            <option value="+08:00">WITA (+08:00)</option>
+            <option value="+09:00">WIT (+09:00)</option>
+          </select>
+        </label>
+        <label>Event Start ISO (otomatis)
+          <input id="eventStartISO" type="text" readonly />
+        </label>
       </div>
 
       <h3>Akad</h3>
@@ -101,6 +114,22 @@
         <label>Tempat Resepsi<input id="resepsiVenue" type="text" /></label>
         <label>Link Maps Resepsi<input id="resepsiMapUrl" type="text" /></label>
       </div>
+
+      <h3>Gift / Rekening</h3>
+      <div class="grid two">
+        <label class="inline-check">
+          <input id="giftEnabled" type="checkbox" />
+          Aktifkan Section Gift
+        </label>
+        <label>Judul Section Gift<input id="giftSectionTitle" type="text" placeholder="Wedding Gift" /></label>
+        <label>Subjudul Section Gift
+          <textarea id="giftSectionSubtitle" rows="2" placeholder="Doa restu Anda adalah hadiah terindah."></textarea>
+        </label>
+      </div>
+      <div class="actions">
+        <button id="btnAddGiftAccount" class="btn btn-ghost" type="button">Tambah Rekening</button>
+      </div>
+      <div id="giftAccountsEditor" class="gift-editor-list"></div>
 
       <h3>Doa, Ayat, dan Hadist</h3>
       <div class="grid two">

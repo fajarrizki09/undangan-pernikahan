@@ -18,6 +18,9 @@ const fields = {
   weddingDateTimeLocal: document.getElementById("weddingDateTimeLocal"),
   weddingTimeOffset: document.getElementById("weddingTimeOffset"),
   weddingDateISO: document.getElementById("weddingDateISO"),
+  eventStartDateTimeLocal: document.getElementById("eventStartDateTimeLocal"),
+  eventStartOffset: document.getElementById("eventStartOffset"),
+  eventStartISO: document.getElementById("eventStartISO"),
   akadDate: document.getElementById("akadDate"),
   akadTime: document.getElementById("akadTime"),
   akadVenue: document.getElementById("akadVenue"),
@@ -48,6 +51,9 @@ const fields = {
   galleryMaxItems: document.getElementById("galleryMaxItems"),
   galleryAutoplaySec: document.getElementById("galleryAutoplaySec"),
   galleryStyle: document.getElementById("galleryStyle"),
+  giftEnabled: document.getElementById("giftEnabled"),
+  giftSectionTitle: document.getElementById("giftSectionTitle"),
+  giftSectionSubtitle: document.getElementById("giftSectionSubtitle"),
   backgroundMusicUrl: document.getElementById("backgroundMusicUrl"),
   musicStartSec: document.getElementById("musicStartSec"),
   musicLoopStartSec: document.getElementById("musicLoopStartSec"),
@@ -87,11 +93,26 @@ const deletePhotoUrlsInput = document.getElementById("deletePhotoUrls");
 const musicFileInput = document.getElementById("musicFile");
 const galleryPreview = document.getElementById("galleryPreview");
 const loveStoryPreview = document.getElementById("loveStoryPreview");
+const giftAccountsEditor = document.getElementById("giftAccountsEditor");
 const deleteFromDriveInput = document.getElementById("deleteFromDrive");
 const btnHeroFromGallery = document.getElementById("btnHeroFromGallery");
 const btnLoveStoryFromGallery = document.getElementById("btnLoveStoryFromGallery");
+const btnAddGiftAccount = document.getElementById("btnAddGiftAccount");
 const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
+
+const BANK_OPTIONS = [
+  { code: "bca", name: "BCA", logoUrl: "https://logo.clearbit.com/bca.co.id" },
+  { code: "bri", name: "BRI", logoUrl: "https://logo.clearbit.com/bri.co.id" },
+  { code: "bni", name: "BNI", logoUrl: "https://logo.clearbit.com/bni.co.id" },
+  { code: "mandiri", name: "Mandiri", logoUrl: "https://logo.clearbit.com/bankmandiri.co.id" },
+  { code: "bsi", name: "BSI", logoUrl: "https://logo.clearbit.com/bankbsi.co.id" },
+  { code: "cimb", name: "CIMB Niaga", logoUrl: "https://logo.clearbit.com/cimbniaga.co.id" },
+  { code: "permata", name: "Permata", logoUrl: "https://logo.clearbit.com/permatabank.com" },
+  { code: "btn", name: "BTN", logoUrl: "https://logo.clearbit.com/btn.co.id" },
+  { code: "danamon", name: "Danamon", logoUrl: "https://logo.clearbit.com/danamon.co.id" },
+  { code: "panin", name: "Panin", logoUrl: "https://logo.clearbit.com/panin.co.id" }
+];
 
 document.getElementById("btnLoadConfig").addEventListener("click", loadConfigFromServer);
 document.getElementById("btnSaveConfig").addEventListener("click", saveConfigToServer);
@@ -106,12 +127,20 @@ document.getElementById("btnExportGuestsCsv").addEventListener("click", exportGu
 document.getElementById("btnLoadRsvps").addEventListener("click", loadRsvps);
 document.getElementById("btnGenerateHeroDate").addEventListener("click", generateHeroDatePlaceFromInputs);
 document.getElementById("btnApplyGallerySelection").addEventListener("click", applySelectedGalleryUrls);
+if (btnAddGiftAccount) {
+  btnAddGiftAccount.addEventListener("click", () => {
+    const current = readGiftAccountsFromEditor();
+    current.push(createDefaultGiftAccount());
+    renderGiftAccountsEditor(current);
+  });
+}
 
 apiUrlInput.value = RSVP_API_URL;
 let currentGuests = [];
 let currentRsvps = [];
 let selectedGalleryUrls = new Set();
 let galleryPhotoFocusMap = {};
+let giftAccountsDraft = [];
 let guestState = {
   total: 0,
   page: 1,
@@ -268,6 +297,217 @@ function buildWeddingIsoFromInputs() {
 
 function updateWeddingIsoPreview() {
   fields.weddingDateISO.value = buildWeddingIsoFromInputs();
+  if (!fields.eventStartDateTimeLocal.value && fields.weddingDateTimeLocal.value) {
+    fields.eventStartDateTimeLocal.value = fields.weddingDateTimeLocal.value;
+    fields.eventStartOffset.value = fields.weddingTimeOffset.value || "+07:00";
+    updateEventStartIsoPreview();
+  }
+}
+
+function buildEventStartIsoFromInputs() {
+  const dateTime = fields.eventStartDateTimeLocal.value.trim();
+  const offset = fields.eventStartOffset.value || "+07:00";
+  if (!dateTime) return "";
+  return `${dateTime}:00${offset}`;
+}
+
+function updateEventStartIsoPreview() {
+  fields.eventStartISO.value = buildEventStartIsoFromInputs();
+}
+
+function normalizeBoolean(value, fallback = false) {
+  if (typeof value === "boolean") return value;
+  const text = String(value || "").trim().toLowerCase();
+  if (!text) return fallback;
+  return ["1", "true", "yes", "y", "on"].includes(text);
+}
+
+function getBankOptionByCode(code) {
+  const clean = String(code || "").trim().toLowerCase();
+  return BANK_OPTIONS.find((item) => item.code === clean) || null;
+}
+
+function createDefaultGiftAccount() {
+  const fallbackBank = BANK_OPTIONS[0];
+  return {
+    bankCode: fallbackBank.code,
+    bankName: fallbackBank.name,
+    accountNumber: "",
+    accountHolder: "",
+    logoUrl: fallbackBank.logoUrl,
+    isActive: true
+  };
+}
+
+function normalizeGiftAccounts(input) {
+  let source = input;
+  if (typeof source === "string") {
+    try {
+      source = JSON.parse(source);
+    } catch (error) {
+      source = [];
+    }
+  }
+  if (!Array.isArray(source)) return [];
+
+  return source.map((item) => {
+    const bankCode = String(item && item.bankCode || "").trim().toLowerCase();
+    const bankMeta = getBankOptionByCode(bankCode);
+    const accountNumber = String(item && item.accountNumber || "").replace(/\D+/g, "");
+    return {
+      bankCode: bankMeta ? bankMeta.code : bankCode,
+      bankName: String(item && item.bankName || (bankMeta && bankMeta.name) || "").trim(),
+      accountNumber,
+      accountHolder: String(item && item.accountHolder || "").trim(),
+      logoUrl: String(item && item.logoUrl || (bankMeta && bankMeta.logoUrl) || "").trim(),
+      isActive: normalizeBoolean(item && item.isActive, true)
+    };
+  });
+}
+
+function suggestBankByAccountNumber(accountNumber) {
+  const digits = String(accountNumber || "").replace(/\D+/g, "");
+  if (!digits) return null;
+  if (digits.length === 13) return "mandiri";
+  if (digits.length >= 14) return "bri";
+  if (digits.length === 10 && digits.startsWith("0")) return "bca";
+  if (digits.length === 10 && digits.startsWith("1")) return "bni";
+  return null;
+}
+
+function renderGiftAccountsEditor(accounts) {
+  if (!giftAccountsEditor) return;
+  giftAccountsDraft = normalizeGiftAccounts(accounts);
+
+  if (!giftAccountsDraft.length) {
+    giftAccountsDraft = [createDefaultGiftAccount()];
+  }
+
+  giftAccountsEditor.innerHTML = "";
+  giftAccountsDraft.forEach((account, index) => {
+    const item = document.createElement("article");
+    item.className = "gift-account-editor-item";
+
+    const head = document.createElement("div");
+    head.className = "gift-account-editor-head";
+    const title = document.createElement("p");
+    title.className = "gift-account-editor-title";
+    title.textContent = `Rekening ${index + 1}`;
+    head.appendChild(title);
+    item.appendChild(head);
+
+    const bankSelect = document.createElement("select");
+    bankSelect.innerHTML = `<option value="">Pilih Bank</option>${BANK_OPTIONS.map((opt) => `<option value="${opt.code}">${opt.name}</option>`).join("")}`;
+    bankSelect.value = account.bankCode || "";
+
+    const bankNameInput = document.createElement("input");
+    bankNameInput.type = "text";
+    bankNameInput.placeholder = "Nama Bank";
+    bankNameInput.value = account.bankName || "";
+
+    const accountNumberInput = document.createElement("input");
+    accountNumberInput.type = "text";
+    accountNumberInput.placeholder = "Nomor Rekening";
+    accountNumberInput.value = account.accountNumber || "";
+
+    const accountHolderInput = document.createElement("input");
+    accountHolderInput.type = "text";
+    accountHolderInput.placeholder = "Nama Pemilik Rekening";
+    accountHolderInput.value = account.accountHolder || "";
+
+    const logoInput = document.createElement("input");
+    logoInput.type = "text";
+    logoInput.placeholder = "URL Logo Bank";
+    logoInput.value = account.logoUrl || "";
+
+    const activeWrap = document.createElement("label");
+    activeWrap.className = "inline-check";
+    const activeInput = document.createElement("input");
+    activeInput.type = "checkbox";
+    activeInput.checked = normalizeBoolean(account.isActive, true);
+    const activeText = document.createElement("span");
+    activeText.textContent = "Aktif Ditampilkan";
+    activeWrap.appendChild(activeInput);
+    activeWrap.appendChild(activeText);
+
+    const controls = document.createElement("div");
+    controls.className = "actions";
+
+    const detectBtn = document.createElement("button");
+    detectBtn.type = "button";
+    detectBtn.className = "btn-mini";
+    detectBtn.textContent = "Deteksi Bank";
+    detectBtn.addEventListener("click", () => {
+      const suggestion = suggestBankByAccountNumber(accountNumberInput.value);
+      if (!suggestion) {
+        setStatus(statusConfig, "Bank tidak bisa dideteksi otomatis. Pilih manual.");
+        return;
+      }
+      const bankMeta = getBankOptionByCode(suggestion);
+      if (!bankMeta) return;
+      bankSelect.value = bankMeta.code;
+      bankNameInput.value = bankMeta.name;
+      if (!logoInput.value.trim()) {
+        logoInput.value = bankMeta.logoUrl;
+      }
+      setStatus(statusConfig, `Bank terdeteksi: ${bankMeta.name} (silakan verifikasi).`);
+    });
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "btn-mini";
+    removeBtn.textContent = "Hapus Rekening";
+    removeBtn.addEventListener("click", () => {
+      const next = readGiftAccountsFromEditor();
+      next.splice(index, 1);
+      renderGiftAccountsEditor(next.length ? next : [createDefaultGiftAccount()]);
+    });
+
+    controls.appendChild(detectBtn);
+    controls.appendChild(removeBtn);
+
+    bankSelect.addEventListener("change", () => {
+      const bankMeta = getBankOptionByCode(bankSelect.value);
+      if (!bankMeta) return;
+      bankNameInput.value = bankMeta.name;
+      if (!logoInput.value.trim()) logoInput.value = bankMeta.logoUrl;
+    });
+
+    const wrap = document.createElement("div");
+    wrap.className = "grid two";
+    wrap.appendChild(createLabeledInput("Bank", bankSelect));
+    wrap.appendChild(createLabeledInput("Nama Bank", bankNameInput));
+    wrap.appendChild(createLabeledInput("Nomor Rekening", accountNumberInput));
+    wrap.appendChild(createLabeledInput("Nama Pemilik", accountHolderInput));
+    wrap.appendChild(createLabeledInput("Logo Bank (URL)", logoInput));
+    wrap.appendChild(activeWrap);
+
+    item.appendChild(wrap);
+    item.appendChild(controls);
+    giftAccountsEditor.appendChild(item);
+  });
+}
+
+function createLabeledInput(labelText, inputEl) {
+  const label = document.createElement("label");
+  label.textContent = labelText;
+  label.appendChild(inputEl);
+  return label;
+}
+
+function readGiftAccountsFromEditor() {
+  if (!giftAccountsEditor) return [];
+  const items = Array.from(giftAccountsEditor.querySelectorAll(".gift-account-editor-item"));
+  return items.map((item) => {
+    const inputs = item.querySelectorAll("input, select");
+    const bankCode = String(inputs[0] && inputs[0].value || "").trim().toLowerCase();
+    const bankName = String(inputs[1] && inputs[1].value || "").trim();
+    const accountNumber = String(inputs[2] && inputs[2].value || "").replace(/\D+/g, "");
+    const accountHolder = String(inputs[3] && inputs[3].value || "").trim();
+    const logoUrl = String(inputs[4] && inputs[4].value || "").trim();
+    const isActive = Boolean(inputs[5] && inputs[5].checked);
+    return { bankCode, bankName, accountNumber, accountHolder, logoUrl, isActive };
+  }).filter((item) => item.accountNumber);
 }
 
 function parseDateInput(value) {
@@ -323,6 +563,13 @@ function generateHeroDatePlaceFromInputs() {
   fields.heroDatePlace.value = result;
   const dateOnly = result.split("•")[0].trim();
   fields.resepsiDate.value = dateOnly;
+  if (!fields.eventStartDateTimeLocal.value) {
+    const yyyy = String(start.getFullYear());
+    const mm = String(start.getMonth() + 1).padStart(2, "0");
+    const dd = String(start.getDate()).padStart(2, "0");
+    fields.eventStartDateTimeLocal.value = `${yyyy}-${mm}-${dd}T08:00`;
+    updateEventStartIsoPreview();
+  }
   setStatus(statusConfig, "Tanggal hero berhasil digenerate.");
 }
 
@@ -462,6 +709,7 @@ function readConfigFromForm() {
     musicLoopStartSec: parseNonNegativeNumber(fields.musicLoopStartSec.value.trim()),
     musicLoopEndSec: parseNonNegativeNumber(fields.musicLoopEndSec.value.trim()),
     weddingDateISO: buildWeddingIsoFromInputs(),
+    eventStartISO: buildEventStartIsoFromInputs(),
     akad: {
       date: fields.akadDate.value.trim(),
       time: fields.akadTime.value.trim(),
@@ -488,7 +736,11 @@ function readConfigFromForm() {
     galleryMaxItems: parseNonNegativeInteger(fields.galleryMaxItems.value.trim()),
     galleryAutoplaySec: parsePositiveNumber(fields.galleryAutoplaySec.value.trim()),
     galleryStyle: normalizeGalleryStyle(fields.galleryStyle.value),
-    galleryPhotoFocus: sanitizedFocusMap
+    galleryPhotoFocus: sanitizedFocusMap,
+    giftEnabled: Boolean(fields.giftEnabled && fields.giftEnabled.checked),
+    giftSectionTitle: fields.giftSectionTitle.value.trim(),
+    giftSectionSubtitle: fields.giftSectionSubtitle.value.trim(),
+    giftAccounts: readGiftAccountsFromEditor()
   };
 }
 
@@ -545,6 +797,11 @@ function fillForm(config) {
   fields.weddingTimeOffset.value = parsedWeddingDate.offset;
   updateWeddingIsoPreview();
 
+  const parsedEventStartDate = parseWeddingIso(safeConfig.eventStartISO || safeConfig.weddingDateISO || "");
+  fields.eventStartDateTimeLocal.value = parsedEventStartDate.localDateTime;
+  fields.eventStartOffset.value = parsedEventStartDate.offset;
+  updateEventStartIsoPreview();
+
   fields.akadDate.value = (safeConfig.akad && safeConfig.akad.date) || "";
   fields.akadTime.value = (safeConfig.akad && safeConfig.akad.time) || "";
   fields.akadVenue.value = (safeConfig.akad && safeConfig.akad.venue) || "";
@@ -579,6 +836,16 @@ function fillForm(config) {
   fields.galleryMaxItems.value = safeConfig.galleryMaxItems || "";
   fields.galleryAutoplaySec.value = safeConfig.galleryAutoplaySec || "";
   fields.galleryStyle.value = normalizeGalleryStyle(safeConfig.galleryStyle || (WEDDING_CONFIG.galleryStyle || "elegant"));
+  fields.giftEnabled.checked = normalizeBoolean(safeConfig.giftEnabled, normalizeBoolean(WEDDING_CONFIG.giftEnabled, false));
+  fields.giftSectionTitle.value = String(safeConfig.giftSectionTitle || WEDDING_CONFIG.giftSectionTitle || "Wedding Gift");
+  fields.giftSectionSubtitle.value = String(
+    safeConfig.giftSectionSubtitle || WEDDING_CONFIG.giftSectionSubtitle || "Doa restu Anda adalah hadiah terindah."
+  );
+  renderGiftAccountsEditor(
+    normalizeGiftAccounts(
+      safeConfig.giftAccounts !== undefined ? safeConfig.giftAccounts : (WEDDING_CONFIG.giftAccounts || [])
+    )
+  );
   updateGalleryModeFields();
   renderGalleryPreview();
 }
@@ -1757,6 +2024,8 @@ invitationBaseUrlInput.addEventListener("input", () => {
 });
 fields.weddingDateTimeLocal.addEventListener("input", updateWeddingIsoPreview);
 fields.weddingTimeOffset.addEventListener("change", updateWeddingIsoPreview);
+fields.eventStartDateTimeLocal.addEventListener("input", updateEventStartIsoPreview);
+fields.eventStartOffset.addEventListener("change", updateEventStartIsoPreview);
 fields.galleryPhotos.addEventListener("input", renderGalleryPreview);
 fields.loveStoryPhotos.addEventListener("input", renderLoveStoryPreview);
 if (fields.heroDateStart) {

@@ -1,4 +1,4 @@
-const form = document.getElementById("rsvpForm");
+﻿const form = document.getElementById("rsvpForm");
 const statusText = document.getElementById("formStatus");
 const inputNama = document.getElementById("inputNama");
 const submitRsvpBtn = form ? form.querySelector("button[type='submit']") : null;
@@ -26,11 +26,28 @@ const gateNames = document.getElementById("gateNames");
 const gateDatePlace = document.getElementById("gateDatePlace");
 const gateGuestName = document.getElementById("gateGuestName");
 const addToCalendarLink = document.getElementById("addToCalendarLink");
+const giftSection = document.getElementById("giftSection");
+const giftSectionTitle = document.getElementById("giftSectionTitle");
+const giftSectionSubtitle = document.getElementById("giftSectionSubtitle");
+const giftAccountsList = document.getElementById("giftAccountsList");
+
+const BANK_CATALOG = {
+  bca: { code: "bca", name: "BCA", logoUrl: "https://logo.clearbit.com/bca.co.id" },
+  bri: { code: "bri", name: "BRI", logoUrl: "https://logo.clearbit.com/bri.co.id" },
+  bni: { code: "bni", name: "BNI", logoUrl: "https://logo.clearbit.com/bni.co.id" },
+  mandiri: { code: "mandiri", name: "Mandiri", logoUrl: "https://logo.clearbit.com/bankmandiri.co.id" },
+  bsi: { code: "bsi", name: "BSI", logoUrl: "https://logo.clearbit.com/bankbsi.co.id" },
+  cimb: { code: "cimb", name: "CIMB Niaga", logoUrl: "https://logo.clearbit.com/cimbniaga.co.id" },
+  permata: { code: "permata", name: "Permata", logoUrl: "https://logo.clearbit.com/permatabank.com" },
+  btn: { code: "btn", name: "BTN", logoUrl: "https://logo.clearbit.com/btn.co.id" },
+  danamon: { code: "danamon", name: "Danamon", logoUrl: "https://logo.clearbit.com/danamon.co.id" },
+  panin: { code: "panin", name: "Panin", logoUrl: "https://logo.clearbit.com/panin.co.id" }
+};
 const lightbox = document.createElement("div");
 lightbox.className = "gallery-lightbox";
 lightbox.setAttribute("aria-hidden", "true");
 lightbox.innerHTML = `
-  <button type="button" class="gallery-lightbox-close" aria-label="Tutup foto">×</button>
+  <button type="button" class="gallery-lightbox-close" aria-label="Tutup foto">&times;</button>
   <img class="gallery-lightbox-image" alt="Foto galeri ukuran besar" />
 `;
 document.body.appendChild(lightbox);
@@ -68,7 +85,12 @@ let currentConfig = {
   loveStoryPhotos: Array.isArray(WEDDING_CONFIG.loveStoryPhotos) ? [...WEDDING_CONFIG.loveStoryPhotos] : [],
   loveStoryItems: Array.isArray(WEDDING_CONFIG.loveStoryItems) ? [...WEDDING_CONFIG.loveStoryItems] : [],
   galleryPhotos: Array.isArray(WEDDING_CONFIG.galleryPhotos) ? [...WEDDING_CONFIG.galleryPhotos] : [],
-  galleryPhotoFocus: {}
+  galleryPhotoFocus: {},
+  eventStartISO: String(WEDDING_CONFIG.eventStartISO || WEDDING_CONFIG.weddingDateISO || "").trim(),
+  giftEnabled: Boolean(WEDDING_CONFIG.giftEnabled),
+  giftSectionTitle: String(WEDDING_CONFIG.giftSectionTitle || "Wedding Gift"),
+  giftSectionSubtitle: String(WEDDING_CONFIG.giftSectionSubtitle || ""),
+  giftAccounts: Array.isArray(WEDDING_CONFIG.giftAccounts) ? [...WEDDING_CONFIG.giftAccounts] : []
 };
 const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
 const CONFIG_CACHE_TTL_MS = 1000 * 60 * 10;
@@ -252,6 +274,36 @@ function normalizeGalleryPhotoFocusMap(input) {
   return normalized;
 }
 
+function normalizeBoolean(value, fallback = false) {
+  if (typeof value === "boolean") return value;
+  const text = String(value || "").trim().toLowerCase();
+  if (!text) return fallback;
+  return ["1", "true", "yes", "y", "on"].includes(text);
+}
+
+function normalizeGiftAccounts(input) {
+  let source = input;
+  if (typeof source === "string") {
+    try {
+      source = JSON.parse(source);
+    } catch (error) {
+      source = [];
+    }
+  }
+  if (!Array.isArray(source)) return [];
+
+  return source
+    .map((item) => ({
+      bankCode: String(item && item.bankCode || "").trim().toLowerCase(),
+      bankName: String(item && item.bankName || "").trim(),
+      accountNumber: String(item && item.accountNumber || "").replace(/\D+/g, ""),
+      accountHolder: String(item && item.accountHolder || "").trim(),
+      logoUrl: String(item && item.logoUrl || "").trim(),
+      isActive: normalizeBoolean(item && item.isActive, true)
+    }))
+    .filter((item) => item.accountNumber);
+}
+
 function getGalleryObjectPosition(photoUrl) {
   const key = String(photoUrl || "").trim();
   const map = normalizeGalleryPhotoFocusMap(currentConfig.galleryPhotoFocus);
@@ -288,6 +340,26 @@ function mergeConfig(base, incoming) {
       : base.galleryPhotos,
     galleryPhotoFocus: normalizeGalleryPhotoFocusMap(
       incoming.galleryPhotoFocus || base.galleryPhotoFocus || WEDDING_CONFIG.galleryPhotoFocus || {}
+    ),
+    eventStartISO: String(
+      incoming.eventStartISO ||
+      base.eventStartISO ||
+      WEDDING_CONFIG.eventStartISO ||
+      incoming.weddingDateISO ||
+      base.weddingDateISO ||
+      WEDDING_CONFIG.weddingDateISO ||
+      ""
+    ).trim(),
+    giftEnabled: normalizeBoolean(
+      (incoming.giftEnabled !== undefined ? incoming.giftEnabled : base.giftEnabled),
+      normalizeBoolean(WEDDING_CONFIG.giftEnabled, false)
+    ),
+    giftSectionTitle: String(incoming.giftSectionTitle || base.giftSectionTitle || WEDDING_CONFIG.giftSectionTitle || "Wedding Gift").trim(),
+    giftSectionSubtitle: String(incoming.giftSectionSubtitle || base.giftSectionSubtitle || WEDDING_CONFIG.giftSectionSubtitle || "").trim(),
+    giftAccounts: normalizeGiftAccounts(
+      incoming.giftAccounts !== undefined
+        ? incoming.giftAccounts
+        : (base.giftAccounts !== undefined ? base.giftAccounts : WEDDING_CONFIG.giftAccounts)
     )
   };
 
@@ -766,14 +838,14 @@ function renderGalleryCarousel(photos, autoplaySec) {
   const prev = document.createElement("button");
   prev.type = "button";
   prev.className = "gallery-nav gallery-nav-prev";
-  prev.textContent = "‹";
+  prev.textContent = "â€¹";
   prev.setAttribute("aria-label", "Foto sebelumnya");
   prev.addEventListener("click", () => updateSlide(activeIndex <= 0 ? maxIndex : activeIndex - 1));
 
   const next = document.createElement("button");
   next.type = "button";
   next.className = "gallery-nav gallery-nav-next";
-  next.textContent = "›";
+  next.textContent = "â€º";
   next.setAttribute("aria-label", "Foto berikutnya");
   next.addEventListener("click", () => updateSlide(activeIndex >= maxIndex ? 0 : activeIndex + 1));
 
@@ -881,7 +953,7 @@ function formatGoogleCalendarDate(ms) {
 
 function buildCalendarEndTime(startMs) {
   const resepsiTime = String((currentConfig.resepsi && currentConfig.resepsi.time) || "").trim();
-  const rangeMatch = resepsiTime.match(/(\d{1,2})[.:](\d{2})\s*[-–]\s*(\d{1,2})[.:](\d{2})/);
+  const rangeMatch = resepsiTime.match(/(\d{1,2})[.:](\d{2})\s*[-â€“]\s*(\d{1,2})[.:](\d{2})/);
   if (!rangeMatch) return startMs + (2 * 60 * 60 * 1000);
 
   const startHour = Number(rangeMatch[1]);
@@ -924,6 +996,102 @@ function applyCalendarLink() {
 
   addToCalendarLink.href = url.toString();
   addToCalendarLink.style.display = "inline-flex";
+}
+
+function getBankMeta(account) {
+  const code = String(account && account.bankCode || "").trim().toLowerCase();
+  if (code && BANK_CATALOG[code]) return BANK_CATALOG[code];
+  return null;
+}
+
+function renderGiftSection() {
+  if (!giftSection || !giftAccountsList) return;
+
+  const enabled = normalizeBoolean(currentConfig.giftEnabled, false);
+  const accounts = normalizeGiftAccounts(currentConfig.giftAccounts).filter((item) => item.isActive);
+  if (!enabled || !accounts.length) {
+    giftSection.style.display = "none";
+    return;
+  }
+
+  giftSection.style.display = "";
+  if (giftSectionTitle) {
+    giftSectionTitle.textContent = String(currentConfig.giftSectionTitle || "Wedding Gift").trim() || "Wedding Gift";
+  }
+  if (giftSectionSubtitle) {
+    giftSectionSubtitle.textContent = String(currentConfig.giftSectionSubtitle || "").trim() || "Doa restu Anda adalah hadiah terindah.";
+  }
+
+  giftAccountsList.innerHTML = "";
+  accounts.forEach((account) => {
+    const card = document.createElement("article");
+    card.className = "gift-account-card";
+
+    const bankMeta = getBankMeta(account);
+    const bankName = String(account.bankName || (bankMeta && bankMeta.name) || "Bank").trim();
+    const logoUrl = String(account.logoUrl || (bankMeta && bankMeta.logoUrl) || "").trim();
+
+    const head = document.createElement("div");
+    head.className = "gift-bank-row";
+
+    if (logoUrl) {
+      const logo = document.createElement("img");
+      logo.className = "gift-bank-logo";
+      logo.alt = `${bankName} logo`;
+      logo.loading = "lazy";
+      logo.src = logoUrl;
+      logo.onerror = () => {
+        const fallback = document.createElement("div");
+        fallback.className = "gift-bank-fallback";
+        fallback.textContent = bankName.slice(0, 3).toUpperCase();
+        logo.replaceWith(fallback);
+      };
+      head.appendChild(logo);
+    } else {
+      const fallback = document.createElement("div");
+      fallback.className = "gift-bank-fallback";
+      fallback.textContent = bankName.slice(0, 3).toUpperCase();
+      head.appendChild(fallback);
+    }
+
+    const bankText = document.createElement("p");
+    bankText.className = "gift-bank-name";
+    bankText.textContent = bankName;
+    head.appendChild(bankText);
+
+    const accountNumber = document.createElement("p");
+    accountNumber.className = "gift-account-number";
+    accountNumber.textContent = account.accountNumber;
+
+    const holder = document.createElement("p");
+    holder.className = "gift-account-holder";
+    holder.textContent = account.accountHolder || "-";
+
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "gift-copy-btn";
+    copyBtn.textContent = "Salin Rekening";
+    copyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(account.accountNumber);
+        copyBtn.textContent = "Tersalin";
+        window.setTimeout(() => {
+          copyBtn.textContent = "Salin Rekening";
+        }, 1200);
+      } catch (error) {
+        copyBtn.textContent = "Gagal Salin";
+        window.setTimeout(() => {
+          copyBtn.textContent = "Salin Rekening";
+        }, 1400);
+      }
+    });
+
+    card.appendChild(head);
+    card.appendChild(accountNumber);
+    card.appendChild(holder);
+    card.appendChild(copyBtn);
+    giftAccountsList.appendChild(card);
+  });
 }
 
 function applyWeddingConfig() {
@@ -1021,6 +1189,7 @@ function applyWeddingConfig() {
   }
 
   renderGalleryGrid(currentConfig.galleryPhotos);
+  renderGiftSection();
 
   if (Array.isArray(currentConfig.loveStoryPhotos)) {
     currentConfig.loveStoryPhotos.slice(0, 3).forEach((src, index) => {
@@ -1150,17 +1319,45 @@ function parseIndonesianDateToMs(dateText, timeText) {
   let month = null;
   let year = null;
 
-  const idMatch = normalized.match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/);
-  if (idMatch && monthMap[idMatch[2]]) {
-    day = Number(idMatch[1]);
-    month = Number(monthMap[idMatch[2]]);
-    year = Number(idMatch[3]);
+  const rangeSameMonthMatch = normalized.match(/(\d{1,2})\s*-\s*(\d{1,2})\s+([a-z]+)\s+(\d{4})/);
+  if (rangeSameMonthMatch && monthMap[rangeSameMonthMatch[3]]) {
+    day = Number(rangeSameMonthMatch[1]);
+    month = Number(monthMap[rangeSameMonthMatch[3]]);
+    year = Number(rangeSameMonthMatch[4]);
   } else {
-    const slashMatch = normalized.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
-    if (slashMatch) {
-      day = Number(slashMatch[1]);
-      month = Number(slashMatch[2]);
-      year = Number(slashMatch[3]);
+    const rangeTwoMonthMatch = normalized.match(/(\d{1,2})\s+([a-z]+)\s*-\s*(\d{1,2})\s+([a-z]+)\s+(\d{4})/);
+    if (rangeTwoMonthMatch && monthMap[rangeTwoMonthMatch[2]]) {
+      day = Number(rangeTwoMonthMatch[1]);
+      month = Number(monthMap[rangeTwoMonthMatch[2]]);
+      year = Number(rangeTwoMonthMatch[5]);
+    }
+  }
+
+  if (!day || !month || !year) {
+    const idMatch = normalized.match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/);
+    if (idMatch && monthMap[idMatch[2]]) {
+      day = Number(idMatch[1]);
+      month = Number(monthMap[idMatch[2]]);
+      year = Number(idMatch[3]);
+    } else {
+      const slashMatch = normalized.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+      if (slashMatch) {
+        day = Number(slashMatch[1]);
+        month = Number(slashMatch[2]);
+        year = Number(slashMatch[3]);
+      }
+    }
+  }
+
+  if (!day || !month || !year) {
+    const anyDateMatch = normalized.match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/g);
+    if (anyDateMatch && anyDateMatch.length) {
+      const first = anyDateMatch[0].match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/);
+      if (first && monthMap[first[2]]) {
+        day = Number(first[1]);
+        month = Number(monthMap[first[2]]);
+        year = Number(first[3]);
+      }
     }
   }
 
@@ -1180,7 +1377,13 @@ function parseIndonesianDateToMs(dateText, timeText) {
   return Date.UTC(year, month - 1, day, hour, minute, 0) - (7 * 60 * 60 * 1000);
 }
 
-function parseWeddingTimestamp() {
+function parsePrimaryWeddingTimestamp() {
+  const eventStartIso = String(currentConfig.eventStartISO || "").trim();
+  if (eventStartIso) {
+    const eventStartMs = parseIsoDateTimeToMs(eventStartIso);
+    if (!Number.isNaN(eventStartMs)) return eventStartMs;
+  }
+
   const isoValue = String(currentConfig.weddingDateISO || "").trim();
   if (isoValue) {
     const isoTime = parseIsoDateTimeToMs(isoValue);
@@ -1196,6 +1399,10 @@ function parseWeddingTimestamp() {
   if (!Number.isNaN(heroMs)) return heroMs;
 
   return NaN;
+}
+
+function parseWeddingTimestamp() {
+  return parsePrimaryWeddingTimestamp();
 }
 
 function updateCountdown() {
@@ -1564,3 +1771,4 @@ if (loaderRetry) {
     initPage();
   });
 }
+
