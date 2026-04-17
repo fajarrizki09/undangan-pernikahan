@@ -1015,6 +1015,7 @@ function renderGiftSection() {
   }
 
   giftSection.style.display = "";
+  giftAccountsList.classList.toggle("is-single", accounts.length === 1);
   let sectionTitleText = String(currentConfig.giftSectionTitle || "Wedding Gift").trim() || "Wedding Gift";
   let sectionSubtitleText = String(currentConfig.giftSectionSubtitle || "").trim();
   if (sectionTitleText.length > 60 && !sectionSubtitleText) {

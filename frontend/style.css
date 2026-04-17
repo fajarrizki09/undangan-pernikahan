@@ -24,9 +24,11 @@ body {
   color: var(--ink);
   font-family: "Manrope", sans-serif;
   background:
-    radial-gradient(1200px 560px at -10% -12%, #ddeade 0%, transparent 55%),
-    radial-gradient(900px 520px at 110% -12%, #f6e8d7 0%, transparent 56%),
-    linear-gradient(165deg, #fcfaf7, var(--bg));
+    radial-gradient(900px 620px at 52% 22%, rgba(225, 215, 206, 0.44) 0%, rgba(225, 215, 206, 0) 72%),
+    radial-gradient(860px 540px at 46% 82%, rgba(238, 230, 222, 0.56) 0%, rgba(238, 230, 222, 0) 74%),
+    radial-gradient(1200px 560px at -10% -12%, #ebe4dd 0%, transparent 55%),
+    radial-gradient(900px 520px at 110% -12%, #f5ebe0 0%, transparent 56%),
+    linear-gradient(168deg, #fcfaf7, #f2ebe4);
 }
 
 body::before,
@@ -35,39 +37,45 @@ body::after {
   position: fixed;
   pointer-events: none;
   z-index: 0;
-  width: 340px;
-  height: 340px;
-  opacity: 0.34;
+  width: 360px;
+  height: 360px;
+  opacity: 0.52;
   background-repeat: no-repeat;
   background-size: contain;
 }
 
 body::before {
-  left: -72px;
-  top: -78px;
-  transform: rotate(-12deg);
+  right: -94px;
+  top: -88px;
+  transform: rotate(6deg);
   background-image:
-    radial-gradient(circle at 26% 28%, rgba(255, 255, 255, 0.92) 0 10px, rgba(255, 255, 255, 0) 11px),
-    radial-gradient(ellipse at 30% 30%, rgba(255, 213, 233, 0.85) 0 18px, rgba(255, 213, 233, 0) 19px),
-    radial-gradient(ellipse at 41% 21%, rgba(255, 226, 240, 0.88) 0 14px, rgba(255, 226, 240, 0) 15px),
-    radial-gradient(ellipse at 18% 41%, rgba(245, 201, 222, 0.84) 0 16px, rgba(245, 201, 222, 0) 17px),
-    radial-gradient(circle at 38% 44%, rgba(230, 187, 209, 0.52) 0 8px, rgba(230, 187, 209, 0) 9px),
-    radial-gradient(ellipse at 56% 53%, rgba(214, 231, 214, 0.75) 0 20px, rgba(214, 231, 214, 0) 21px),
-    radial-gradient(ellipse at 68% 60%, rgba(191, 218, 193, 0.68) 0 16px, rgba(191, 218, 193, 0) 17px);
+    radial-gradient(ellipse at 78% 14%, rgba(188, 154, 114, 0.86) 0 34px, rgba(188, 154, 114, 0) 35px),
+    radial-gradient(ellipse at 69% 24%, rgba(198, 166, 126, 0.76) 0 22px, rgba(198, 166, 126, 0) 23px),
+    radial-gradient(ellipse at 87% 28%, rgba(176, 141, 102, 0.66) 0 20px, rgba(176, 141, 102, 0) 21px),
+    radial-gradient(ellipse at 64% 33%, rgba(231, 196, 202, 0.82) 0 24px, rgba(231, 196, 202, 0) 25px),
+    radial-gradient(ellipse at 74% 40%, rgba(245, 214, 219, 0.88) 0 17px, rgba(245, 214, 219, 0) 18px),
+    radial-gradient(ellipse at 57% 45%, rgba(244, 222, 224, 0.82) 0 13px, rgba(244, 222, 224, 0) 14px),
+    radial-gradient(ellipse at 56% 23%, rgba(205, 183, 147, 0.72) 0 25px, rgba(205, 183, 147, 0) 26px),
+    radial-gradient(circle at 62% 40%, rgba(168, 136, 102, 0.35) 0 7px, rgba(168, 136, 102, 0) 8px),
+    radial-gradient(circle at 71% 47%, rgba(183, 150, 117, 0.34) 0 6px, rgba(183, 150, 117, 0) 7px),
+    radial-gradient(circle at 84% 41%, rgba(188, 149, 115, 0.26) 0 4px, rgba(188, 149, 115, 0) 5px);
 }
 
 body::after {
-  right: -86px;
-  bottom: -92px;
-  transform: rotate(18deg);
+  left: -104px;
+  bottom: -98px;
+  transform: rotate(-8deg);
   background-image:
-    radial-gradient(circle at 72% 66%, rgba(255, 255, 255, 0.9) 0 10px, rgba(255, 255, 255, 0) 11px),
-    radial-gradient(ellipse at 70% 64%, rgba(255, 215, 235, 0.86) 0 20px, rgba(255, 215, 235, 0) 21px),
-    radial-gradient(ellipse at 59% 73%, rgba(255, 225, 241, 0.86) 0 16px, rgba(255, 225, 241, 0) 17px),
-    radial-gradient(ellipse at 82% 77%, rgba(246, 204, 224, 0.84) 0 14px, rgba(246, 204, 224, 0) 15px),
-    radial-gradient(circle at 62% 58%, rgba(224, 184, 206, 0.48) 0 8px, rgba(224, 184, 206, 0) 9px),
-    radial-gradient(ellipse at 34% 30%, rgba(216, 233, 216, 0.74) 0 24px, rgba(216, 233, 216, 0) 25px),
-    radial-gradient(ellipse at 24% 39%, rgba(188, 217, 191, 0.7) 0 18px, rgba(188, 217, 191, 0) 19px);
+    radial-gradient(ellipse at 26% 78%, rgba(188, 154, 114, 0.84) 0 35px, rgba(188, 154, 114, 0) 36px),
+    radial-gradient(ellipse at 36% 69%, rgba(205, 173, 134, 0.76) 0 24px, rgba(205, 173, 134, 0) 25px),
+    radial-gradient(ellipse at 19% 63%, rgba(175, 140, 102, 0.66) 0 20px, rgba(175, 140, 102, 0) 21px),
+    radial-gradient(ellipse at 44% 58%, rgba(230, 197, 203, 0.82) 0 24px, rgba(230, 197, 203, 0) 25px),
+    radial-gradient(ellipse at 34% 50%, rgba(245, 214, 219, 0.9) 0 16px, rgba(245, 214, 219, 0) 17px),
+    radial-gradient(ellipse at 53% 46%, rgba(244, 221, 223, 0.84) 0 14px, rgba(244, 221, 223, 0) 15px),
+    radial-gradient(ellipse at 45% 84%, rgba(206, 184, 150, 0.7) 0 25px, rgba(206, 184, 150, 0) 26px),
+    radial-gradient(circle at 38% 53%, rgba(167, 132, 98, 0.36) 0 7px, rgba(167, 132, 98, 0) 8px),
+    radial-gradient(circle at 30% 59%, rgba(183, 148, 114, 0.34) 0 6px, rgba(183, 148, 114, 0) 7px),
+    radial-gradient(circle at 48% 64%, rgba(188, 149, 115, 0.26) 0 4px, rgba(188, 149, 115, 0) 5px);
 }
 
 body.is-loading {
@@ -1225,26 +1233,38 @@ h2 {
 
 .gift-section h2 {
   margin: 0 auto;
-  max-width: 18ch;
-  font-size: clamp(1.8rem, 4.5vw, 2.6rem);
-  line-height: 1.08;
+  max-width: 30ch;
+  font-size: clamp(1.7rem, 4.2vw, 2.4rem);
+  line-height: 1.16;
   text-align: center;
+  text-wrap: balance;
 }
 
 .gift-section .lead {
   margin: 0 auto;
-  max-width: 40ch;
+  max-width: 54ch;
   text-align: center;
   color: #63776c;
-  font-size: clamp(0.94rem, 2.6vw, 1.05rem);
-  line-height: 1.72;
+  font-size: clamp(0.95rem, 2.5vw, 1.06rem);
+  line-height: 1.75;
+  text-wrap: pretty;
 }
 
 .gift-accounts-list {
   margin-top: 6px;
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  justify-content: center;
+}
+
+.gift-accounts-list.is-single {
+  grid-template-columns: minmax(0, 560px);
+}
+
+.gift-accounts-list.is-single .gift-account-card {
+  width: min(100%, 560px);
+  margin-inline: auto;
 }
 
 .gift-account-card {
@@ -1683,14 +1703,14 @@ body.is-loading .page-loader {
 
 @media (max-width: 520px) {
   .gift-section h2 {
-    font-size: clamp(1.5rem, 7.2vw, 2rem);
-    max-width: 22ch;
+    font-size: clamp(1.4rem, 6.6vw, 1.9rem);
+    max-width: 26ch;
   }
 
   .gift-section .lead {
-    max-width: 34ch;
-    font-size: 0.9rem;
-    line-height: 1.6;
+    max-width: 40ch;
+    font-size: 0.92rem;
+    line-height: 1.68;
   }
 
   .gift-accounts-list {
@@ -1711,21 +1731,21 @@ body.is-loading .page-loader {
 @media (max-width: 520px) {
   body::before,
   body::after {
-    width: 220px;
-    height: 220px;
-    opacity: 0.34;
+    width: 240px;
+    height: 240px;
+    opacity: 0.48;
   }
 
   body::before {
-    left: -28px;
-    top: 48px;
-    transform: rotate(-10deg);
+    right: -72px;
+    top: -14px;
+    transform: rotate(4deg);
   }
 
   body::after {
-    right: -34px;
-    bottom: 26px;
-    transform: rotate(14deg);
+    left: -74px;
+    bottom: -18px;
+    transform: rotate(-7deg);
   }
 
   .topbar {
@@ -1835,6 +1855,23 @@ body.is-loading .page-loader {
 }
 
 @media (max-width: 360px) {
+  body::before,
+  body::after {
+    width: 200px;
+    height: 200px;
+    opacity: 0.4;
+  }
+
+  body::before {
+    right: -66px;
+    top: -10px;
+  }
+
+  body::after {
+    left: -64px;
+    bottom: -12px;
+  }
+
   .topbar {
     width: calc(100vw - 10px);
     padding: 9px 7px 8px;
