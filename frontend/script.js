@@ -1764,12 +1764,12 @@ function setupMusicControl() {
   const hasMusic = Boolean(activeTracks.length);
   if (!hasMusic) {
     musicToggle.disabled = true;
-    musicToggle.textContent = "Musik belum diatur";
+    musicToggle.textContent = "Audio";
     return;
   }
 
   function setPlayingState(isPlaying) {
-    musicToggle.textContent = isPlaying ? "Pause Music" : "Play Music";
+    musicToggle.textContent = isPlaying ? "Pause" : "Music";
     musicToggle.classList.toggle("is-playing", isPlaying);
   }
 
@@ -1785,7 +1785,7 @@ function setupMusicControl() {
     }
 
     if (index >= primaryCandidateCount) {
-      musicToggle.textContent = "Play Music (Sumber Cadangan)";
+      musicToggle.textContent = "Music";
     }
     return true;
   }
@@ -1822,7 +1822,7 @@ function setupMusicControl() {
         }
       }
       setPlayingState(false);
-      musicToggle.textContent = "Musik gagal dimuat";
+      musicToggle.textContent = "Audio";
       return false;
     }
   }
@@ -1912,7 +1912,7 @@ function setupMusicControl() {
   bgMusic.addEventListener("error", () => {
     const nextIndex = currentMusicCandidateIndex + 1;
     const switched = useMusicCandidate(nextIndex);
-    musicToggle.textContent = switched ? musicToggle.textContent : "Musik gagal dimuat";
+    musicToggle.textContent = switched ? musicToggle.textContent : "Audio";
   });
 }
 

@@ -248,36 +248,38 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
 }
 
 .topbar {
-  width: min(1080px, 94vw);
-  margin: 16px auto 0;
-  padding: 12px 18px;
+  width: min(920px, 92vw);
+  margin: 12px auto 0;
+  padding: 8px 14px;
   position: sticky;
-  top: 12px;
+  top: 10px;
   z-index: 40;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(79, 119, 100, 0.14);
   border-radius: 999px;
-  background: rgba(255, 250, 244, 0.74);
-  backdrop-filter: blur(14px);
+  background: rgba(255, 250, 244, 0.52);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 24px rgba(44, 68, 57, 0.08);
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   white-space: nowrap;
   line-height: 1;
-  padding: 7px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(79, 119, 100, 0.24);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(239, 247, 242, 0.65));
+  padding: 4px 0;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
   text-decoration: none;
   color: var(--sage);
   font-family: "Cormorant Garamond", serif;
-  font-size: 1.45rem;
+  font-size: 1.72rem;
   font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .brand-letter {
@@ -298,9 +300,10 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
 .topbar nav {
   display: flex;
   flex-wrap: nowrap;
-  gap: 16px;
+  gap: 0;
   overflow-x: auto;
   scrollbar-width: none;
+  align-items: center;
 }
 
 .topbar nav::-webkit-scrollbar {
@@ -311,10 +314,28 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
   text-decoration: none;
   color: var(--ink);
   font-weight: 600;
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   white-space: nowrap;
+  opacity: 0.74;
+}
+
+.topbar nav a + a {
+  position: relative;
+  margin-left: 18px;
+  padding-left: 18px;
+}
+
+.topbar nav a + a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 11px;
+  transform: translateY(-50%);
+  background: rgba(79, 119, 100, 0.2);
 }
 
 .section {
@@ -332,11 +353,11 @@ main {
 .hero {
   position: relative;
   isolation: isolate;
-  min-height: 92vh;
+  min-height: 96vh;
   display: grid;
   place-content: center;
   text-align: center;
-  gap: 18px;
+  gap: 24px;
 }
 
 .hero > * {
@@ -347,18 +368,19 @@ main {
 .hero-cloud-photo {
   position: absolute;
   left: 50%;
-  top: 28%;
+  top: 27%;
   transform: translate(-50%, -50%);
-  width: min(860px, 96vw);
+  width: min(840px, 94vw);
   aspect-ratio: 16 / 8.8;
   border-radius: 36px;
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08)),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.12)),
     url("assets/photos/foto-1.svg") center 36%/cover no-repeat;
-  opacity: 0.46;
+  opacity: 0.34;
   z-index: 0;
-  box-shadow: 0 24px 50px rgba(42, 65, 55, 0.18);
+  box-shadow: 0 22px 46px rgba(42, 65, 55, 0.12);
   overflow: hidden;
+  filter: saturate(0.72) brightness(1.02);
 }
 
 .hero-cloud-photo::before,
@@ -405,7 +427,7 @@ main {
 .hero-title-block {
   width: min(760px, 100%);
   margin: 0 auto;
-  padding: 8px 8px 4px;
+  padding: 12px 8px 6px;
 }
 
 h1,
@@ -510,7 +532,7 @@ h3 {
 }
 
 .hero-actions {
-  margin-top: 4px;
+  margin-top: 6px;
   display: flex;
   gap: 14px;
   justify-content: center;
@@ -533,45 +555,37 @@ h3 {
 }
 
 .countdown {
-  margin-top: 8px;
+  margin-top: 14px;
   display: grid;
-  gap: 12px;
+  gap: 10px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  padding: 10px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45), rgba(212, 228, 217, 0.32));
-  border: 1px solid rgba(79, 119, 100, 0.22);
+  padding: 8px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(79, 119, 100, 0.14);
 }
 
 .countdown-item {
   position: relative;
-  border-radius: 16px;
-  border: 1px solid rgba(79, 119, 100, 0.28);
-  background:
-    radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.9), transparent 50%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(228, 239, 232, 0.58));
-  padding: 14px 8px 12px;
-  box-shadow: 0 10px 22px rgba(42, 66, 54, 0.12);
+  border-radius: 18px;
+  border: 1px solid rgba(79, 119, 100, 0.14);
+  background: rgba(255, 255, 255, 0.56);
+  padding: 12px 8px 11px;
+  box-shadow: 0 8px 18px rgba(42, 66, 54, 0.08);
   overflow: hidden;
 }
 
 .countdown-item::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto auto 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, #6f9882, #d8b07d);
-  opacity: 0.85;
+  display: none;
 }
 
 .countdown strong {
   display: block;
   color: var(--sage);
-  font-size: clamp(1.38rem, 3.5vw, 1.78rem);
+  font-size: clamp(1.26rem, 3vw, 1.62rem);
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.75);
+  text-shadow: none;
 }
 
 .countdown strong.tick {
@@ -580,10 +594,10 @@ h3 {
 
 .countdown span {
   margin-top: 4px;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #5f7066;
+  color: #70857a;
   font-weight: 700;
 }
 
@@ -721,10 +735,10 @@ h3 {
 }
 
 .event-grid {
-  margin-top: 30px;
+  margin-top: 36px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  gap: 28px;
   max-width: 920px;
   margin-left: auto;
   margin-right: auto;
@@ -751,25 +765,23 @@ h3 {
 
 .event-item {
   position: relative;
-  border: 1px solid rgba(79, 119, 100, 0.22);
-  border-radius: 20px;
-  background:
-    radial-gradient(circle at 10% -4%, rgba(212, 228, 217, 0.55), transparent 35%),
-    linear-gradient(160deg, rgba(255, 255, 255, 0.84), rgba(247, 241, 233, 0.7));
-  padding: 18px 18px 16px;
-  box-shadow: 0 14px 24px rgba(41, 62, 52, 0.1);
+  border: 1px solid rgba(79, 119, 100, 0.14);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 28px 26px 24px;
+  box-shadow: 0 12px 24px rgba(41, 62, 52, 0.08);
 }
 
 .event-item::before {
   content: "";
   position: absolute;
-  left: 16px;
-  right: 16px;
+  left: 26px;
+  right: 26px;
   top: 0;
-  height: 4px;
+  height: 2px;
   border-radius: 999px;
   background: linear-gradient(90deg, #6f9882, #d8b07d);
-  opacity: 0.82;
+  opacity: 0.58;
 }
 
 .event-tag {
@@ -863,7 +875,7 @@ h3 {
   margin-top: 28px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+  gap: 24px;
 }
 
 .gallery-grid[data-mode="carousel"] {
@@ -872,11 +884,11 @@ h3 {
 
 .gallery-item {
   position: relative;
-  border-radius: 18px;
+  border-radius: 22px;
   overflow: hidden;
-  border: 1px solid rgba(79, 119, 100, 0.22);
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.72), rgba(245, 238, 228, 0.55));
-  box-shadow: 0 12px 24px rgba(38, 63, 51, 0.12);
+  border: 1px solid rgba(79, 119, 100, 0.14);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 12px 22px rgba(38, 63, 51, 0.08);
 }
 
 .gallery-item.is-clickable {
@@ -905,29 +917,19 @@ h3 {
   transform: scale(1.04);
 }
 
-.gallery-grid[data-style="soft"] .gallery-item {
-  border-radius: 26px;
-  border-color: rgba(79, 119, 100, 0.16);
-  box-shadow: 0 10px 20px rgba(44, 69, 57, 0.1);
-}
-
-.gallery-grid[data-style="polaroid"] .gallery-item {
-  padding: 8px 8px 18px;
-  border-radius: 8px;
-  background: #fff;
-  border-color: rgba(47, 73, 60, 0.2);
-  box-shadow: 0 10px 22px rgba(36, 57, 47, 0.2);
-}
-
-.gallery-grid[data-style="polaroid"] .gallery-item img {
-  border-radius: 4px;
-}
-
+.gallery-grid[data-style="soft"] .gallery-item,
+.gallery-grid[data-style="polaroid"] .gallery-item,
 .gallery-grid[data-style="clean"] .gallery-item {
-  border-radius: 12px;
-  border-color: rgba(79, 119, 100, 0.12);
-  box-shadow: none;
+  border-radius: 22px;
+  border-color: rgba(79, 119, 100, 0.14);
   background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 12px 22px rgba(38, 63, 51, 0.08);
+  padding: 0;
+}
+
+.gallery-grid[data-style="polaroid"] .gallery-item img,
+.gallery-grid[data-style="clean"] .gallery-item img {
+  border-radius: 0;
 }
 
 .gallery-carousel {
@@ -1161,11 +1163,11 @@ h3 {
 .rsvp-form {
   margin-top: 26px;
   display: grid;
-  gap: 12px;
-  border: 1px solid rgba(79, 119, 100, 0.2);
-  border-radius: 18px;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.8), rgba(245, 238, 228, 0.65));
-  padding: 16px;
+  gap: 10px;
+  border: 1px solid rgba(79, 119, 100, 0.16);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 18px;
 }
 
 .rsvp-pill-row {
@@ -1182,10 +1184,10 @@ h3 {
   border: 1px solid rgba(79, 119, 100, 0.24);
   border-radius: 999px;
   padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.72);
-  font-size: 0.74rem;
+  background: rgba(255, 255, 255, 0.64);
+  font-size: 0.68rem;
   font-weight: 700;
-  color: #4f665a;
+  color: #65796f;
 }
 
 .rsvp-layout {
@@ -1211,9 +1213,9 @@ h3 {
 }
 
 .wishes-panel {
-  border: 1px solid rgba(79, 119, 100, 0.2);
-  border-radius: 18px;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.82), rgba(238, 248, 243, 0.62));
+  border: 1px solid rgba(79, 119, 100, 0.14);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.66);
   padding: 18px;
 }
 
@@ -1240,9 +1242,9 @@ h3 {
 }
 
 .wishes-item {
-  border: 1px solid rgba(79, 119, 100, 0.2);
+  border: 1px solid rgba(79, 119, 100, 0.14);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.72);
   padding: 10px 12px;
 }
 
@@ -1576,21 +1578,26 @@ textarea:focus {
 .music-toggle {
   position: fixed;
   right: 18px;
-  bottom: calc(22px + env(safe-area-inset-bottom));
+  bottom: calc(20px + env(safe-area-inset-bottom));
   z-index: 55;
-  border: none;
+  border: 1px solid rgba(79, 119, 100, 0.14);
   border-radius: 999px;
-  padding: 10px 14px;
-  background: linear-gradient(135deg, #426856, #6f9882);
-  color: #fff;
+  min-width: 46px;
+  min-height: 46px;
+  padding: 10px 12px;
+  background: rgba(255, 250, 244, 0.82);
+  color: #355343;
   font-weight: 700;
-  font-size: 0.9rem;
-  box-shadow: 0 14px 24px rgba(34, 56, 45, 0.26);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  box-shadow: 0 12px 20px rgba(34, 56, 45, 0.12);
   cursor: pointer;
+  backdrop-filter: blur(12px);
 }
 
 .music-toggle.is-playing {
-  background: linear-gradient(135deg, #2f5b48, #4f7764);
+  background: rgba(231, 241, 235, 0.92);
+  color: #2f5b48;
 }
 
 .page-loader {
