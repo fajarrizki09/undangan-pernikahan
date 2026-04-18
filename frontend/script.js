@@ -1165,7 +1165,7 @@ function getGiftAccountCategory(account) {
 
 function createGiftHead(bankName, logoUrl) {
   const head = document.createElement("div");
-  head.className = "gift-bank-row";
+  head.className = "gift-bank-brand";
 
   if (logoUrl) {
     const logo = document.createElement("img");
@@ -1183,9 +1183,14 @@ function createGiftHead(bankName, logoUrl) {
   } else {
     const fallback = document.createElement("div");
     fallback.className = "gift-bank-fallback";
-    fallback.textContent = bankName.slice(0, 3).toUpperCase();
-    head.appendChild(fallback);
-  }
+      fallback.textContent = bankName.slice(0, 3).toUpperCase();
+      head.appendChild(fallback);
+    }
+
+  const bankText = document.createElement("p");
+  bankText.className = "gift-bank-name";
+  bankText.textContent = bankName;
+  head.appendChild(bankText);
 
   return head;
 }
@@ -1280,16 +1285,11 @@ function renderGiftSection() {
 
     const head = createGiftHead(bankName, logoUrl);
 
-    const bankText = document.createElement("p");
-    bankText.className = "gift-bank-name";
-    bankText.textContent = bankName;
-    head.appendChild(bankText);
-
     const summaryMeta = document.createElement("div");
     summaryMeta.className = "gift-summary-meta";
     const summaryHint = document.createElement("p");
     summaryHint.className = "gift-summary-hint";
-    summaryHint.textContent = "Lihat rincian";
+    summaryHint.textContent = "Buka rincian";
     summaryMeta.appendChild(summaryHint);
 
     const chevron = document.createElement("span");
@@ -1304,13 +1304,13 @@ function renderGiftSection() {
     const body = document.createElement("div");
     body.className = "gift-account-body";
 
+    const holder = document.createElement("p");
+    holder.className = "gift-account-holder";
+    holder.textContent = account.accountHolder ? `a/n ${account.accountHolder}` : "-";
+
     const accountNumber = document.createElement("p");
     accountNumber.className = "gift-account-number";
     accountNumber.textContent = account.accountNumber;
-
-    const holder = document.createElement("p");
-    holder.className = "gift-account-holder";
-    holder.textContent = account.accountHolder || "-";
 
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
@@ -1331,8 +1331,8 @@ function renderGiftSection() {
       }
     });
 
-    body.appendChild(accountNumber);
     body.appendChild(holder);
+    body.appendChild(accountNumber);
     body.appendChild(copyBtn);
     card.appendChild(summary);
     card.appendChild(body);
