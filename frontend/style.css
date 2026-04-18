@@ -1242,6 +1242,16 @@ h3 {
   padding: 18px;
 }
 
+.rsvp-mode-hint {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(245, 232, 220, 0.82);
+  color: #7a4e3c;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
 .rsvp-pill-row {
   margin: 18px auto 0;
   display: flex;

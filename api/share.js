@@ -131,12 +131,16 @@ export default async function handler(req, res) {
     .replace(/\+/g, " ")
     .trim();
   const guestRaw = String((req.query && (req.query.guest || req.query.guestCode || req.query.kode)) || "").trim();
+  const inviteTypeRaw = String((req.query && (req.query.type || req.query.inviteType)) || "").trim().toLowerCase();
   const redirectUrl = new URL("/frontend/", origin || "https://example.com");
   if (toRaw) {
     redirectUrl.searchParams.set("to", toRaw);
   }
   if (guestRaw) {
     redirectUrl.searchParams.set("guest", guestRaw);
+  }
+  if (inviteTypeRaw === "group") {
+    redirectUrl.searchParams.set("type", "group");
   }
   // Samakan URL share untuk semua link tamu agar metadata preview konsisten.
   const shareUrl = new URL("/", origin || "https://example.com");

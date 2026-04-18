@@ -228,13 +228,14 @@
       </div>
       <div class="rsvp-layout">
         <form id="rsvpForm" class="rsvp-form">
+          <p id="rsvpModeHint" class="rsvp-mode-hint">Mode personal aktif. Nama tamu bisa langsung dikonfirmasi melalui form ini.</p>
           <div class="rsvp-grid">
             <label>
-              Nama Tamu
-              <input type="text" id="inputNama" name="nama" required />
+              <span id="rsvpNameLabel">Nama Tamu</span>
+              <input type="text" id="inputNama" name="nama" required placeholder="Nama tamu" />
             </label>
             <label>
-              Jumlah Tamu
+              <span id="rsvpCountLabel">Jumlah Tamu</span>
               <input type="number" name="jumlah" min="1" max="10" required />
             </label>
             <label>

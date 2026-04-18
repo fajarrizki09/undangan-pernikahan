@@ -72,7 +72,7 @@
       if (!rows.length) {
         const row = document.createElement("tr");
         const cell = document.createElement("td");
-        cell.colSpan = 7;
+        cell.colSpan = 8;
         cell.textContent = "Belum ada data RSVP.";
         row.appendChild(cell);
         elements.rsvpTableBody.appendChild(row);
@@ -87,6 +87,9 @@
 
         const codeCell = document.createElement("td");
         codeCell.textContent = item.guestCode || "-";
+
+        const typeCell = document.createElement("td");
+        typeCell.textContent = item.inviteType === "group" ? "GROUP" : "PERSONAL";
 
         const namaCell = document.createElement("td");
         namaCell.textContent = item.nama || "-";
@@ -113,6 +116,7 @@
 
         row.appendChild(waktuCell);
         row.appendChild(codeCell);
+        row.appendChild(typeCell);
         row.appendChild(namaCell);
         row.appendChild(jumlahCell);
         row.appendChild(kehadiranCell);
@@ -166,6 +170,7 @@
             rowNumber: index + 2,
             waktu: item.waktu,
             guestCode: item.guestCode || "",
+            inviteType: item.inviteType || "personal",
             nama: item.nama,
             jumlah: "-",
             kehadiran: item.kehadiran || "-",

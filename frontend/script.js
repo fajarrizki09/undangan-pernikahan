@@ -1,6 +1,9 @@
 ﻿const form = document.getElementById("rsvpForm");
 const statusText = document.getElementById("formStatus");
 const inputNama = document.getElementById("inputNama");
+const rsvpNameLabel = document.getElementById("rsvpNameLabel");
+const rsvpCountLabel = document.getElementById("rsvpCountLabel");
+const rsvpModeHint = document.getElementById("rsvpModeHint");
 const submitRsvpBtn = form ? form.querySelector("button[type='submit']") : null;
 const galleryGrid = document.getElementById("galleryGrid");
 const wishesList = document.getElementById("wishesList");
@@ -357,6 +360,13 @@ function getGuestNameFromUrl() {
 function getGuestCodeFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return String(params.get("guest") || params.get("guestCode") || params.get("kode") || "").trim();
+}
+
+function getGuestInviteTypeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get("type") || params.get("inviteType") || "").trim().toLowerCase() === "group"
+    ? "group"
+    : "personal";
 }
 
 function clampPercent(value, fallback = 50) {
@@ -1253,10 +1263,26 @@ function setupInvitationGate() {
 
 function applyGuestName() {
   const guestName = getGuestNameFromUrl();
+  const inviteType = getGuestInviteTypeFromUrl();
   setText("guestName", guestName);
   setText("gateGuestName", guestName);
-  if (inputNama && guestName !== "Bapak/Ibu/Saudara/i") {
+  if (rsvpNameLabel) {
+    rsvpNameLabel.textContent = inviteType === "group" ? "Nama Anda" : "Nama Tamu";
+  }
+  if (rsvpCountLabel) {
+    rsvpCountLabel.textContent = inviteType === "group" ? "Jumlah Orang yang Hadir" : "Jumlah Tamu";
+  }
+  if (rsvpModeHint) {
+    rsvpModeHint.textContent = inviteType === "group"
+      ? `Mode grup aktif untuk ${guestName}. Setiap orang boleh isi RSVP masing-masing dari link ini.`
+      : "Mode personal aktif. Nama tamu bisa langsung dikonfirmasi melalui form ini.";
+  }
+  if (inputNama && inviteType === "group") {
+    inputNama.value = "";
+    inputNama.placeholder = "Tulis nama Anda";
+  } else if (inputNama && guestName !== "Bapak/Ibu/Saudara/i") {
     inputNama.value = guestName;
+    inputNama.placeholder = "Nama tamu";
   }
 }
 
@@ -1624,7 +1650,9 @@ if (form) {
       jumlah: Number(formData.get("jumlah")),
       kehadiran: formData.get("kehadiran"),
       ucapan: formData.get("ucapan")?.toString().trim() || "-",
-      guestCode: getGuestCodeFromUrl()
+      guestCode: getGuestCodeFromUrl(),
+      inviteType: getGuestInviteTypeFromUrl(),
+      guestLabel: getGuestNameFromUrl()
     };
 
     setFormStatus("Mengirim RSVP...", "is-loading");

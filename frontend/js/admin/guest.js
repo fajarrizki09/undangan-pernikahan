@@ -20,6 +20,10 @@
       }
     };
 
+    function normalizeInviteType(value) {
+      return String(value || "").trim().toLowerCase() === "group" ? "group" : "personal";
+    }
+
     function parseGuestInput() {
       return elements.guestInput.value
         .split(/\r?\n+/)
@@ -27,11 +31,17 @@
         .filter(Boolean)
         .map((line) => {
           const parts = line.split("|").map((part) => part.trim());
+          const rawType = parts[3] || "";
+          const inviteType = normalizeInviteType(rawType);
+          const notes = rawType && !["group", "personal"].includes(rawType.toLowerCase())
+            ? rawType
+            : (parts[4] || "");
           return {
             name: parts[0] || "",
             group: parts[1] || "Umum",
             phone: parts[2] || "",
-            notes: parts[3] || "",
+            inviteType,
+            notes,
             status: "active"
           };
         })
@@ -44,8 +54,10 @@
       const url = new URL(safeBase, window.location.origin);
       const guestName = String(guest && guest.name || "").trim();
       const guestCode = String(guest && guest.code || "").trim();
+      const inviteType = normalizeInviteType(guest && guest.inviteType);
       if (guestName) url.searchParams.set("to", guestName);
       if (guestCode) url.searchParams.set("guest", guestCode);
+      if (inviteType === "group") url.searchParams.set("type", "group");
       return url.toString();
     }
 
@@ -97,6 +109,7 @@
           name: cleanName,
           group: String((payload && payload.group) || "Umum").trim() || "Umum",
           status: String((payload && payload.status) || "active").trim() || "active",
+          inviteType: normalizeInviteType(payload && payload.inviteType),
           phone: String((payload && payload.phone) || "").trim(),
           notes: String((payload && payload.notes) || "").trim()
         });
@@ -132,7 +145,7 @@
       if (!guests.length) {
         const row = document.createElement("tr");
         const cell = document.createElement("td");
-        cell.colSpan = 7;
+        cell.colSpan = 8;
         cell.textContent = "Belum ada data tamu.";
         row.appendChild(cell);
         elements.guestTableBody.appendChild(row);
@@ -159,6 +172,18 @@
         groupInput.type = "text";
         groupInput.value = guest.group || "Umum";
         groupCell.appendChild(groupInput);
+
+        const typeCell = document.createElement("td");
+        const typeSelect = document.createElement("select");
+        typeSelect.className = "guest-inline-input";
+        ["personal", "group"].forEach((inviteTypeValue) => {
+          const option = document.createElement("option");
+          option.value = inviteTypeValue;
+          option.textContent = inviteTypeValue === "group" ? "GROUP" : "PERSONAL";
+          if (normalizeInviteType(guest.inviteType) === inviteTypeValue) option.selected = true;
+          typeSelect.appendChild(option);
+        });
+        typeCell.appendChild(typeSelect);
 
         const statusCell = document.createElement("td");
         const statusSelect = document.createElement("select");
@@ -203,6 +228,7 @@
         saveBtn.addEventListener("click", () => updateGuestName(guest.code, {
           name: nameInput.value,
           group: groupInput.value,
+          inviteType: typeSelect.value,
           status: statusSelect.value,
           phone: phoneInput.value
         }));
@@ -220,6 +246,7 @@
         row.appendChild(codeCell);
         row.appendChild(nameCell);
         row.appendChild(groupCell);
+        row.appendChild(typeCell);
         row.appendChild(statusCell);
         row.appendChild(phoneCell);
         row.appendChild(linkCell);
@@ -243,13 +270,14 @@
 
       const baseUrl = normalizeBaseUrl(elements.invitationBaseUrlInput.value);
       const lines = [
-        "code,nama,group,status,telepon,link_undangan",
+        "code,nama,group,invite_type,status,telepon,link_undangan",
         ...guests.map((guest) => {
           const link = baseUrl ? buildGuestLink(baseUrl, guest) : "";
           return [
             toCsvCell(guest.code),
             toCsvCell(guest.name),
             toCsvCell(guest.group || "Umum"),
+            toCsvCell(normalizeInviteType(guest.inviteType)),
             toCsvCell(guest.status || "active"),
             toCsvCell(guest.phone || ""),
             toCsvCell(link)
