@@ -94,7 +94,7 @@ let currentConfig = {
   giftAccounts: Array.isArray(WEDDING_CONFIG.giftAccounts) ? [...WEDDING_CONFIG.giftAccounts] : []
 };
 const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
-const CONFIG_CACHE_TTL_MS = 1000 * 60 * 10;
+const CONFIG_CACHE_TTL_MS = 1000 * 30;
 
 function cleanPhotoArray(input) {
   if (!Array.isArray(input)) return [];
@@ -1446,6 +1446,19 @@ function parseIndonesianDateToMs(dateText, timeText) {
 }
 
 function parsePrimaryWeddingTimestamp() {
+  const resepsiDate = (currentConfig.resepsi && currentConfig.resepsi.date) || "";
+  const resepsiTime = (currentConfig.resepsi && currentConfig.resepsi.time) || "";
+  const resepsiMs = parseIndonesianDateToMs(resepsiDate, resepsiTime);
+  if (!Number.isNaN(resepsiMs)) return resepsiMs;
+
+  const akadDate = (currentConfig.akad && currentConfig.akad.date) || "";
+  const akadTime = (currentConfig.akad && currentConfig.akad.time) || "";
+  const akadMs = parseIndonesianDateToMs(akadDate, akadTime);
+  if (!Number.isNaN(akadMs)) return akadMs;
+
+  const heroMs = parseIndonesianDateToMs(currentConfig.heroDatePlace || "", resepsiTime);
+  if (!Number.isNaN(heroMs)) return heroMs;
+
   const eventStartIso = String(currentConfig.eventStartISO || "").trim();
   if (eventStartIso) {
     const eventStartMs = parseIsoDateTimeToMs(eventStartIso);
@@ -1457,14 +1470,6 @@ function parsePrimaryWeddingTimestamp() {
     const isoTime = parseIsoDateTimeToMs(isoValue);
     if (!Number.isNaN(isoTime)) return isoTime;
   }
-
-  const resepsiDate = (currentConfig.resepsi && currentConfig.resepsi.date) || "";
-  const resepsiTime = (currentConfig.resepsi && currentConfig.resepsi.time) || "";
-  const resepsiMs = parseIndonesianDateToMs(resepsiDate, resepsiTime);
-  if (!Number.isNaN(resepsiMs)) return resepsiMs;
-
-  const heroMs = parseIndonesianDateToMs(currentConfig.heroDatePlace || "", resepsiTime);
-  if (!Number.isNaN(heroMs)) return heroMs;
 
   return NaN;
 }
