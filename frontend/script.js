@@ -924,6 +924,20 @@ function extractDriveResourceKey(url) {
   return (keyMatch && keyMatch[1]) || "";
 }
 
+function buildMusicProxyUrl(fileId, resourceKey, sourceUrl) {
+  const cleanFileId = String(fileId || "").trim();
+  const cleanResourceKey = String(resourceKey || "").trim();
+  const cleanSourceUrl = String(sourceUrl || "").trim();
+  const params = new URLSearchParams();
+
+  if (cleanFileId) params.set("fileId", cleanFileId);
+  if (cleanResourceKey) params.set("resourceKey", cleanResourceKey);
+  if (!cleanFileId && cleanSourceUrl) params.set("src", cleanSourceUrl);
+  if (!params.toString()) return "";
+
+  return `/api/music?${params.toString()}`;
+}
+
 function normalizeAudioUrl(url) {
   const candidates = getAudioSourceCandidates(url);
   return candidates[0] || "";
@@ -939,8 +953,14 @@ function getAudioSourceCandidates(url) {
   const isDriveHost = /(?:^|\/\/)(?:drive|docs)\.google\.com/i.test(clean)
     || /(?:^|\/\/)drive\.usercontent\.google\.com/i.test(clean);
 
+  if (/^\/api\/music(?:\?|$)/i.test(clean)) {
+    return [clean];
+  }
+
   if (isDriveHost && fileId) {
+    const proxyUrl = buildMusicProxyUrl(fileId, resourceKey, clean);
     const candidates = [
+      proxyUrl,
       clean,
       `https://drive.google.com/uc?export=download&id=${fileId}${resourceKeySuffix}`,
       `https://docs.google.com/uc?export=download&id=${fileId}${resourceKeySuffix}`,
@@ -957,6 +977,11 @@ function getAudioSourceCandidates(url) {
       unique.push(value);
     });
     return unique;
+  }
+
+  if (fileId) {
+    const proxyUrl = buildMusicProxyUrl(fileId, resourceKey, clean);
+    if (proxyUrl) return [proxyUrl, clean].filter(Boolean);
   }
 
   return [clean];

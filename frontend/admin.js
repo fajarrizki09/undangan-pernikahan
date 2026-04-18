@@ -244,6 +244,41 @@ function setStatus(el, message) {
   el.textContent = message;
 }
 
+function extractDriveFileId(value) {
+  const clean = String(value || "").trim();
+  if (!clean) return "";
+
+  const idFromQuery = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (idFromQuery && idFromQuery[1]) return idFromQuery[1];
+
+  const idFromPath = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (idFromPath && idFromPath[1]) return idFromPath[1];
+
+  return "";
+}
+
+function extractDriveResourceKey(value) {
+  const clean = String(value || "").trim();
+  if (!clean) return "";
+
+  const keyMatch = clean.match(/[?&]resourcekey=([a-zA-Z0-9._-]+)/i);
+  return (keyMatch && keyMatch[1]) || "";
+}
+
+function buildMusicProxyUrl(fileMeta) {
+  const sourceUrl = String(fileMeta && (fileMeta.audioStreamUrl || fileMeta.downloadUrl || fileMeta.publicUrl || fileMeta.webUrl) || "").trim();
+  const fileId = String(fileMeta && fileMeta.id || "").trim() || extractDriveFileId(sourceUrl);
+  const resourceKey = String(fileMeta && fileMeta.resourceKey || "").trim() || extractDriveResourceKey(sourceUrl);
+  const params = new URLSearchParams();
+
+  if (fileId) params.set("fileId", fileId);
+  if (resourceKey) params.set("resourceKey", resourceKey);
+  if (!fileId && sourceUrl) params.set("src", sourceUrl);
+  if (!params.toString()) return "";
+
+  return `/api/music?${params.toString()}`;
+}
+
 function normalizeBaseUrl(value) {
   const clean = (value || "").trim();
   if (!clean) return "";
@@ -1528,7 +1563,7 @@ async function uploadMusicToDrive() {
       }
     });
 
-    const uploadedUrl = (
+    const uploadedUrl = buildMusicProxyUrl(result.file) || (
       result.file &&
       (
         result.file.audioStreamUrl ||
