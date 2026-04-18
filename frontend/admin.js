@@ -1519,22 +1519,21 @@ async function uploadMusicToDrive() {
     setStatus(statusConfig, "Mengupload musik...");
 
     const result = await postApi({
-      action: "uploadPhotos",
+      action: "uploadMusic",
       adminKey,
-      files: [{
+      file: {
         name: file.name,
         mimeType: file.type || "audio/mpeg",
         contentBase64: await fileToBase64(file)
-      }]
+      }
     });
 
     const uploadedUrl = (
-      result.files &&
-      result.files[0] &&
+      result.file &&
       (
-        result.files[0].audioStreamUrl ||
-        result.files[0].downloadUrl ||
-        result.files[0].publicUrl
+        result.file.audioStreamUrl ||
+        result.file.downloadUrl ||
+        result.file.publicUrl
       )
     ) || "";
     if (!uploadedUrl) throw new Error("URL musik dari server kosong");
