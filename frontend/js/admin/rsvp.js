@@ -72,7 +72,7 @@
       if (!rows.length) {
         const row = document.createElement("tr");
         const cell = document.createElement("td");
-        cell.colSpan = 6;
+        cell.colSpan = 7;
         cell.textContent = "Belum ada data RSVP.";
         row.appendChild(cell);
         elements.rsvpTableBody.appendChild(row);
@@ -84,6 +84,9 @@
 
         const waktuCell = document.createElement("td");
         waktuCell.textContent = formatDateTime(item.waktu);
+
+        const codeCell = document.createElement("td");
+        codeCell.textContent = item.guestCode || "-";
 
         const namaCell = document.createElement("td");
         namaCell.textContent = item.nama || "-";
@@ -109,6 +112,7 @@
         actionCell.appendChild(deleteBtn);
 
         row.appendChild(waktuCell);
+        row.appendChild(codeCell);
         row.appendChild(namaCell);
         row.appendChild(jumlahCell);
         row.appendChild(kehadiranCell);
@@ -161,6 +165,7 @@
           state.rows = (result.wishes || []).map((item, index) => ({
             rowNumber: index + 2,
             waktu: item.waktu,
+            guestCode: item.guestCode || "",
             nama: item.nama,
             jumlah: "-",
             kehadiran: item.kehadiran || "-",

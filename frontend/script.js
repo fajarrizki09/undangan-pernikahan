@@ -354,6 +354,11 @@ function getGuestNameFromUrl() {
   return raw.replace(/\+/g, " ").trim() || "Bapak/Ibu/Saudara/i";
 }
 
+function getGuestCodeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get("guest") || params.get("guestCode") || params.get("kode") || "").trim();
+}
+
 function clampPercent(value, fallback = 50) {
   const num = Number(value);
   if (!Number.isFinite(num)) return fallback;
@@ -1618,7 +1623,8 @@ if (form) {
       nama: formData.get("nama")?.toString().trim(),
       jumlah: Number(formData.get("jumlah")),
       kehadiran: formData.get("kehadiran"),
-      ucapan: formData.get("ucapan")?.toString().trim() || "-"
+      ucapan: formData.get("ucapan")?.toString().trim() || "-",
+      guestCode: getGuestCodeFromUrl()
     };
 
     setFormStatus("Mengirim RSVP...", "is-loading");

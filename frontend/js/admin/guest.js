@@ -38,11 +38,14 @@
         .filter((item) => item.name);
     }
 
-    function buildGuestLink(baseUrl, name) {
+    function buildGuestLink(baseUrl, guest) {
       const safeBase = normalizeBaseUrl(baseUrl);
       if (!safeBase) return "";
       const url = new URL(safeBase, window.location.origin);
-      url.searchParams.set("to", name || "");
+      const guestName = String(guest && guest.name || "").trim();
+      const guestCode = String(guest && guest.code || "").trim();
+      if (guestName) url.searchParams.set("to", guestName);
+      if (guestCode) url.searchParams.set("guest", guestCode);
       return url.toString();
     }
 
@@ -59,7 +62,7 @@
       }
 
       elements.guestLinks.value = guests
-        .map((guest) => `${guest.name} => ${buildGuestLink(baseUrl, guest.name)}`)
+        .map((guest) => `${guest.name} => ${buildGuestLink(baseUrl, guest)}`)
         .join("\n");
     }
 
@@ -180,7 +183,7 @@
         if (baseUrl && guest.name) {
           const link = document.createElement("a");
           link.className = "guest-link-mini";
-          link.href = buildGuestLink(baseUrl, guest.name);
+          link.href = buildGuestLink(baseUrl, guest);
           link.target = "_blank";
           link.rel = "noopener noreferrer";
           link.textContent = "Buka Link";
@@ -242,7 +245,7 @@
       const lines = [
         "code,nama,group,status,telepon,link_undangan",
         ...guests.map((guest) => {
-          const link = baseUrl ? buildGuestLink(baseUrl, guest.name || "") : "";
+          const link = baseUrl ? buildGuestLink(baseUrl, guest) : "";
           return [
             toCsvCell(guest.code),
             toCsvCell(guest.name),

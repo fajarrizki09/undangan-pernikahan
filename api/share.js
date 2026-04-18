@@ -130,9 +130,13 @@ export default async function handler(req, res) {
   const toRaw = String((req.query && req.query.to) || "")
     .replace(/\+/g, " ")
     .trim();
+  const guestRaw = String((req.query && (req.query.guest || req.query.guestCode || req.query.kode)) || "").trim();
   const redirectUrl = new URL("/frontend/", origin || "https://example.com");
   if (toRaw) {
-    redirectUrl.search = `?to=${encodeURIComponent(toRaw)}`;
+    redirectUrl.searchParams.set("to", toRaw);
+  }
+  if (guestRaw) {
+    redirectUrl.searchParams.set("guest", guestRaw);
   }
   // Samakan URL share untuk semua link tamu agar metadata preview konsisten.
   const shareUrl = new URL("/", origin || "https://example.com");
