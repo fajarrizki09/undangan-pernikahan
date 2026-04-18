@@ -62,8 +62,7 @@ h3 {
   backdrop-filter: blur(10px);
 }
 
-.admin-nav a {
-  text-decoration: none;
+.admin-tab {
   color: var(--ink);
   border: 1px solid var(--line);
   background: rgba(255, 253, 251, 0.92);
@@ -71,6 +70,67 @@ h3 {
   border-radius: 999px;
   font-weight: 700;
   font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.admin-tab.is-active {
+  background: linear-gradient(135deg, #78503a, var(--accent));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 10px 18px rgba(120, 80, 58, 0.18);
+}
+
+.admin-action-bar {
+  position: sticky;
+  top: 86px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 14px;
+}
+
+.admin-action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-action-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.admin-preview-panel[hidden],
+.admin-panel-section[hidden] {
+  display: none;
+}
+
+.admin-preview-frame {
+  width: 100%;
+  min-height: 820px;
+  border: 1px solid rgba(212, 190, 177, 0.8);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.admin-panel-section.is-active {
+  animation: section-fade-in 0.22s ease;
+}
+
+@keyframes section-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .section-head {
@@ -469,6 +529,12 @@ textarea:focus {
     top: 8px;
   }
 
+  .admin-action-bar {
+    top: 76px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .grid.two {
     grid-template-columns: 1fr;
   }
@@ -487,5 +553,9 @@ textarea:focus {
 
   .gallery-item-actions {
     grid-template-columns: 1fr;
+  }
+
+  .admin-preview-frame {
+    min-height: 680px;
   }
 }

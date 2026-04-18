@@ -37,16 +37,38 @@
     </section>
 
     <nav class="card admin-nav" aria-label="Navigasi admin">
-      <a href="#identitasCard">Identitas Acara</a>
-      <a href="#mempelaiCard">Mempelai</a>
-      <a href="#acaraCard">Acara</a>
-      <a href="#galeriCard">Galeri</a>
-      <a href="#musikCard">Musik</a>
-      <a href="#giftCard">Gift</a>
-      <a href="#tamuRsvpCard">Tamu / RSVP</a>
+      <button type="button" class="admin-tab is-active" data-target="identitasCard">Identitas</button>
+      <button type="button" class="admin-tab" data-target="mempelaiCard">Mempelai</button>
+      <button type="button" class="admin-tab" data-target="acaraCard">Acara</button>
+      <button type="button" class="admin-tab" data-target="galeriCard">Galeri</button>
+      <button type="button" class="admin-tab" data-target="musikCard">Musik</button>
+      <button type="button" class="admin-tab" data-target="giftCard">Gift</button>
+      <button type="button" class="admin-tab" data-target="tamuRsvpCard">Tamu / RSVP</button>
     </nav>
 
-    <section class="card" id="identitasCard">
+    <section class="card admin-action-bar" aria-label="Aksi cepat admin">
+      <div class="admin-action-group">
+        <button id="btnActionSave" class="btn" type="button">Simpan</button>
+        <button id="btnActionLoad" class="btn btn-ghost" type="button">Muat dari Server</button>
+        <button id="btnPreviewToggle" class="btn btn-ghost" type="button">Lihat Preview</button>
+        <button id="btnScrollTop" class="btn btn-ghost" type="button">Scroll ke Atas</button>
+      </div>
+      <p class="admin-action-note">Draft preview bisa dilihat tanpa simpan ke server.</p>
+    </section>
+
+    <section id="previewPanel" class="card admin-preview-panel" hidden>
+      <div class="row-between">
+        <div>
+          <p class="section-label">Preview Mode</p>
+          <h2>Preview Undangan</h2>
+        </div>
+        <button id="btnPreviewRefresh" class="btn btn-ghost" type="button">Refresh Preview</button>
+      </div>
+      <p class="section-copy">Preview membaca draft terbaru dari admin ini, jadi perubahan bisa dicek sebelum disimpan ke server.</p>
+      <iframe id="previewFrame" class="admin-preview-frame" title="Preview undangan admin"></iframe>
+    </section>
+
+    <section class="card admin-panel-section is-active" id="identitasCard" data-section="identitasCard">
       <div class="row-between">
         <div>
           <p class="section-label">Publik Config</p>
@@ -98,7 +120,7 @@
       </div>
     </section>
 
-    <section class="card" id="mempelaiCard">
+    <section class="card admin-panel-section" id="mempelaiCard" data-section="mempelaiCard" hidden>
       <div class="section-head">
         <div>
           <p class="section-label">Publik Config</p>
@@ -171,7 +193,7 @@
       </div>
     </section>
 
-    <section class="card" id="acaraCard">
+    <section class="card admin-panel-section" id="acaraCard" data-section="acaraCard" hidden>
       <div class="section-head">
         <div>
           <p class="section-label">Publik Config</p>
@@ -227,7 +249,7 @@
       </div>
     </section>
 
-    <section class="card" id="galeriCard">
+    <section class="card admin-panel-section" id="galeriCard" data-section="galeriCard" hidden>
       <div class="section-head">
         <div>
           <p class="section-label">Publik Config</p>
@@ -327,7 +349,7 @@
       <p class="hint-text">Tip: upload foto lewat tombol <b>Upload Foto</b>. Jika Hero/Love Story kosong, sistem akan isi otomatis dari hasil upload terbaru.</p>
     </section>
 
-    <section class="card" id="musikCard">
+    <section class="card admin-panel-section" id="musikCard" data-section="musikCard" hidden>
       <div class="section-head">
         <div>
           <p class="section-label">Publik Config</p>
@@ -374,7 +396,7 @@
       </div>
     </section>
 
-    <section class="card" id="giftCard">
+    <section class="card admin-panel-section" id="giftCard" data-section="giftCard" hidden>
       <div class="section-head">
         <div>
           <p class="section-label">Publik Config</p>
@@ -400,7 +422,7 @@
       <p class="status" id="statusConfig"></p>
     </section>
 
-    <section class="card" id="tamuRsvpCard">
+    <section class="card admin-panel-section" id="tamuRsvpCard" data-section="tamuRsvpCard" hidden>
       <div class="section-head">
         <div>
           <p class="section-label">Admin Data</p>

@@ -114,6 +114,7 @@ let currentConfig = {
 };
 const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
 const CONFIG_CACHE_TTL_MS = 1000 * 30;
+const ADMIN_PREVIEW_DRAFT_KEY = "wedding_admin_preview_draft_v1";
 const metaModule = window.WeddingMetaModule;
 const publicConfigRuntime = window.WeddingPublicConfigModule.createRuntime({
   cacheKey: CONFIG_CACHE_KEY,
@@ -569,6 +570,10 @@ async function loadServerConfig() {
     rsvpApiUrl: RSVP_API_URL
   });
   currentConfig = result.config;
+  const previewDraft = readAdminPreviewDraft();
+  if (previewDraft) {
+    currentConfig = mergeConfig(currentConfig, previewDraft);
+  }
   return result.ok;
 }
 
@@ -578,6 +583,24 @@ function readCachedConfig() {
 
 function writeCachedConfig(config) {
   publicConfigRuntime.writeCachedConfig(config);
+}
+
+function isAdminPreviewMode() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("preview") === "admin";
+}
+
+function readAdminPreviewDraft() {
+  if (!isAdminPreviewMode()) return null;
+  try {
+    const raw = localStorage.getItem(ADMIN_PREVIEW_DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || !parsed.data) return null;
+    return parsed.data;
+  } catch (error) {
+    return null;
+  }
 }
 
 function setLoaderMessage(message, allowRetry) {
@@ -1199,6 +1222,13 @@ function applyWeddingConfig() {
 function setupInvitationGate() {
   if (!invitationGate || !openInvitationBtn) {
     document.body.classList.remove("invitation-locked");
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("open") === "1" || isAdminPreviewMode()) {
+    document.body.classList.remove("invitation-locked");
+    invitationGate.setAttribute("aria-hidden", "true");
     return;
   }
 

@@ -101,8 +101,18 @@ const btnLoveStoryFromGallery = document.getElementById("btnLoveStoryFromGallery
 const btnAddGiftAccount = document.getElementById("btnAddGiftAccount");
 const btnLoadMusicLibrary = document.getElementById("btnLoadMusicLibrary");
 const musicLibraryEditor = document.getElementById("musicLibraryEditor");
+const adminTabs = Array.from(document.querySelectorAll(".admin-tab"));
+const adminPanelSections = Array.from(document.querySelectorAll(".admin-panel-section"));
+const previewPanel = document.getElementById("previewPanel");
+const previewFrame = document.getElementById("previewFrame");
+const btnActionSave = document.getElementById("btnActionSave");
+const btnActionLoad = document.getElementById("btnActionLoad");
+const btnPreviewToggle = document.getElementById("btnPreviewToggle");
+const btnPreviewRefresh = document.getElementById("btnPreviewRefresh");
+const btnScrollTop = document.getElementById("btnScrollTop");
 const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
+const ADMIN_PREVIEW_DRAFT_KEY = "wedding_admin_preview_draft_v1";
 
 const BANK_OPTIONS = [
   { code: "bca", name: "BCA", logoUrl: "assets/bank/bca.svg", aliases: ["bank central asia"] },
@@ -147,6 +157,12 @@ if (btnAddGiftAccount) {
 }
 if (btnLoadMusicLibrary) {
   btnLoadMusicLibrary.addEventListener("click", loadMusicLibrary);
+}
+if (btnActionSave) {
+  btnActionSave.addEventListener("click", saveConfigToServer);
+}
+if (btnActionLoad) {
+  btnActionLoad.addEventListener("click", loadConfigFromServer);
 }
 
 apiUrlInput.value = RSVP_API_URL;
@@ -242,6 +258,91 @@ function getAdminKeyOrThrow() {
 
 function setStatus(el, message) {
   el.textContent = message;
+}
+
+function setActiveAdminSection(targetId) {
+  const safeTarget = String(targetId || "").trim();
+  if (!safeTarget) return;
+
+  adminTabs.forEach((button) => {
+    const isActive = button.dataset.target === safeTarget;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+
+  adminPanelSections.forEach((section) => {
+    const isActive = section.id === safeTarget;
+    section.hidden = !isActive;
+    section.classList.toggle("is-active", isActive);
+  });
+}
+
+function getAdminPreviewUrl() {
+  const previewUrl = new URL("./index.html", window.location.href);
+  previewUrl.searchParams.set("preview", "admin");
+  previewUrl.searchParams.set("open", "1");
+  previewUrl.searchParams.set("to", "Preview Tamu");
+  return previewUrl.toString();
+}
+
+function writePreviewDraftToStorage() {
+  try {
+    const draft = readConfigFromForm();
+    localStorage.setItem(ADMIN_PREVIEW_DRAFT_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      data: draft
+    }));
+  } catch (error) {
+    // Abaikan jika storage tidak tersedia.
+  }
+}
+
+let previewRefreshTimer = null;
+
+function refreshPreviewFrame(forceReload = false) {
+  if (!previewFrame) return;
+  writePreviewDraftToStorage();
+
+  if (!previewFrame.src || forceReload) {
+    const previewUrl = new URL(getAdminPreviewUrl());
+    previewUrl.searchParams.set("_ts", String(Date.now()));
+    previewFrame.src = previewUrl.toString();
+    return;
+  }
+
+  try {
+    previewFrame.contentWindow.location.reload();
+  } catch (error) {
+    const previewUrl = new URL(getAdminPreviewUrl());
+    previewUrl.searchParams.set("_ts", String(Date.now()));
+    previewFrame.src = previewUrl.toString();
+  }
+}
+
+function schedulePreviewRefresh() {
+  if (previewRefreshTimer) {
+    clearTimeout(previewRefreshTimer);
+  }
+  previewRefreshTimer = window.setTimeout(() => {
+    if (!previewPanel || previewPanel.hidden) {
+      writePreviewDraftToStorage();
+      return;
+    }
+    refreshPreviewFrame();
+  }, 420);
+}
+
+function togglePreviewPanel(forceOpen) {
+  if (!previewPanel) return;
+  const shouldOpen = typeof forceOpen === "boolean" ? forceOpen : previewPanel.hidden;
+  previewPanel.hidden = !shouldOpen;
+  if (btnPreviewToggle) {
+    btnPreviewToggle.textContent = shouldOpen ? "Sembunyikan Preview" : "Lihat Preview";
+  }
+  if (shouldOpen) {
+    refreshPreviewFrame(!previewFrame.src);
+    previewPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 
 function extractDriveFileId(value) {
@@ -1199,6 +1300,7 @@ function fillForm(config) {
   );
   updateGalleryModeFields();
   renderGalleryPreview();
+  writePreviewDraftToStorage();
 }
 
 async function postApi(payload) {
@@ -1280,6 +1382,7 @@ async function loadConfigFromServer() {
 
     fillForm(result.config || {});
     setStatus(statusConfig, "Konfigurasi berhasil dimuat");
+    schedulePreviewRefresh();
   } catch (error) {
     setStatus(statusConfig, `Error: ${error.message}`);
   }
@@ -1288,15 +1391,18 @@ async function loadConfigFromServer() {
 async function saveConfigToServer() {
   try {
     const adminKey = getAdminKeyOrThrow();
+    const config = readConfigFromForm();
 
     setStatus(statusConfig, "Menyimpan konfigurasi...");
     await postApi({
       action: "saveConfig",
       adminKey,
-      config: readConfigFromForm()
+      config
     });
 
     setStatus(statusConfig, "Konfigurasi berhasil disimpan");
+    writePreviewDraftToStorage();
+    schedulePreviewRefresh();
   } catch (error) {
     setStatus(statusConfig, `Error: ${error.message}`);
   }
@@ -1998,6 +2104,43 @@ loadSavedAdminKey();
 loadSavedInvitationBaseUrl();
 renderGalleryPreview();
 renderLoveStoryPreview();
+writePreviewDraftToStorage();
+
+adminTabs.forEach((button) => {
+  button.setAttribute("aria-selected", button.classList.contains("is-active") ? "true" : "false");
+  button.addEventListener("click", () => {
+    setActiveAdminSection(button.dataset.target);
+  });
+});
+
+if (btnPreviewToggle) {
+  btnPreviewToggle.addEventListener("click", () => {
+    togglePreviewPanel();
+  });
+}
+if (btnPreviewRefresh) {
+  btnPreviewRefresh.addEventListener("click", () => {
+    refreshPreviewFrame(true);
+  });
+}
+if (btnScrollTop) {
+  btnScrollTop.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+document.addEventListener("input", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) return;
+  schedulePreviewRefresh();
+});
+
+document.addEventListener("change", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) return;
+  schedulePreviewRefresh();
+});
+
 adminKeyInput.addEventListener("change", () => {
   saveAdminKey(adminKeyInput.value.trim());
 });
