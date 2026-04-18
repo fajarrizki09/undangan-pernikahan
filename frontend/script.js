@@ -1202,7 +1202,7 @@ function renderGiftCategoryTabs(categoryEntries, activeCategory) {
     if (key === activeCategory) button.classList.add("is-active");
     button.setAttribute("role", "tab");
     button.setAttribute("aria-selected", key === activeCategory ? "true" : "false");
-    button.textContent = key === "ewallet" ? `E-Wallet (${items.length})` : `Bank (${items.length})`;
+    button.textContent = key === "ewallet" ? "E-Wallet" : "Transfer Bank";
     button.addEventListener("click", () => {
       giftUiState.activeCategory = key;
       renderGiftSection();
@@ -1272,7 +1272,7 @@ function renderGiftSection() {
     summaryMeta.className = "gift-summary-meta";
     const summaryHint = document.createElement("p");
     summaryHint.className = "gift-summary-hint";
-    summaryHint.textContent = "Klik untuk lihat rincian";
+    summaryHint.textContent = "Lihat rincian";
     summaryMeta.appendChild(summaryHint);
 
     const chevron = document.createElement("span");
