@@ -87,6 +87,7 @@ const WEDDING_CONFIG = {
   giftSectionSubtitle: "Doa restu Anda adalah hadiah terindah. Jika berkenan, Anda dapat mengirimkan tanda kasih melalui rekening berikut.",
   giftAccounts: [
     {
+      category: "bank",
       bankCode: "bca",
       bankName: "BCA",
       accountNumber: "",

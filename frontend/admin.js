@@ -116,6 +116,14 @@ const BANK_OPTIONS = [
   { code: "danamon", name: "Danamon", logoUrl: "assets/bank/danamon.svg", aliases: ["bank danamon"] },
   { code: "panin", name: "Panin", logoUrl: "assets/bank/panin.svg", aliases: ["panin bank", "bank panin"] }
 ];
+const EWALLET_OPTIONS = [
+  { code: "dana", name: "DANA", aliases: ["dana"] },
+  { code: "ovo", name: "OVO", aliases: ["ovo"] },
+  { code: "gopay", name: "GoPay", aliases: ["gopay", "go-pay"] },
+  { code: "shopeepay", name: "ShopeePay", aliases: ["shopeepay", "shopee pay"] },
+  { code: "linkaja", name: "LinkAja", aliases: ["linkaja", "link aja"] },
+  { code: "sakuku", name: "Sakuku", aliases: ["sakuku"] }
+];
 
 document.getElementById("btnLoadConfig").addEventListener("click", loadConfigFromServer);
 document.getElementById("btnSaveConfig").addEventListener("click", saveConfigToServer);
@@ -587,9 +595,33 @@ function getBankOptionByName(name) {
   ) || null;
 }
 
+function getEwalletOptionByCode(code) {
+  const clean = String(code || "").trim().toLowerCase();
+  return EWALLET_OPTIONS.find((item) => item.code === clean) || null;
+}
+
+function getEwalletOptionByName(name) {
+  const clean = String(name || "").trim().toLowerCase();
+  if (!clean) return null;
+  return EWALLET_OPTIONS.find((item) =>
+    item.name.toLowerCase() === clean
+    || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === clean))
+  ) || null;
+}
+
+function inferGiftAccountCategory(account) {
+  const explicit = String(account && account.category || "").trim().toLowerCase();
+  if (explicit === "bank" || explicit === "ewallet") return explicit;
+
+  const source = `${account && account.bankCode || ""} ${account && account.bankName || ""}`.toLowerCase();
+  const ewalletKeywords = ["dana", "ovo", "gopay", "go-pay", "shopeepay", "shopee pay", "linkaja", "link aja", "sakuku"];
+  return ewalletKeywords.some((keyword) => source.includes(keyword)) ? "ewallet" : "bank";
+}
+
 function createDefaultGiftAccount() {
   const fallbackBank = BANK_OPTIONS[0];
   return {
+    category: "bank",
     bankCode: fallbackBank.code,
     bankName: fallbackBank.name,
     accountNumber: "",
@@ -611,15 +643,19 @@ function normalizeGiftAccounts(input) {
   if (!Array.isArray(source)) return [];
 
   return source.map((item) => {
+    const category = inferGiftAccountCategory(item);
     const bankCode = String(item && item.bankCode || "").trim().toLowerCase();
-    const bankMeta = getBankOptionByCode(bankCode) || getBankOptionByName(item && item.bankName);
+    const providerMeta = category === "ewallet"
+      ? (getEwalletOptionByCode(bankCode) || getEwalletOptionByName(item && item.bankName))
+      : (getBankOptionByCode(bankCode) || getBankOptionByName(item && item.bankName));
     const accountNumber = String(item && item.accountNumber || "").replace(/\D+/g, "");
     return {
-      bankCode: bankMeta ? bankMeta.code : bankCode,
-      bankName: String(item && item.bankName || (bankMeta && bankMeta.name) || "").trim(),
+      category,
+      bankCode: providerMeta ? providerMeta.code : bankCode,
+      bankName: String(item && item.bankName || (providerMeta && providerMeta.name) || "").trim(),
       accountNumber,
       accountHolder: String(item && item.accountHolder || "").trim(),
-      logoUrl: String((bankMeta && bankMeta.logoUrl) || item && item.logoUrl || "").trim(),
+      logoUrl: String((providerMeta && providerMeta.logoUrl) || item && item.logoUrl || "").trim(),
       isActive: normalizeBoolean(item && item.isActive, true)
     };
   });
@@ -645,6 +681,7 @@ function renderGiftAccountsEditor(accounts) {
 
   giftAccountsEditor.innerHTML = "";
   giftAccountsDraft.forEach((account, index) => {
+    const category = inferGiftAccountCategory(account);
     const item = document.createElement("article");
     item.className = "gift-account-editor-item";
 
@@ -652,37 +689,50 @@ function renderGiftAccountsEditor(accounts) {
     head.className = "gift-account-editor-head";
     const title = document.createElement("p");
     title.className = "gift-account-editor-title";
-    title.textContent = `Rekening ${index + 1}`;
+    title.textContent = `Akun Gift ${index + 1}`;
     head.appendChild(title);
     item.appendChild(head);
 
+    const categorySelect = document.createElement("select");
+    categorySelect.setAttribute("data-role", "category");
+    categorySelect.innerHTML = `
+      <option value="bank">Transfer Bank</option>
+      <option value="ewallet">E-Wallet</option>
+    `;
+    categorySelect.value = category;
+
     const bankSelect = document.createElement("select");
-    bankSelect.innerHTML = `<option value="">Pilih Bank</option>${BANK_OPTIONS.map((opt) => `<option value="${opt.code}">${opt.name}</option>`).join("")}`;
+    bankSelect.setAttribute("data-role", "provider-code");
     bankSelect.value = account.bankCode || "";
 
     const bankNameInput = document.createElement("input");
+    bankNameInput.setAttribute("data-role", "provider-name");
     bankNameInput.type = "text";
-    bankNameInput.placeholder = "Nama Bank";
+    bankNameInput.placeholder = "Nama Bank / E-Wallet";
     bankNameInput.value = account.bankName || "";
 
     const accountNumberInput = document.createElement("input");
+    accountNumberInput.setAttribute("data-role", "account-number");
     accountNumberInput.type = "text";
-    accountNumberInput.placeholder = "Nomor Rekening";
+    accountNumberInput.placeholder = "Nomor Rekening / Nomor HP";
     accountNumberInput.value = account.accountNumber || "";
 
     const accountHolderInput = document.createElement("input");
+    accountHolderInput.setAttribute("data-role", "account-holder");
     accountHolderInput.type = "text";
-    accountHolderInput.placeholder = "Nama Pemilik Rekening";
+    accountHolderInput.placeholder = "Nama Pemilik";
     accountHolderInput.value = account.accountHolder || "";
 
     const logoInput = document.createElement("input");
+    logoInput.setAttribute("data-role", "logo-url");
     logoInput.type = "text";
-    logoInput.placeholder = "URL Logo Bank";
+    logoInput.placeholder = "URL Logo";
     logoInput.value = account.logoUrl || "";
 
     const activeWrap = document.createElement("label");
     activeWrap.className = "inline-check";
     const activeInput = document.createElement("input");
+    activeInput.setAttribute("data-role", "is-active");
     activeInput.type = "checkbox";
     activeInput.checked = normalizeBoolean(account.isActive, true);
     const activeText = document.createElement("span");
@@ -726,20 +776,69 @@ function renderGiftAccountsEditor(accounts) {
     controls.appendChild(detectBtn);
     controls.appendChild(removeBtn);
 
+    const categoryLabel = createLabeledInput("Jenis Akun", categorySelect);
+    const providerSelectLabel = createLabeledInput("Bank", bankSelect);
+    const providerNameLabel = createLabeledInput("Nama Bank", bankNameInput);
+    const accountNumberLabel = createLabeledInput("Nomor Rekening", accountNumberInput);
+    const accountHolderLabel = createLabeledInput("Nama Pemilik", accountHolderInput);
+    const logoLabel = createLabeledInput("Logo (URL)", logoInput);
+
+    function syncProviderOptions(nextCategory) {
+      const options = nextCategory === "ewallet" ? EWALLET_OPTIONS : BANK_OPTIONS;
+      const defaultLabel = nextCategory === "ewallet" ? "Pilih E-Wallet" : "Pilih Bank";
+      bankSelect.innerHTML = `<option value="">${defaultLabel}</option>${options.map((opt) => `<option value="${opt.code}">${opt.name}</option>`).join("")}`;
+    }
+
+    function applyProviderMeta(nextCategory) {
+      const selectedCode = String(bankSelect.value || "").trim().toLowerCase();
+      const providerMeta = nextCategory === "ewallet"
+        ? getEwalletOptionByCode(selectedCode)
+        : getBankOptionByCode(selectedCode);
+      if (!providerMeta) return;
+      bankNameInput.value = providerMeta.name;
+      if (!logoInput.value.trim() && providerMeta.logoUrl) {
+        logoInput.value = providerMeta.logoUrl;
+      }
+    }
+
+    function updateGiftFieldLabels(nextCategory) {
+      const isEwallet = nextCategory === "ewallet";
+      providerSelectLabel.firstChild.textContent = isEwallet ? "E-Wallet" : "Bank";
+      providerNameLabel.firstChild.textContent = isEwallet ? "Nama E-Wallet" : "Nama Bank";
+      accountNumberLabel.firstChild.textContent = isEwallet ? "Nomor E-Wallet" : "Nomor Rekening";
+      logoLabel.firstChild.textContent = isEwallet ? "Logo E-Wallet (URL)" : "Logo Bank (URL)";
+      accountNumberInput.placeholder = isEwallet ? "Nomor HP / ID E-Wallet" : "Nomor Rekening";
+      bankNameInput.placeholder = isEwallet ? "Nama E-Wallet" : "Nama Bank";
+      detectBtn.style.display = isEwallet ? "none" : "";
+      syncProviderOptions(nextCategory);
+    }
+
     bankSelect.addEventListener("change", () => {
-      const bankMeta = getBankOptionByCode(bankSelect.value);
-      if (!bankMeta) return;
-      bankNameInput.value = bankMeta.name;
-      if (!logoInput.value.trim()) logoInput.value = bankMeta.logoUrl;
+      applyProviderMeta(categorySelect.value);
     });
+
+    categorySelect.addEventListener("change", () => {
+      bankSelect.value = "";
+      bankNameInput.value = "";
+      if (!logoInput.value.trim() || EWALLET_OPTIONS.some((opt) => opt.name === logoInput.value) || BANK_OPTIONS.some((opt) => opt.logoUrl === logoInput.value)) {
+        logoInput.value = "";
+      }
+      updateGiftFieldLabels(categorySelect.value);
+    });
+
+    updateGiftFieldLabels(category);
+    if (account.bankCode) {
+      bankSelect.value = account.bankCode;
+    }
 
     const wrap = document.createElement("div");
     wrap.className = "grid two";
-    wrap.appendChild(createLabeledInput("Bank", bankSelect));
-    wrap.appendChild(createLabeledInput("Nama Bank", bankNameInput));
-    wrap.appendChild(createLabeledInput("Nomor Rekening", accountNumberInput));
-    wrap.appendChild(createLabeledInput("Nama Pemilik", accountHolderInput));
-    wrap.appendChild(createLabeledInput("Logo Bank (URL)", logoInput));
+    wrap.appendChild(categoryLabel);
+    wrap.appendChild(providerSelectLabel);
+    wrap.appendChild(providerNameLabel);
+    wrap.appendChild(accountNumberLabel);
+    wrap.appendChild(accountHolderLabel);
+    wrap.appendChild(logoLabel);
     wrap.appendChild(activeWrap);
 
     item.appendChild(wrap);
@@ -759,14 +858,14 @@ function readGiftAccountsFromEditor() {
   if (!giftAccountsEditor) return [];
   const items = Array.from(giftAccountsEditor.querySelectorAll(".gift-account-editor-item"));
   return items.map((item) => {
-    const inputs = item.querySelectorAll("input, select");
-    const bankCode = String(inputs[0] && inputs[0].value || "").trim().toLowerCase();
-    const bankName = String(inputs[1] && inputs[1].value || "").trim();
-    const accountNumber = String(inputs[2] && inputs[2].value || "").replace(/\D+/g, "");
-    const accountHolder = String(inputs[3] && inputs[3].value || "").trim();
-    const logoUrl = String(inputs[4] && inputs[4].value || "").trim();
-    const isActive = Boolean(inputs[5] && inputs[5].checked);
-    return { bankCode, bankName, accountNumber, accountHolder, logoUrl, isActive };
+    const category = String(item.querySelector('[data-role="category"]')?.value || "bank").trim().toLowerCase();
+    const bankCode = String(item.querySelector('[data-role="provider-code"]')?.value || "").trim().toLowerCase();
+    const bankName = String(item.querySelector('[data-role="provider-name"]')?.value || "").trim();
+    const accountNumber = String(item.querySelector('[data-role="account-number"]')?.value || "").replace(/\D+/g, "");
+    const accountHolder = String(item.querySelector('[data-role="account-holder"]')?.value || "").trim();
+    const logoUrl = String(item.querySelector('[data-role="logo-url"]')?.value || "").trim();
+    const isActive = Boolean(item.querySelector('[data-role="is-active"]')?.checked);
+    return { category, bankCode, bankName, accountNumber, accountHolder, logoUrl, isActive };
   }).filter((item) => item.accountNumber);
 }
 

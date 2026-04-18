@@ -44,6 +44,14 @@ const BANK_CATALOG = {
   danamon: { code: "danamon", name: "Danamon", logoUrl: "assets/bank/danamon.svg", aliases: ["bank danamon"] },
   panin: { code: "panin", name: "Panin", logoUrl: "assets/bank/panin.svg", aliases: ["panin bank", "bank panin"] }
 };
+const EWALLET_CATALOG = {
+  dana: { code: "dana", name: "DANA", aliases: ["dana"] },
+  ovo: { code: "ovo", name: "OVO", aliases: ["ovo"] },
+  gopay: { code: "gopay", name: "GoPay", aliases: ["gopay", "go-pay"] },
+  shopeepay: { code: "shopeepay", name: "ShopeePay", aliases: ["shopeepay", "shopee pay"] },
+  linkaja: { code: "linkaja", name: "LinkAja", aliases: ["linkaja", "link aja"] },
+  sakuku: { code: "sakuku", name: "Sakuku", aliases: ["sakuku"] }
+};
 const lightbox = document.createElement("div");
 lightbox.className = "gallery-lightbox";
 lightbox.setAttribute("aria-hidden", "true");
@@ -365,6 +373,7 @@ function normalizeGiftAccounts(input) {
 
   return source
     .map((item) => ({
+      category: getGiftAccountCategory(item),
       bankCode: String(item && item.bankCode || "").trim().toLowerCase(),
       bankName: String(item && item.bankName || "").trim(),
       accountNumber: String(item && item.accountNumber || "").replace(/\D+/g, ""),
@@ -1158,9 +1167,30 @@ function getGiftLogoUrl(account, bankMeta) {
 }
 
 function getGiftAccountCategory(account) {
+  if (String(account && account.category || "").trim().toLowerCase() === "ewallet") {
+    return "ewallet";
+  }
+  if (String(account && account.category || "").trim().toLowerCase() === "bank") {
+    return "bank";
+  }
   const source = `${account && account.bankCode || ""} ${account && account.bankName || ""}`.toLowerCase();
   const ewalletKeywords = ["dana", "ovo", "gopay", "go-pay", "shopeepay", "shopee pay", "linkaja", "link aja", "sakuku"];
   return ewalletKeywords.some((keyword) => source.includes(keyword)) ? "ewallet" : "bank";
+}
+
+function getGiftProviderMeta(account) {
+  const category = getGiftAccountCategory(account);
+  const catalog = category === "ewallet" ? EWALLET_CATALOG : BANK_CATALOG;
+  const rawCode = String(account && account.bankCode || "").trim().toLowerCase();
+  if (rawCode && catalog[rawCode]) return catalog[rawCode];
+
+  const rawName = String(account && account.bankName || "").trim().toLowerCase();
+  if (!rawName) return null;
+
+  return Object.values(catalog).find((item) =>
+    item.name.toLowerCase() === rawName
+    || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === rawName))
+  ) || null;
 }
 
 function createGiftHead(bankName, logoUrl) {
@@ -1277,12 +1307,14 @@ function renderGiftSection() {
   giftAccountsList.classList.toggle("is-single", (groupedAccounts[activeCategory] || []).length === 1);
   (groupedAccounts[activeCategory] || []).forEach((account) => {
     const bankMeta = getBankMeta(account);
-    const bankName = String(account.bankName || (bankMeta && bankMeta.name) || "Bank").trim();
-    const logoUrl = getGiftLogoUrl(account, bankMeta);
+    const providerMeta = getGiftProviderMeta(account) || bankMeta;
+    const category = getGiftAccountCategory(account);
+    const providerName = String(account.bankName || (providerMeta && providerMeta.name) || (category === "ewallet" ? "E-Wallet" : "Bank")).trim();
+    const logoUrl = getGiftLogoUrl(account, providerMeta);
     const card = document.createElement("article");
     card.className = "gift-account-card";
 
-    const head = createGiftHead(bankName, logoUrl);
+    const head = createGiftHead(providerName, logoUrl);
 
     const body = document.createElement("div");
     body.className = "gift-account-body";
@@ -1298,18 +1330,18 @@ function renderGiftSection() {
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
     copyBtn.className = "gift-copy-btn";
-    copyBtn.textContent = "Salin Rekening";
+    copyBtn.textContent = category === "ewallet" ? "Salin Nomor" : "Salin Rekening";
     copyBtn.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(account.accountNumber);
         copyBtn.textContent = "Tersalin";
         window.setTimeout(() => {
-          copyBtn.textContent = "Salin Rekening";
+          copyBtn.textContent = category === "ewallet" ? "Salin Nomor" : "Salin Rekening";
         }, 1200);
       } catch (error) {
         copyBtn.textContent = "Gagal Salin";
         window.setTimeout(() => {
-          copyBtn.textContent = "Salin Rekening";
+          copyBtn.textContent = category === "ewallet" ? "Salin Nomor" : "Salin Rekening";
         }, 1400);
       }
     });
