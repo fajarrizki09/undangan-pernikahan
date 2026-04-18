@@ -150,27 +150,12 @@ if (btnLoadMusicLibrary) {
 }
 
 apiUrlInput.value = RSVP_API_URL;
-let currentGuests = [];
-let currentRsvps = [];
 let selectedGalleryUrls = new Set();
 let galleryPhotoFocusMap = {};
 let giftAccountsDraft = [];
 let musicPlaylistDraft = [];
-let guestState = {
-  total: 0,
-  page: 1,
-  pageSize: 20,
-  totalPages: 1,
-  groups: [],
-  statuses: ["active", "vip", "disabled"]
-};
-let rsvpState = {
-  total: 0,
-  page: 1,
-  pageSize: 20,
-  totalPages: 1
-};
-let rsvpFullMode = true;
+let guestAdminModule = null;
+let rsvpAdminModule = null;
 
 function getDefaultInvitationBaseUrl() {
   const fromConfig = (ADMIN_CONFIG && ADMIN_CONFIG.invitationBaseUrl) || "";
@@ -1235,6 +1220,44 @@ async function postApi(payload) {
   return result;
 }
 
+guestAdminModule = window.WeddingGuestAdminModule.createGuestAdminModule({
+  elements: {
+    guestInput,
+    guestSearch,
+    guestGroupFilter,
+    guestStatusFilter,
+    guestPageSize,
+    guestPageInfo,
+    btnGuestPrev,
+    btnGuestNext,
+    guestLinks,
+    guestTableBody,
+    invitationBaseUrlInput,
+    statusGuests
+  },
+  getAdminKeyOrThrow,
+  setStatus,
+  postApi,
+  normalizeBaseUrl
+});
+
+rsvpAdminModule = window.WeddingRsvpAdminModule.createRsvpAdminModule({
+  elements: {
+    rsvpSearch,
+    rsvpKehadiranFilter,
+    rsvpPageSize,
+    rsvpPageInfo,
+    btnRsvpPrev,
+    btnRsvpNext,
+    rsvpTableBody,
+    statusRsvps
+  },
+  getAdminKeyOrThrow,
+  setStatus,
+  postApi,
+  rsvpApiUrl: RSVP_API_URL
+});
+
 async function loadConfigFromServer() {
   try {
     if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
@@ -1928,458 +1951,39 @@ async function uploadMusicToDrive() {
   }
 }
 
-function parseGuestInput() {
-  return guestInput.value
-    .split(/\r?\n+/)
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const parts = line.split("|").map((part) => part.trim());
-      return {
-        name: parts[0] || "",
-        group: parts[1] || "Umum",
-        phone: parts[2] || "",
-        notes: parts[3] || "",
-        status: "active"
-      };
-    })
-    .filter((item) => item.name);
-}
-
-function buildGuestLink(baseUrl, name) {
-  const safeBase = normalizeBaseUrl(baseUrl);
-  if (!safeBase) return "";
-  const url = new URL(safeBase, window.location.origin);
-  url.searchParams.set("to", name || "");
-  return url.toString();
-}
-
-function toCsvCell(value) {
-  const text = String(value || "");
-  return `"${text.replace(/"/g, "\"\"")}"`;
-}
-
-function renderGuestLinks(guests) {
-  const baseUrl = normalizeBaseUrl(invitationBaseUrlInput.value);
-  if (!baseUrl) {
-    guestLinks.value = "Isi Base URL Undangan terlebih dahulu.";
-    return;
-  }
-
-  guestLinks.value = guests
-    .map((guest) => `${guest.name} => ${buildGuestLink(baseUrl, guest.name)}`)
-    .join("\n");
-}
-
-function renderGuestMeta() {
-  if (guestPageInfo) {
-    guestPageInfo.textContent = `Halaman ${guestState.page} / ${guestState.totalPages} (${guestState.total} tamu)`;
-  }
-
-  if (btnGuestPrev) btnGuestPrev.disabled = guestState.page <= 1;
-  if (btnGuestNext) btnGuestNext.disabled = guestState.page >= guestState.totalPages;
-}
-
-function renderGuestFilterOptions() {
-  if (!guestGroupFilter) return;
-  const current = guestGroupFilter.value || "all";
-  const groups = Array.isArray(guestState.groups) ? guestState.groups : [];
-  guestGroupFilter.innerHTML = `<option value="all">Semua Group</option>${groups.map((group) => `<option value="${group}">${group}</option>`).join("")}`;
-  guestGroupFilter.value = groups.includes(current) ? current : "all";
-}
-
-async function updateGuestName(code, payload) {
-  try {
-    const adminKey = getAdminKeyOrThrow();
-    const cleanName = String((payload && payload.name) || "").trim();
-    if (!cleanName) throw new Error("Nama tamu tidak boleh kosong");
-
-    setStatus(statusGuests, "Menyimpan perubahan tamu...");
-    await postApi({
-      action: "updateGuest",
-      adminKey,
-      code,
-      name: cleanName,
-      group: String((payload && payload.group) || "Umum").trim() || "Umum",
-      status: String((payload && payload.status) || "active").trim() || "active",
-      phone: String((payload && payload.phone) || "").trim(),
-      notes: String((payload && payload.notes) || "").trim()
-    });
-    setStatus(statusGuests, "Data tamu berhasil diperbarui");
-    await loadGuests();
-  } catch (error) {
-    setStatus(statusGuests, `Error: ${error.message}`);
-  }
-}
-
-async function deleteGuestByCode(code) {
-  try {
-    const adminKey = getAdminKeyOrThrow();
-    if (!window.confirm("Hapus tamu ini?")) return;
-
-    setStatus(statusGuests, "Menghapus tamu...");
-    await postApi({
-      action: "deleteGuest",
-      adminKey,
-      code
-    });
-    setStatus(statusGuests, "Tamu berhasil dihapus");
-    await loadGuests();
-  } catch (error) {
-    setStatus(statusGuests, `Error: ${error.message}`);
-  }
-}
-
-function renderGuestTable(guests) {
-  if (!guestTableBody) return;
-
-  guestTableBody.innerHTML = "";
-  if (!guests.length) {
-    const row = document.createElement("tr");
-    const cell = document.createElement("td");
-    cell.colSpan = 7;
-    cell.textContent = "Belum ada data tamu.";
-    row.appendChild(cell);
-    guestTableBody.appendChild(row);
-    return;
-  }
-
-  const baseUrl = normalizeBaseUrl(invitationBaseUrlInput.value);
-  guests.forEach((guest) => {
-    const row = document.createElement("tr");
-
-    const codeCell = document.createElement("td");
-    codeCell.textContent = guest.code || "-";
-
-    const nameCell = document.createElement("td");
-    const nameInput = document.createElement("input");
-    nameInput.className = "guest-name-input";
-    nameInput.type = "text";
-    nameInput.value = guest.name || "";
-    nameCell.appendChild(nameInput);
-
-    const groupCell = document.createElement("td");
-    const groupInput = document.createElement("input");
-    groupInput.className = "guest-inline-input";
-    groupInput.type = "text";
-    groupInput.value = guest.group || "Umum";
-    groupCell.appendChild(groupInput);
-
-    const statusCell = document.createElement("td");
-    const statusSelect = document.createElement("select");
-    statusSelect.className = "guest-inline-input";
-    ["active", "vip", "disabled"].forEach((statusValue) => {
-      const option = document.createElement("option");
-      option.value = statusValue;
-      option.textContent = statusValue.toUpperCase();
-      if ((guest.status || "active") === statusValue) option.selected = true;
-      statusSelect.appendChild(option);
-    });
-    statusCell.appendChild(statusSelect);
-
-    const phoneCell = document.createElement("td");
-    const phoneInput = document.createElement("input");
-    phoneInput.className = "guest-inline-input";
-    phoneInput.type = "text";
-    phoneInput.value = guest.phone || "";
-    phoneCell.appendChild(phoneInput);
-
-    const linkCell = document.createElement("td");
-    if (baseUrl && guest.name) {
-      const link = document.createElement("a");
-      link.className = "guest-link-mini";
-      link.href = buildGuestLink(baseUrl, guest.name);
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.textContent = "Buka Link";
-      linkCell.appendChild(link);
-    } else {
-      linkCell.textContent = "-";
-    }
-
-    const actionCell = document.createElement("td");
-    const actions = document.createElement("div");
-    actions.className = "guest-actions";
-
-    const saveBtn = document.createElement("button");
-    saveBtn.type = "button";
-    saveBtn.className = "btn-mini";
-    saveBtn.textContent = "Simpan";
-    saveBtn.addEventListener("click", () => updateGuestName(guest.code, {
-      name: nameInput.value,
-      group: groupInput.value,
-      status: statusSelect.value,
-      phone: phoneInput.value
-    }));
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
-    deleteBtn.className = "btn-mini";
-    deleteBtn.textContent = "Hapus";
-    deleteBtn.addEventListener("click", () => deleteGuestByCode(guest.code));
-
-    actions.appendChild(saveBtn);
-    actions.appendChild(deleteBtn);
-    actionCell.appendChild(actions);
-
-    row.appendChild(codeCell);
-    row.appendChild(nameCell);
-    row.appendChild(groupCell);
-    row.appendChild(statusCell);
-    row.appendChild(phoneCell);
-    row.appendChild(linkCell);
-    row.appendChild(actionCell);
-    guestTableBody.appendChild(row);
-  });
-}
-
 function refreshGuestViews() {
-  renderGuestTable(currentGuests);
-  renderGuestLinks(currentGuests);
-  renderGuestMeta();
+  if (guestAdminModule) {
+    guestAdminModule.refreshViews();
+  }
 }
 
 function exportGuestsCsv() {
-  const guests = [...currentGuests];
-  if (!guests.length) {
-    setStatus(statusGuests, "Belum ada data tamu untuk diexport.");
-    return;
+  if (guestAdminModule) {
+    guestAdminModule.exportGuestsCsv();
   }
-
-  const baseUrl = normalizeBaseUrl(invitationBaseUrlInput.value);
-  const lines = [
-    "code,nama,group,status,telepon,link_undangan",
-    ...guests.map((guest) => {
-      const link = baseUrl ? buildGuestLink(baseUrl, guest.name || "") : "";
-      return [
-        toCsvCell(guest.code),
-        toCsvCell(guest.name),
-        toCsvCell(guest.group || "Umum"),
-        toCsvCell(guest.status || "active"),
-        toCsvCell(guest.phone || ""),
-        toCsvCell(link)
-      ].join(",");
-    })
-  ];
-
-  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = "daftar-tamu-undangan.csv";
-  document.body.appendChild(anchor);
-  anchor.click();
-  document.body.removeChild(anchor);
-  URL.revokeObjectURL(url);
-  setStatus(statusGuests, `CSV berhasil diexport (${guests.length} tamu).`);
 }
 
 async function importGuests() {
-  try {
-    const adminKey = getAdminKeyOrThrow();
-
-    const guests = parseGuestInput();
-    if (!guests.length) throw new Error("Daftar tamu kosong");
-
-    setStatus(statusGuests, "Mengimport tamu...");
-    const result = await postApi({
-      action: "importGuests",
-      adminKey,
-      guests
-    });
-
-    setStatus(statusGuests, `${result.importedCount} tamu baru diimport. Total: ${result.totalGuests}`);
-    await loadGuests();
-  } catch (error) {
-    setStatus(statusGuests, `Error: ${error.message}`);
+  if (guestAdminModule) {
+    await guestAdminModule.importGuests();
   }
 }
 
 async function loadGuests() {
-  try {
-    const adminKey = getAdminKeyOrThrow();
-
-    setStatus(statusGuests, "Memuat daftar tamu...");
-    const result = await postApi({
-      action: "listGuests",
-      adminKey,
-      search: String((guestSearch && guestSearch.value) || "").trim(),
-      group: String((guestGroupFilter && guestGroupFilter.value) || "all").trim(),
-      status: String((guestStatusFilter && guestStatusFilter.value) || "all").trim(),
-      page: guestState.page,
-      pageSize: Number((guestPageSize && guestPageSize.value) || guestState.pageSize || 20)
-    });
-    currentGuests = Array.isArray(result.guests) ? result.guests : [];
-    guestState.total = Number(result.total || currentGuests.length);
-    guestState.page = Number(result.page || 1);
-    guestState.pageSize = Number(result.pageSize || guestState.pageSize || 20);
-    guestState.totalPages = Number(result.totalPages || 1);
-    guestState.groups = Array.isArray(result.groups) ? result.groups : [];
-    guestState.statuses = Array.isArray(result.statuses) ? result.statuses : guestState.statuses;
-    renderGuestFilterOptions();
-    refreshGuestViews();
-    setStatus(statusGuests, `Berhasil memuat ${currentGuests.length} tamu (total ${guestState.total})`);
-  } catch (error) {
-    setStatus(statusGuests, `Error: ${error.message}`);
+  if (guestAdminModule) {
+    await guestAdminModule.loadGuests();
   }
-}
-
-function formatDateTime(value) {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  try {
-    return new Intl.DateTimeFormat("id-ID", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    }).format(date);
-  } catch (error) {
-    return String(value);
-  }
-}
-
-function renderRsvpMeta() {
-  if (!rsvpPageInfo) return;
-  rsvpPageInfo.textContent = `Halaman ${rsvpState.page} / ${rsvpState.totalPages} (${rsvpState.total} RSVP)`;
-  if (btnRsvpPrev) btnRsvpPrev.disabled = rsvpState.page <= 1;
-  if (btnRsvpNext) btnRsvpNext.disabled = rsvpState.page >= rsvpState.totalPages;
-}
-
-async function deleteRsvpByRow(rowNumber) {
-  try {
-    if (!rsvpFullMode) {
-      throw new Error("Hapus RSVP butuh update Code.gs terbaru terlebih dahulu");
-    }
-    const adminKey = getAdminKeyOrThrow();
-    if (!window.confirm("Hapus data RSVP ini?")) return;
-
-    setStatus(statusRsvps, "Menghapus RSVP...");
-    await postApi({
-      action: "deleteRsvp",
-      adminKey,
-      rowNumber
-    });
-
-    setStatus(statusRsvps, "RSVP berhasil dihapus");
-    await loadRsvps();
-  } catch (error) {
-    setStatus(statusRsvps, `Error: ${error.message}`);
-  }
-}
-
-function renderRsvpTable(rows) {
-  if (!rsvpTableBody) return;
-  rsvpTableBody.innerHTML = "";
-
-  if (!rows.length) {
-    const row = document.createElement("tr");
-    const cell = document.createElement("td");
-    cell.colSpan = 6;
-    cell.textContent = "Belum ada data RSVP.";
-    row.appendChild(cell);
-    rsvpTableBody.appendChild(row);
-    return;
-  }
-
-  rows.forEach((item) => {
-    const row = document.createElement("tr");
-
-    const waktuCell = document.createElement("td");
-    waktuCell.textContent = formatDateTime(item.waktu);
-
-    const namaCell = document.createElement("td");
-    namaCell.textContent = item.nama || "-";
-
-    const jumlahCell = document.createElement("td");
-    jumlahCell.textContent = String(item.jumlah || 0);
-
-    const kehadiranCell = document.createElement("td");
-    kehadiranCell.textContent = item.kehadiran || "-";
-
-    const ucapanCell = document.createElement("td");
-    ucapanCell.textContent = item.ucapan || "-";
-
-    const actionCell = document.createElement("td");
-    const deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
-    deleteBtn.className = "btn-mini";
-    deleteBtn.textContent = rsvpFullMode ? "Hapus" : "Read Only";
-    deleteBtn.disabled = !rsvpFullMode;
-    if (rsvpFullMode) {
-      deleteBtn.addEventListener("click", () => deleteRsvpByRow(item.rowNumber));
-    }
-    actionCell.appendChild(deleteBtn);
-
-    row.appendChild(waktuCell);
-    row.appendChild(namaCell);
-    row.appendChild(jumlahCell);
-    row.appendChild(kehadiranCell);
-    row.appendChild(ucapanCell);
-    row.appendChild(actionCell);
-    rsvpTableBody.appendChild(row);
-  });
 }
 
 function refreshRsvpViews() {
-  renderRsvpTable(currentRsvps);
-  renderRsvpMeta();
+  if (rsvpAdminModule) {
+    rsvpAdminModule.refreshViews();
+  }
 }
 
 async function loadRsvps() {
-  try {
-    rsvpFullMode = true;
-    const adminKey = getAdminKeyOrThrow();
-    setStatus(statusRsvps, "Memuat RSVP...");
-
-    const result = await postApi({
-      action: "listRsvps",
-      adminKey,
-      search: String((rsvpSearch && rsvpSearch.value) || "").trim(),
-      kehadiran: String((rsvpKehadiranFilter && rsvpKehadiranFilter.value) || "all").trim(),
-      page: rsvpState.page,
-      pageSize: Number((rsvpPageSize && rsvpPageSize.value) || rsvpState.pageSize || 20)
-    });
-
-    currentRsvps = Array.isArray(result.rsvps) ? result.rsvps : [];
-    rsvpState.total = Number(result.total || currentRsvps.length);
-    rsvpState.page = Number(result.page || 1);
-    rsvpState.pageSize = Number(result.pageSize || rsvpState.pageSize || 20);
-    rsvpState.totalPages = Number(result.totalPages || 1);
-    refreshRsvpViews();
-    setStatus(statusRsvps, `Berhasil memuat ${currentRsvps.length} data RSVP (total ${rsvpState.total})`);
-  } catch (error) {
-    try {
-      const fallbackUrl = new URL(RSVP_API_URL);
-      fallbackUrl.searchParams.set("action", "wishes");
-      fallbackUrl.searchParams.set("limit", String(Number((rsvpPageSize && rsvpPageSize.value) || 20)));
-      fallbackUrl.searchParams.set("_ts", String(Date.now()));
-
-      const response = await fetch(fallbackUrl.toString(), { cache: "no-store" });
-      const result = await response.json();
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Gagal memuat fallback ucapan");
-      }
-
-      currentRsvps = (result.wishes || []).map((item, index) => ({
-        rowNumber: index + 2,
-        waktu: item.waktu,
-        nama: item.nama,
-        jumlah: "-",
-        kehadiran: item.kehadiran || "-",
-        ucapan: item.ucapan || "-"
-      }));
-      rsvpState.total = currentRsvps.length;
-      rsvpState.page = 1;
-      rsvpState.totalPages = 1;
-      rsvpFullMode = false;
-      refreshRsvpViews();
-      setStatus(statusRsvps, "Mode fallback aktif: menampilkan data ucapan. Update Code.gs untuk manajemen RSVP penuh.");
-    } catch (fallbackError) {
-      setStatus(statusRsvps, `Error: ${error.message}`);
-    }
+  if (rsvpAdminModule) {
+    await rsvpAdminModule.loadRsvps();
   }
 }
 
@@ -2427,67 +2031,75 @@ if (fields.galleryMode) {
 }
 if (guestSearch) {
   guestSearch.addEventListener("input", () => {
-    guestState.page = 1;
+    if (guestAdminModule) guestAdminModule.setPage(1);
     loadGuests();
   });
 }
 if (guestGroupFilter) {
   guestGroupFilter.addEventListener("change", () => {
-    guestState.page = 1;
+    if (guestAdminModule) guestAdminModule.setPage(1);
     loadGuests();
   });
 }
 if (guestStatusFilter) {
   guestStatusFilter.addEventListener("change", () => {
-    guestState.page = 1;
+    if (guestAdminModule) guestAdminModule.setPage(1);
     loadGuests();
   });
 }
 if (guestPageSize) {
   guestPageSize.addEventListener("change", () => {
-    guestState.page = 1;
+    if (guestAdminModule) guestAdminModule.setPage(1);
     loadGuests();
   });
 }
 if (btnGuestPrev) {
   btnGuestPrev.addEventListener("click", () => {
-    guestState.page = Math.max(guestState.page - 1, 1);
+    if (guestAdminModule) {
+      guestAdminModule.setPage(Math.max(guestAdminModule.getPage() - 1, 1));
+    }
     loadGuests();
   });
 }
 if (btnGuestNext) {
   btnGuestNext.addEventListener("click", () => {
-    guestState.page = Math.min(guestState.page + 1, guestState.totalPages || 1);
+    if (guestAdminModule) {
+      guestAdminModule.setPage(Math.min(guestAdminModule.getPage() + 1, guestAdminModule.getTotalPages()));
+    }
     loadGuests();
   });
 }
 if (rsvpSearch) {
   rsvpSearch.addEventListener("input", () => {
-    rsvpState.page = 1;
+    if (rsvpAdminModule) rsvpAdminModule.setPage(1);
     loadRsvps();
   });
 }
 if (rsvpKehadiranFilter) {
   rsvpKehadiranFilter.addEventListener("change", () => {
-    rsvpState.page = 1;
+    if (rsvpAdminModule) rsvpAdminModule.setPage(1);
     loadRsvps();
   });
 }
 if (rsvpPageSize) {
   rsvpPageSize.addEventListener("change", () => {
-    rsvpState.page = 1;
+    if (rsvpAdminModule) rsvpAdminModule.setPage(1);
     loadRsvps();
   });
 }
 if (btnRsvpPrev) {
   btnRsvpPrev.addEventListener("click", () => {
-    rsvpState.page = Math.max(rsvpState.page - 1, 1);
+    if (rsvpAdminModule) {
+      rsvpAdminModule.setPage(Math.max(rsvpAdminModule.getPage() - 1, 1));
+    }
     loadRsvps();
   });
 }
 if (btnRsvpNext) {
   btnRsvpNext.addEventListener("click", () => {
-    rsvpState.page = Math.min(rsvpState.page + 1, rsvpState.totalPages || 1);
+    if (rsvpAdminModule) {
+      rsvpAdminModule.setPage(Math.min(rsvpAdminModule.getPage() + 1, rsvpAdminModule.getTotalPages()));
+    }
     loadRsvps();
   });
 }

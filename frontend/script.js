@@ -114,6 +114,38 @@ let currentConfig = {
 };
 const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
 const CONFIG_CACHE_TTL_MS = 1000 * 30;
+const metaModule = window.WeddingMetaModule;
+const publicConfigRuntime = window.WeddingPublicConfigModule.createRuntime({
+  cacheKey: CONFIG_CACHE_KEY,
+  cacheTtlMs: CONFIG_CACHE_TTL_MS
+});
+const galleryController = window.WeddingGalleryModule.createGalleryController({
+  galleryGrid,
+  lightbox,
+  lightboxImg,
+  galleryState,
+  isMobileViewport,
+  weddingConfig: WEDDING_CONFIG,
+  getCurrentConfig: () => currentConfig,
+  normalizeCountString,
+  normalizeGalleryMode,
+  normalizeGalleryStyle,
+  normalizePositiveNumberString,
+  getGalleryObjectPosition,
+  extractDriveFileId
+});
+const musicController = window.WeddingMusicModule.createController({
+  musicToggle,
+  bgMusic,
+  musicState,
+  weddingConfig: WEDDING_CONFIG,
+  getCurrentConfig: () => currentConfig,
+  getActiveMusicTracks,
+  normalizeMusicPlaybackMode,
+  extractDriveFileId,
+  extractDriveResourceKey,
+  isLikelyDriveFileId
+});
 
 function cleanPhotoArray(input) {
   if (!Array.isArray(input)) return [];
@@ -497,16 +529,7 @@ function cleanStoryDescription(value) {
 }
 
 function setMetaDescription(content) {
-  const text = String(content || "").trim();
-  if (!text) return;
-
-  let meta = document.querySelector('meta[name="description"]');
-  if (!meta) {
-    meta = document.createElement("meta");
-    meta.setAttribute("name", "description");
-    document.head.appendChild(meta);
-  }
-  meta.setAttribute("content", text);
+  metaModule.setMetaDescription(content);
 }
 
 function normalizeGalleryMode(value) {
@@ -536,78 +559,25 @@ function normalizePositiveNumberString(value) {
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    return await fetch(url, {
-      ...options,
-      signal: controller.signal
-    });
-  } finally {
-    clearTimeout(timeoutId);
-  }
+  return publicConfigRuntime.fetchWithTimeout(url, options, timeoutMs);
 }
 
 async function loadServerConfig() {
-  let hasSheetConfig = false;
-  const cachedConfig = readCachedConfig();
-  if (cachedConfig) {
-    currentConfig = mergeConfig(currentConfig, cachedConfig);
-    hasSheetConfig = true;
-  }
-
-  if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
-    return true;
-  }
-
-  const url = new URL(RSVP_API_URL);
-  url.searchParams.set("action", "config");
-  url.searchParams.set("_ts", String(Date.now()));
-
-  for (let attempt = 1; attempt <= 2; attempt += 1) {
-    try {
-      const response = await fetchWithTimeout(url.toString(), {
-        cache: "no-store"
-      }, 10000);
-
-      const result = await response.json();
-      if (response.ok && result.success && result.config) {
-        currentConfig = mergeConfig(currentConfig, result.config);
-        writeCachedConfig(result.config);
-        return true;
-      }
-    } catch (error) {
-      // Retry 1x jika koneksi awal lambat.
-    }
-  }
-
-  return hasSheetConfig;
+  const result = await publicConfigRuntime.loadServerConfig({
+    currentConfig,
+    mergeConfig,
+    rsvpApiUrl: RSVP_API_URL
+  });
+  currentConfig = result.config;
+  return result.ok;
 }
 
 function readCachedConfig() {
-  try {
-    const raw = localStorage.getItem(CONFIG_CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object") return null;
-    if (!parsed.savedAt || !parsed.data) return null;
-    if (Date.now() - Number(parsed.savedAt) > CONFIG_CACHE_TTL_MS) return null;
-    return parsed.data;
-  } catch (error) {
-    return null;
-  }
+  return publicConfigRuntime.readCachedConfig();
 }
 
 function writeCachedConfig(config) {
-  try {
-    localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify({
-      savedAt: Date.now(),
-      data: config
-    }));
-  } catch (error) {
-    // Abaikan jika storage penuh/terblokir.
-  }
+  publicConfigRuntime.writeCachedConfig(config);
 }
 
 function setLoaderMessage(message, allowRetry) {
@@ -771,231 +741,27 @@ function startWishesRefresh() {
 }
 
 function normalizeGalleryUrl(url, purpose = "gallery") {
-  const clean = String(url || "").trim();
-  if (!clean) return "";
-
-  const fileId = extractDriveFileId(clean);
-
-  if (clean.includes("drive.google.com") && fileId) {
-    return getDriveImageCandidates(fileId, purpose)[0];
-  }
-
-  return clean;
-}
-
-function getImageSizeByPurpose(purpose) {
-  if (purpose === "full") return 2400;
-  if (purpose === "hero") return isMobileViewport ? 1280 : 1800;
-  if (purpose === "story") return isMobileViewport ? 720 : 980;
-  return isMobileViewport ? 960 : 1400;
-}
-
-function getDriveImageCandidates(fileId, purpose = "gallery") {
-  const size = getImageSizeByPurpose(purpose);
-  return [
-    `https://lh3.googleusercontent.com/d/${fileId}=w${size}`,
-    `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`,
-    `https://drive.google.com/uc?export=view&id=${fileId}`
-  ];
+  return galleryController.normalizeGalleryUrl(url, purpose);
 }
 
 function applyImageWithFallback(img, rawUrl, options = {}) {
-  if (!img) return;
-
-  const fallbackSrc = options.fallbackSrc || "";
-  const purpose = options.purpose || "gallery";
-  const cleanUrl = String(rawUrl || "").trim();
-  if (!cleanUrl) {
-    if (fallbackSrc) img.src = fallbackSrc;
-    return;
-  }
-
-  const fileId = extractDriveFileId(cleanUrl);
-  const candidates = (cleanUrl.includes("drive.google.com") && fileId)
-    ? getDriveImageCandidates(fileId, purpose)
-    : [cleanUrl];
-
-  let index = 0;
-  const applyNext = () => {
-    const nextUrl = String(candidates[index] || "").trim();
-    if (!nextUrl) {
-      img.onerror = null;
-      if (fallbackSrc) img.src = fallbackSrc;
-      return;
-    }
-
-    index += 1;
-    img.src = nextUrl;
-  };
-
-  img.onerror = () => {
-    if (index >= candidates.length) {
-      img.onerror = null;
-      if (fallbackSrc) img.src = fallbackSrc;
-      return;
-    }
-    applyNext();
-  };
-
-  applyNext();
+  galleryController.applyImageWithFallback(img, rawUrl, options);
 }
 
 function clearGalleryAutoplay() {
-  if (!galleryState.autoplayTimer) return;
-  window.clearInterval(galleryState.autoplayTimer);
-  galleryState.autoplayTimer = null;
+  galleryController.clearGalleryAutoplay();
 }
 
 function openGalleryLightbox(src, index) {
-  if (!lightbox || !lightboxImg) return;
-  const clean = String(src || "").trim();
-  if (!clean) return;
-
-  lightbox.classList.add("is-open");
-  lightbox.setAttribute("aria-hidden", "false");
-  document.body.classList.add("gallery-lightbox-open");
-  lightboxImg.alt = `Foto galeri ${index + 1} ukuran besar`;
-  applyImageWithFallback(lightboxImg, clean, { purpose: "full", fallbackSrc: clean });
+  galleryController.openGalleryLightbox(src, index);
 }
 
 function closeGalleryLightbox() {
-  if (!lightbox || !lightboxImg) return;
-  lightbox.classList.remove("is-open");
-  lightbox.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("gallery-lightbox-open");
-  lightboxImg.removeAttribute("src");
-}
-
-function createGalleryCard(src, index) {
-  const card = document.createElement("article");
-  card.className = "gallery-item";
-  card.classList.add("is-clickable");
-
-  const img = document.createElement("img");
-  img.alt = `Foto galeri ${index + 1}`;
-  img.decoding = "async";
-  img.loading = index < 4 ? "eager" : "lazy";
-  if (index < 2) img.fetchPriority = "high";
-  img.style.objectPosition = getGalleryObjectPosition(src);
-  img.addEventListener("click", () => openGalleryLightbox(src, index));
-
-  applyImageWithFallback(img, src, {
-    purpose: "gallery",
-    fallbackSrc: `assets/photos/foto-${(index % 6) + 1}.svg`
-  });
-
-  card.appendChild(img);
-  return card;
-}
-
-function renderGalleryCarousel(photos, autoplaySec) {
-  const carousel = document.createElement("div");
-  carousel.className = "gallery-carousel";
-
-  const track = document.createElement("div");
-  track.className = "gallery-carousel-track";
-  carousel.appendChild(track);
-
-  const dots = document.createElement("div");
-  dots.className = "gallery-dots";
-  carousel.appendChild(dots);
-
-  let activeIndex = 0;
-  const maxIndex = photos.length - 1;
-  const dotButtons = [];
-
-  function updateSlide(nextIndex) {
-    activeIndex = Math.max(0, Math.min(nextIndex, maxIndex));
-    track.style.transform = `translateX(-${activeIndex * 100}%)`;
-    dotButtons.forEach((dot, idx) => dot.classList.toggle("is-active", idx === activeIndex));
-  }
-
-  photos.forEach((src, index) => {
-    const slide = document.createElement("div");
-    slide.className = "gallery-slide";
-    slide.appendChild(createGalleryCard(src, index));
-    track.appendChild(slide);
-
-    const dot = document.createElement("button");
-    dot.type = "button";
-    dot.className = "gallery-dot";
-    dot.setAttribute("aria-label", `Foto ${index + 1}`);
-    dot.addEventListener("click", () => updateSlide(index));
-    dots.appendChild(dot);
-    dotButtons.push(dot);
-  });
-
-  const prev = document.createElement("button");
-  prev.type = "button";
-  prev.className = "gallery-nav gallery-nav-prev";
-  prev.textContent = "<";
-  prev.setAttribute("aria-label", "Foto sebelumnya");
-  prev.addEventListener("click", () => updateSlide(activeIndex <= 0 ? maxIndex : activeIndex - 1));
-
-  const next = document.createElement("button");
-  next.type = "button";
-  next.className = "gallery-nav gallery-nav-next";
-  next.textContent = ">";
-  next.setAttribute("aria-label", "Foto berikutnya");
-  next.addEventListener("click", () => updateSlide(activeIndex >= maxIndex ? 0 : activeIndex + 1));
-
-  if (photos.length > 1) {
-    carousel.appendChild(prev);
-    carousel.appendChild(next);
-  }
-
-  updateSlide(0);
-  galleryGrid.appendChild(carousel);
-
-  if (photos.length > 1 && autoplaySec > 0) {
-    galleryState.autoplayTimer = window.setInterval(() => {
-      updateSlide(activeIndex >= maxIndex ? 0 : activeIndex + 1);
-    }, autoplaySec * 1000);
-
-    carousel.addEventListener("mouseenter", clearGalleryAutoplay);
-    carousel.addEventListener("mouseleave", () => {
-      clearGalleryAutoplay();
-      galleryState.autoplayTimer = window.setInterval(() => {
-        updateSlide(activeIndex >= maxIndex ? 0 : activeIndex + 1);
-      }, autoplaySec * 1000);
-    });
-  }
+  galleryController.closeGalleryLightbox();
 }
 
 function renderGalleryGrid(photos) {
-  if (!galleryGrid) return;
-  clearGalleryAutoplay();
-  galleryGrid.innerHTML = "";
-
-  const fallbackPhotos = Array.isArray(WEDDING_CONFIG.galleryPhotos) ? WEDDING_CONFIG.galleryPhotos : [];
-  const sourcePhotos = Array.isArray(photos) && photos.length ? photos : fallbackPhotos;
-  const cleanPhotosRaw = sourcePhotos
-    .map((item) => String(item || "").trim())
-    .filter(Boolean);
-  const maxItems = Number(normalizeCountString(currentConfig.galleryMaxItems));
-  const cleanPhotos = (Number.isFinite(maxItems) && maxItems > 0)
-    ? cleanPhotosRaw.slice(0, maxItems)
-    : cleanPhotosRaw;
-  const mode = normalizeGalleryMode(currentConfig.galleryMode || WEDDING_CONFIG.galleryMode);
-  const style = normalizeGalleryStyle(currentConfig.galleryStyle || WEDDING_CONFIG.galleryStyle);
-
-  galleryGrid.dataset.mode = mode;
-  galleryGrid.dataset.style = style;
-
-  if (!cleanPhotos.length) {
-    galleryGrid.innerHTML = '<p class="gallery-empty">Belum ada foto galeri.</p>';
-    return;
-  }
-
-  if (mode === "carousel") {
-    const autoplaySec = Number(normalizePositiveNumberString(currentConfig.galleryAutoplaySec || WEDDING_CONFIG.galleryAutoplaySec || "3.5")) || 3.5;
-    renderGalleryCarousel(cleanPhotos, autoplaySec);
-    return;
-  }
-
-  cleanPhotos.forEach((src, index) => {
-    galleryGrid.appendChild(createGalleryCard(src, index));
-  });
+  galleryController.renderGalleryGrid(photos);
 }
 
 function extractDriveFileId(url) {
@@ -1014,67 +780,15 @@ function extractDriveResourceKey(url) {
 }
 
 function buildMusicProxyUrl(fileId, resourceKey, sourceUrl) {
-  const rawFileId = String(fileId || "").trim();
-  const cleanFileId = isLikelyDriveFileId(rawFileId) ? rawFileId : "";
-  const cleanResourceKey = String(resourceKey || "").trim();
-  const cleanSourceUrl = String(sourceUrl || "").trim();
-  const params = new URLSearchParams();
-
-  if (cleanFileId) params.set("fileId", cleanFileId);
-  if (cleanResourceKey) params.set("resourceKey", cleanResourceKey);
-  if (!cleanFileId && cleanSourceUrl) params.set("src", cleanSourceUrl);
-  if (!params.toString()) return "";
-
-  return `/api/music?${params.toString()}`;
+  return musicController.buildMusicProxyUrl(fileId, resourceKey, sourceUrl);
 }
 
 function normalizeAudioUrl(url) {
-  const candidates = getAudioSourceCandidates(url);
-  return candidates[0] || "";
+  return musicController.normalizeAudioUrl(url);
 }
 
 function getAudioSourceCandidates(url) {
-  const clean = String(url || "").trim();
-  if (!clean) return [];
-
-  const fileId = extractDriveFileId(clean);
-  const resourceKey = extractDriveResourceKey(clean);
-  const resourceKeySuffix = resourceKey ? `&resourcekey=${encodeURIComponent(resourceKey)}` : "";
-  const isDriveHost = /(?:^|\/\/)(?:drive|docs)\.google\.com/i.test(clean)
-    || /(?:^|\/\/)drive\.usercontent\.google\.com/i.test(clean);
-
-  if (/^\/api\/music(?:\?|$)/i.test(clean)) {
-    return [clean];
-  }
-
-  if (isDriveHost && fileId) {
-    const proxyUrl = buildMusicProxyUrl(fileId, resourceKey, clean);
-    const candidates = [
-      proxyUrl,
-      clean,
-      `https://drive.google.com/uc?export=download&id=${fileId}${resourceKeySuffix}`,
-      `https://docs.google.com/uc?export=download&id=${fileId}${resourceKeySuffix}`,
-      `https://drive.google.com/uc?export=view&id=${fileId}${resourceKeySuffix}`,
-      `https://drive.usercontent.google.com/download?id=${fileId}&export=download${resourceKey ? `&resourcekey=${encodeURIComponent(resourceKey)}` : ""}`
-    ];
-
-    const unique = [];
-    const seen = new Set();
-    candidates.forEach((item) => {
-      const value = String(item || "").trim();
-      if (!value || seen.has(value)) return;
-      seen.add(value);
-      unique.push(value);
-    });
-    return unique;
-  }
-
-  if (fileId) {
-    const proxyUrl = buildMusicProxyUrl(fileId, resourceKey, clean);
-    if (proxyUrl) return [proxyUrl, clean].filter(Boolean);
-  }
-
-  return [clean];
+  return musicController.getAudioSourceCandidates(url);
 }
 
 function applyHeroCloudPhoto() {
@@ -1742,210 +1456,10 @@ function setupRevealAnimation() {
 }
 
 function setupMusicControl() {
-  if (!musicToggle || !bgMusic) return;
-
-  const activeTracks = getActiveMusicTracks(currentConfig);
-  musicState.activeTracks = activeTracks;
-  musicState.playbackMode = normalizeMusicPlaybackMode(currentConfig.musicPlaybackMode || "ordered");
-  musicState.currentTrackIndex = 0;
-  let allMusicCandidates = [];
-  let primaryCandidateCount = 0;
-  let currentMusicCandidateIndex = -1;
-
-  function rebuildCandidateList(trackIndex) {
-    const track = musicState.activeTracks[trackIndex];
-    const primaryCandidates = track ? getAudioSourceCandidates(track.url) : [];
-    const fallbackCandidates = getAudioSourceCandidates(WEDDING_CONFIG.backgroundMusicUrl);
-    const nextCandidates = [];
-    const seenCandidate = new Set();
-    [...primaryCandidates, ...fallbackCandidates].forEach((item) => {
-      const value = String(item || "").trim();
-      if (!value || seenCandidate.has(value)) return;
-      seenCandidate.add(value);
-      nextCandidates.push(value);
-    });
-    primaryCandidateCount = primaryCandidates.length;
-    allMusicCandidates = nextCandidates;
-    currentMusicCandidateIndex = -1;
-    return nextCandidates;
+  const runtime = musicController.setupMusicControl();
+  if (runtime && typeof runtime.startMusicFromGesture === "function") {
+    attemptMusicStartFromGesture = runtime.startMusicFromGesture;
   }
-
-  function pickNextTrackIndex() {
-    if (!musicState.activeTracks.length) return -1;
-    if (musicState.playbackMode === "shuffle" && musicState.activeTracks.length > 1) {
-      let nextIndex = musicState.currentTrackIndex;
-      while (nextIndex === musicState.currentTrackIndex) {
-        nextIndex = Math.floor(Math.random() * musicState.activeTracks.length);
-      }
-      return nextIndex;
-    }
-    const orderedIndex = musicState.currentTrackIndex + 1;
-    return orderedIndex >= musicState.activeTracks.length ? 0 : orderedIndex;
-  }
-
-  function loadTrack(trackIndex) {
-    const candidates = rebuildCandidateList(trackIndex);
-    if (!candidates.length) return false;
-    musicState.currentTrackIndex = trackIndex;
-    currentMusicCandidateIndex = 0;
-    bgMusic.src = candidates[0];
-    bgMusic.load();
-    return true;
-  }
-
-  const hasMusic = Boolean(activeTracks.length);
-  if (!hasMusic) {
-    musicToggle.disabled = true;
-    musicToggle.textContent = "Audio";
-    return;
-  }
-
-  function setPlayingState(isPlaying) {
-    musicToggle.textContent = isPlaying ? "Pause" : "Music";
-    musicToggle.classList.toggle("is-playing", isPlaying);
-  }
-
-  function useMusicCandidate(index) {
-    if (index < 0 || index >= allMusicCandidates.length) return false;
-    const target = allMusicCandidates[index];
-    if (!target) return false;
-
-    currentMusicCandidateIndex = index;
-    if (bgMusic.src !== target) {
-      bgMusic.src = target;
-      bgMusic.load();
-    }
-
-    if (index >= primaryCandidateCount) {
-      musicToggle.textContent = "Music";
-    }
-    return true;
-  }
-
-  loadTrack(0);
-
-  async function startMusicFromGesture(recursionDepth = 0) {
-    if (!bgMusic.src && allMusicCandidates.length) {
-      useMusicCandidate(0);
-    }
-
-    if (!bgMusic.paused) {
-      setPlayingState(true);
-      return true;
-    }
-
-    try {
-      await bgMusic.play();
-      if ((bgMusic.currentTime || 0) <= 0.25 && musicState.startSec > 0) {
-        seekAudio(musicState.startSec);
-      }
-      setPlayingState(true);
-      return true;
-    } catch (error) {
-      const switched = useMusicCandidate(currentMusicCandidateIndex + 1);
-      if (switched && recursionDepth < allMusicCandidates.length) {
-        return startMusicFromGesture(recursionDepth + 1);
-      }
-      const nextTrackIndex = pickNextTrackIndex();
-      if (nextTrackIndex >= 0 && nextTrackIndex !== musicState.currentTrackIndex) {
-        const loaded = loadTrack(nextTrackIndex);
-        if (loaded && recursionDepth < (allMusicCandidates.length + musicState.activeTracks.length)) {
-          return startMusicFromGesture(recursionDepth + 1);
-        }
-      }
-      setPlayingState(false);
-      musicToggle.textContent = "Audio";
-      return false;
-    }
-  }
-
-  function parseAudioSecond(value) {
-    const num = Number(value);
-    if (!Number.isFinite(num) || num < 0) return null;
-    return num;
-  }
-
-  const parsedStart = parseAudioSecond(currentConfig.musicStartSec);
-  const parsedLoopStart = parseAudioSecond(currentConfig.musicLoopStartSec);
-  const parsedLoopEnd = parseAudioSecond(currentConfig.musicLoopEndSec);
-
-  musicState.startSec = parsedStart ?? (parsedLoopStart ?? 0);
-  musicState.loopStartSec = parsedLoopStart;
-  musicState.loopEndSec = parsedLoopEnd;
-
-  const hasSegmentLoop = (
-    musicState.activeTracks.length <= 1 &&
-    musicState.loopStartSec !== null &&
-    musicState.loopEndSec !== null &&
-    musicState.loopEndSec > musicState.loopStartSec
-  );
-  bgMusic.loop = musicState.activeTracks.length <= 1 && !hasSegmentLoop;
-
-  function seekAudio(second) {
-    const target = Number(second);
-    if (!Number.isFinite(target) || target <= 0) return;
-    try {
-      const maxDuration = Number.isFinite(bgMusic.duration) ? bgMusic.duration : null;
-      const safeTarget = maxDuration
-        ? Math.min(target, Math.max(0, maxDuration - 0.25))
-        : target;
-      if (safeTarget > 0) bgMusic.currentTime = safeTarget;
-    } catch (error) {
-      // Skip seek jika metadata belum siap / browser menolak seek saat ini.
-    }
-  }
-
-  const applyInitialOffset = () => seekAudio(musicState.startSec);
-
-  bgMusic.addEventListener("loadedmetadata", applyInitialOffset);
-  if (bgMusic.readyState >= 1) applyInitialOffset();
-
-  bgMusic.addEventListener("timeupdate", () => {
-    if (!hasSegmentLoop) return;
-
-    const loopStart = Math.max(0, musicState.loopStartSec || 0);
-    const loopEnd = Math.max(loopStart + 0.1, musicState.loopEndSec || 0);
-    const current = bgMusic.currentTime || 0;
-
-    if (current >= loopEnd) {
-      bgMusic.currentTime = loopStart;
-      if (bgMusic.paused) {
-        bgMusic.play().catch(() => {});
-      }
-    }
-  });
-
-  setPlayingState(false);
-
-  attemptMusicStartFromGesture = startMusicFromGesture;
-
-  musicToggle.addEventListener("click", async () => {
-    if (bgMusic.paused) {
-      await startMusicFromGesture();
-    } else {
-      bgMusic.pause();
-      setPlayingState(false);
-    }
-  });
-
-  bgMusic.addEventListener("ended", async () => {
-    if (musicState.activeTracks.length > 1) {
-      const nextTrackIndex = pickNextTrackIndex();
-      if (nextTrackIndex >= 0) {
-        const loaded = loadTrack(nextTrackIndex);
-        if (loaded) {
-          const started = await startMusicFromGesture();
-          if (started) return;
-        }
-      }
-    }
-    setPlayingState(false);
-  });
-  bgMusic.addEventListener("error", () => {
-    const nextIndex = currentMusicCandidateIndex + 1;
-    const switched = useMusicCandidate(nextIndex);
-    musicToggle.textContent = switched ? musicToggle.textContent : "Audio";
-  });
 }
 
 function createLeaf() {
