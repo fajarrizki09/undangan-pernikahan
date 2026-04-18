@@ -383,11 +383,11 @@ main {
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.12)),
     url("assets/photos/foto-1.svg") center 36%/cover no-repeat;
-  opacity: 0.34;
+  opacity: 0.26;
   z-index: 0;
   box-shadow: 0 22px 46px rgba(42, 65, 55, 0.12);
   overflow: hidden;
-  filter: saturate(0.72) brightness(1.02);
+  filter: saturate(0.66) brightness(1.03);
 }
 
 .hero-cloud-photo::before,
@@ -434,7 +434,11 @@ main {
 .hero-title-block {
   width: min(760px, 100%);
   margin: 0 auto;
-  padding: 12px 8px 6px;
+  padding: 20px 18px 14px;
+  border-radius: 32px;
+  background: linear-gradient(180deg, rgba(255, 252, 248, 0.52), rgba(255, 252, 248, 0.16));
+  box-shadow: 0 18px 34px rgba(63, 82, 72, 0.05);
+  backdrop-filter: blur(8px);
 }
 
 h1,
@@ -445,10 +449,11 @@ h3 {
 }
 
 h1 {
-  font-size: clamp(3.35rem, 8.6vw, 6.4rem);
+  font-size: clamp(3.8rem, 9.4vw, 6.9rem);
   line-height: 0.9;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   font-weight: 600;
+  text-shadow: 0 10px 24px rgba(255, 250, 244, 0.22);
 }
 
 h2 {
@@ -510,7 +515,7 @@ h3 {
 .subtitle {
   margin: 0;
   color: var(--muted);
-  font-size: 0.98rem;
+  font-size: 1rem;
   font-weight: 500;
   letter-spacing: 0.02em;
   max-width: 34ch;
@@ -566,9 +571,9 @@ h3 {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  padding: 8px;
+  padding: 7px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.24);
   border: 1px solid rgba(79, 119, 100, 0.14);
 }
 
@@ -2066,6 +2071,42 @@ body.is-loading .page-loader {
   .topbar nav a {
     font-size: 0.78rem;
     line-height: 1.15;
+  }
+
+  .hero-title-block {
+    width: min(92vw, 640px);
+    padding: 16px 14px 12px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255, 252, 248, 0.46), rgba(255, 252, 248, 0.12));
+  }
+
+  h1 {
+    font-size: clamp(3rem, 11vw, 4.2rem);
+  }
+
+  .subtitle {
+    font-size: 0.92rem;
+  }
+
+  .countdown {
+    gap: 8px;
+    padding: 6px;
+    border-radius: 18px;
+  }
+
+  .countdown-item {
+    padding: 10px 6px 9px;
+    border-radius: 14px;
+  }
+
+  .countdown strong {
+    font-size: clamp(1.02rem, 4.8vw, 1.22rem);
+  }
+
+  .countdown span {
+    margin-top: 3px;
+    font-size: 0.56rem;
+    letter-spacing: 0.1em;
   }
 
   .bismillah-title {
