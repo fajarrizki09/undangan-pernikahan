@@ -1167,25 +1167,27 @@ function createGiftHead(bankName, logoUrl) {
   const head = document.createElement("div");
   head.className = "gift-bank-brand";
 
+  const bankCodeText = String(bankName || "").trim().slice(0, 6).toUpperCase() || "BANK";
+  const fallback = document.createElement("div");
+  fallback.className = "gift-bank-fallback";
+  fallback.textContent = bankCodeText;
+  head.appendChild(fallback);
+
   if (logoUrl) {
     const logo = document.createElement("img");
     logo.className = "gift-bank-logo";
     logo.alt = `${bankName} logo`;
     logo.loading = "lazy";
     logo.src = logoUrl;
+    logo.addEventListener("load", () => {
+      fallback.classList.add("is-hidden");
+    });
     logo.onerror = () => {
-      const fallback = document.createElement("div");
-      fallback.className = "gift-bank-fallback";
-      fallback.textContent = bankName.slice(0, 3).toUpperCase();
-      logo.replaceWith(fallback);
+      logo.remove();
+      fallback.classList.remove("is-hidden");
     };
-    head.appendChild(logo);
-  } else {
-    const fallback = document.createElement("div");
-    fallback.className = "gift-bank-fallback";
-      fallback.textContent = bankName.slice(0, 3).toUpperCase();
-      head.appendChild(fallback);
-    }
+    head.insertBefore(logo, fallback);
+  }
 
   const bankText = document.createElement("p");
   bankText.className = "gift-bank-name";
@@ -1277,29 +1279,10 @@ function renderGiftSection() {
     const bankMeta = getBankMeta(account);
     const bankName = String(account.bankName || (bankMeta && bankMeta.name) || "Bank").trim();
     const logoUrl = getGiftLogoUrl(account, bankMeta);
-    const card = document.createElement("details");
-    card.className = "gift-account-card gift-account-dropdown";
-
-    const summary = document.createElement("summary");
-    summary.className = "gift-account-summary";
+    const card = document.createElement("article");
+    card.className = "gift-account-card";
 
     const head = createGiftHead(bankName, logoUrl);
-
-    const summaryMeta = document.createElement("div");
-    summaryMeta.className = "gift-summary-meta";
-    const summaryHint = document.createElement("p");
-    summaryHint.className = "gift-summary-hint";
-    summaryHint.textContent = "Buka rincian";
-    summaryMeta.appendChild(summaryHint);
-
-    const chevron = document.createElement("span");
-    chevron.className = "gift-summary-chevron";
-    chevron.setAttribute("aria-hidden", "true");
-    chevron.textContent = "▾";
-    summaryMeta.appendChild(chevron);
-
-    summary.appendChild(head);
-    summary.appendChild(summaryMeta);
 
     const body = document.createElement("div");
     body.className = "gift-account-body";
@@ -1331,10 +1314,10 @@ function renderGiftSection() {
       }
     });
 
+    body.appendChild(head);
     body.appendChild(holder);
     body.appendChild(accountNumber);
     body.appendChild(copyBtn);
-    card.appendChild(summary);
     card.appendChild(body);
     giftAccountsList.appendChild(card);
   });

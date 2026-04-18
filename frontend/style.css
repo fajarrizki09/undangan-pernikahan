@@ -1234,11 +1234,6 @@ h2 {
   gap: 16px;
   position: relative;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(29, 22, 15, 0.98), rgba(20, 15, 11, 0.98)),
-    radial-gradient(circle at top, rgba(214, 170, 112, 0.16), transparent 42%);
-  border: 1px solid rgba(191, 153, 103, 0.12);
-  box-shadow: 0 22px 50px rgba(18, 12, 9, 0.34);
 }
 
 .gift-section h2 {
@@ -1248,15 +1243,15 @@ h2 {
   line-height: 1.16;
   text-align: center;
   text-wrap: balance;
-  color: #d6aa70;
-  text-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  color: var(--ink);
+  text-shadow: none;
 }
 
 .gift-section .lead {
   margin: 0 auto;
   max-width: 46ch;
   text-align: center;
-  color: rgba(248, 238, 220, 0.86);
+  color: #63776c;
   font-size: clamp(0.95rem, 2.5vw, 1.06rem);
   line-height: 1.75;
   text-wrap: pretty;
@@ -1274,17 +1269,17 @@ h2 {
 .gift-category-tab {
   flex: 1 1 0;
   min-width: 150px;
-  border: 1px solid rgba(202, 171, 119, 0.2);
+  border: 1px solid rgba(79, 119, 100, 0.18);
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(242, 231, 210, 0.96), rgba(224, 207, 180, 0.96));
-  color: #5a4430;
+  background: linear-gradient(180deg, rgba(255, 252, 247, 0.95), rgba(244, 248, 245, 0.95));
+  color: #3b5748;
   padding: 13px 18px;
   font: inherit;
   font-weight: 700;
   letter-spacing: 0.01em;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 18px rgba(52, 86, 69, 0.08);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1293,14 +1288,14 @@ h2 {
 
 .gift-category-tab:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 12px 24px rgba(52, 86, 69, 0.12);
 }
 
 .gift-category-tab.is-active {
-  background: linear-gradient(135deg, #7c613f, #9b7a4d);
-  color: #fffaf2;
-  border-color: rgba(223, 196, 149, 0.35);
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28);
+  background: linear-gradient(135deg, #557d66, #85ae95);
+  color: #fffdf8;
+  border-color: rgba(95, 130, 110, 0.35);
+  box-shadow: 0 14px 26px rgba(52, 86, 69, 0.18);
 }
 
 .gift-category-chevron {
@@ -1310,15 +1305,15 @@ h2 {
   height: 20px;
   border-radius: 999px;
   font-size: 0.9rem;
-  background: rgba(99, 76, 48, 0.12);
-  color: #6f5739;
+  background: rgba(233, 241, 236, 0.95);
+  color: #557162;
   transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .gift-category-tab.is-active .gift-category-chevron {
   transform: rotate(180deg);
-  background: rgba(255, 244, 224, 0.18);
-  color: #fff7ea;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fffdf8;
 }
 
 .gift-accounts-list {
@@ -1348,12 +1343,12 @@ h2 {
 }
 
 .gift-account-card {
-  border: 1px solid rgba(160, 126, 86, 0.14);
-  border-radius: 30px;
-  background: linear-gradient(180deg, #f7edd9, #f5ead3);
+  border: 1px solid rgba(79, 119, 100, 0.16);
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(246, 249, 246, 0.94));
   display: grid;
   gap: 0;
-  box-shadow: 0 22px 40px rgba(8, 7, 6, 0.28);
+  box-shadow: 0 16px 30px rgba(45, 71, 58, 0.12);
   overflow: hidden;
 }
 
@@ -1366,33 +1361,10 @@ h2 {
   background: transparent;
 }
 
-.gift-account-dropdown[open] {
-  box-shadow: 0 24px 44px rgba(8, 7, 6, 0.34);
-}
-
-.gift-account-summary {
-  list-style: none;
-  display: grid;
-  justify-items: center;
-  gap: 12px;
-  padding: 28px 22px 14px;
-  cursor: pointer;
-}
-
-.gift-account-summary::-webkit-details-marker {
-  display: none;
-}
-
-.gift-account-summary:focus-visible {
-  outline: 2px solid rgba(121, 162, 141, 0.55);
-  outline-offset: -4px;
-  border-radius: 14px;
-}
-
 .gift-bank-brand {
   display: grid;
   justify-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
 }
 
@@ -1400,11 +1372,11 @@ h2 {
   width: min(100%, 182px);
   height: 86px;
   border-radius: 18px;
-  border: 1px solid rgba(165, 129, 86, 0.12);
+  border: 1px solid rgba(79, 119, 100, 0.12);
   object-fit: contain;
-  background: rgba(255, 252, 247, 0.8);
+  background: rgba(255, 255, 255, 0.92);
   padding: 10px 12px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.58);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72);
   flex: 0 0 auto;
 }
 
@@ -1412,64 +1384,33 @@ h2 {
   width: min(100%, 182px);
   height: 86px;
   border-radius: 18px;
-  border: 1px solid rgba(165, 129, 86, 0.12);
+  border: 1px solid rgba(79, 119, 100, 0.12);
   display: grid;
   place-items: center;
   font-weight: 700;
-  font-size: 1.2rem;
-  color: #7a5e3d;
-  background: rgba(255, 252, 247, 0.8);
+  font-size: 1.7rem;
+  letter-spacing: 0.08em;
+  color: #557d66;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.gift-bank-fallback.is-hidden {
+  display: none;
 }
 
 .gift-bank-name {
   margin: 0;
   font-weight: 700;
-  color: #654c35;
+  color: var(--ink);
   line-height: 1.15;
-  font-size: 1.9rem;
+  font-size: 1.35rem;
   letter-spacing: 0.01em;
-  font-family: "Cormorant Garamond", Georgia, serif;
-}
-
-.gift-summary-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: center;
-  text-align: center;
-}
-
-.gift-summary-hint {
-  margin: 0;
-  font-size: 0.9rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  color: #7a6248;
-  padding: 0;
-  background: transparent;
-  border: 0;
-}
-
-.gift-summary-chevron {
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  font-size: 0.9rem;
-  color: #7a6248;
-  background: transparent;
-  transition: transform 0.2s ease;
-}
-
-.gift-account-dropdown[open] .gift-summary-chevron {
-  transform: rotate(180deg);
 }
 
 .gift-account-body {
   display: grid;
-  gap: 10px;
-  padding: 6px 22px 24px;
+  gap: 12px;
+  padding: 22px 22px 24px;
   border-top: 0;
   justify-items: center;
   text-align: center;
@@ -1478,36 +1419,35 @@ h2 {
 .gift-account-number {
   margin: 0;
   font-weight: 700;
-  font-size: 2rem;
-  letter-spacing: 0.08em;
+  font-size: 1.64rem;
+  letter-spacing: 0.04em;
   word-break: break-word;
-  color: #5f4730;
-  font-family: "Cormorant Garamond", Georgia, serif;
+  color: var(--ink);
 }
 
 .gift-account-holder {
   margin: 0;
-  color: #6d563e;
-  font-size: 1.25rem;
-  font-family: "Cormorant Garamond", Georgia, serif;
+  color: #5d7367;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .gift-copy-btn {
   width: fit-content;
-  border: 1px solid rgba(117, 88, 53, 0.12);
+  border: 1px solid rgba(79, 119, 100, 0.16);
   border-radius: 999px;
-  background: linear-gradient(180deg, #7c613f, #644d33);
-  color: #fff6eb;
+  background: linear-gradient(180deg, #5f826e, #6f927d);
+  color: #fffdf8;
   padding: 10px 18px;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 12px 22px rgba(72, 50, 28, 0.24);
+  box-shadow: 0 10px 18px rgba(52, 86, 69, 0.18);
 }
 
 .gift-copy-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 24px rgba(72, 50, 28, 0.32);
+  box-shadow: 0 12px 22px rgba(52, 86, 69, 0.24);
 }
 
 label {
@@ -1886,18 +1826,8 @@ body.is-loading .page-loader {
     font-size: 0.9rem;
   }
 
-  .gift-account-summary,
   .gift-account-body {
     padding-inline: 12px;
-  }
-
-  .gift-account-summary {
-    align-items: start;
-    padding-top: 15px;
-  }
-
-  .gift-summary-meta {
-    justify-items: end;
   }
 
   .gift-bank-logo,
@@ -1908,11 +1838,11 @@ body.is-loading .page-loader {
   }
 
   .gift-bank-name {
-    font-size: 1.6rem;
+    font-size: 1.18rem;
   }
 
   .gift-account-number {
-    font-size: 1.72rem;
+    font-size: 1.4rem;
   }
 
   .gift-copy-btn {
