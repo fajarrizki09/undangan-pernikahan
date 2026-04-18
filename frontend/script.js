@@ -76,7 +76,8 @@ const musicState = {
   playbackMode: "ordered"
 };
 const giftUiState = {
-  activeCategory: ""
+  activeCategory: "",
+  isExpanded: false
 };
 const galleryState = {
   autoplayTimer: null
@@ -1199,12 +1200,26 @@ function renderGiftCategoryTabs(categoryEntries, activeCategory) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "gift-category-tab";
-    if (key === activeCategory) button.classList.add("is-active");
+    const isActive = key === activeCategory && giftUiState.isExpanded;
+    if (isActive) button.classList.add("is-active");
     button.setAttribute("role", "tab");
-    button.setAttribute("aria-selected", key === activeCategory ? "true" : "false");
+    button.setAttribute("aria-selected", isActive ? "true" : "false");
+    button.setAttribute("aria-expanded", isActive ? "true" : "false");
     button.textContent = key === "ewallet" ? "E-Wallet" : "Transfer Bank";
+
+    const chevron = document.createElement("span");
+    chevron.className = "gift-category-chevron";
+    chevron.setAttribute("aria-hidden", "true");
+    chevron.textContent = "▾";
+    button.appendChild(chevron);
+
     button.addEventListener("click", () => {
-      giftUiState.activeCategory = key;
+      if (giftUiState.activeCategory === key) {
+        giftUiState.isExpanded = !giftUiState.isExpanded;
+      } else {
+        giftUiState.activeCategory = key;
+        giftUiState.isExpanded = true;
+      }
       renderGiftSection();
     });
     giftCategoryTabs.appendChild(button);
@@ -1250,6 +1265,8 @@ function renderGiftSection() {
   renderGiftCategoryTabs(categoryEntries, activeCategory);
 
   giftAccountsList.innerHTML = "";
+  giftAccountsList.classList.toggle("is-hidden", !giftUiState.isExpanded);
+  if (!giftUiState.isExpanded) return;
   giftAccountsList.classList.toggle("is-single", (groupedAccounts[activeCategory] || []).length === 1);
   (groupedAccounts[activeCategory] || []).forEach((account) => {
     const bankMeta = getBankMeta(account);

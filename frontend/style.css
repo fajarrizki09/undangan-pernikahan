@@ -1278,6 +1278,10 @@ h2 {
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
   box-shadow: 0 8px 18px rgba(52, 86, 69, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .gift-category-tab:hover {
@@ -1292,12 +1296,34 @@ h2 {
   box-shadow: 0 14px 26px rgba(52, 86, 69, 0.18);
 }
 
+.gift-category-chevron {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  background: rgba(233, 241, 236, 0.95);
+  color: #557162;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.gift-category-tab.is-active .gift-category-chevron {
+  transform: rotate(180deg);
+  background: rgba(255, 255, 255, 0.2);
+  color: #fffdf8;
+}
+
 .gift-accounts-list {
-  margin-top: 6px;
+  margin-top: 12px;
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   justify-content: center;
+}
+
+.gift-accounts-list.is-hidden {
+  display: none;
 }
 
 .gift-accounts-list.is-single {
