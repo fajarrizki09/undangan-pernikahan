@@ -311,8 +311,9 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
   text-decoration: none;
   color: var(--ink);
   font-weight: 600;
-  font-size: 0.9rem;
-  letter-spacing: 0.02em;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -394,9 +395,11 @@ main {
 .overline {
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.28em;
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  opacity: 0.82;
 }
 
 .hero-title-block {
@@ -421,8 +424,10 @@ main {
   border: 1px solid rgba(79, 119, 100, 0.28);
   border-radius: 999px;
   padding: 6px 12px;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: #466654;
   background: rgba(255, 255, 255, 0.72);
 }
@@ -435,15 +440,24 @@ h3 {
 }
 
 h1 {
-  font-size: clamp(3rem, 8vw, 5.6rem);
-  line-height: 0.92;
+  font-size: clamp(3.35rem, 8.6vw, 6.4rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  font-weight: 600;
 }
 
 h2 {
-  font-size: clamp(2rem, 4.2vw, 3.1rem);
+  font-size: clamp(2.15rem, 4.6vw, 3.35rem);
   text-align: center;
-  line-height: 1.06;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  font-weight: 600;
   overflow-wrap: anywhere;
+}
+
+h3 {
+  line-height: 1.08;
+  font-weight: 600;
 }
 
 .bismillah-title {
@@ -491,7 +505,9 @@ h2 {
 .subtitle {
   margin: 0;
   color: var(--muted);
-  font-size: 1.06rem;
+  font-size: 0.98rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .guest-badge {
@@ -618,17 +634,22 @@ h2 {
   margin: 0;
   text-align: center;
   color: var(--sage);
-  letter-spacing: 0.12em;
-  font-size: 0.84rem;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
+  opacity: 0.9;
 }
 
 .lead {
   margin: 10px auto 0;
-  max-width: 620px;
+  max-width: 560px;
   text-align: center;
   color: var(--muted);
-  line-height: 1.8;
+  line-height: 1.92;
+  font-size: 0.98rem;
+  font-weight: 500;
+  text-wrap: pretty;
 }
 
 .mempelai-intro .section-kicker {
@@ -645,9 +666,9 @@ h2 {
 }
 
 .mempelai-intro .lead {
-  max-width: 500px;
-  font-size: 1.08rem;
-  line-height: 1.85;
+  max-width: 470px;
+  font-size: 1rem;
+  line-height: 1.95;
 }
 
 .couple-grid {
@@ -671,13 +692,17 @@ h2 {
 
 .profile p {
   color: var(--muted);
-  line-height: 1.7;
+  line-height: 1.84;
+  max-width: 30ch;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .profile h3 {
-  font-size: clamp(1.85rem, 2.6vw, 2.3rem);
-  line-height: 1.05;
-  margin-top: 2px;
+  font-size: clamp(1.95rem, 2.9vw, 2.5rem);
+  line-height: 1;
+  margin-top: 4px;
+  letter-spacing: -0.01em;
 }
 
 .avatar {
@@ -743,15 +768,16 @@ h2 {
   background: #e7f1ea;
   color: #456453;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  font-size: 0.64rem;
   font-weight: 700;
 }
 
 .event-item h3 {
-  font-size: clamp(1.55rem, 3.1vw, 2rem);
-  line-height: 1.08;
-  margin-bottom: 12px;
+  font-size: clamp(1.7rem, 3.3vw, 2.2rem);
+  line-height: 1.02;
+  margin-bottom: 14px;
+  letter-spacing: -0.01em;
 }
 
 .event-meta {
@@ -769,17 +795,18 @@ h2 {
 }
 
 .event-label {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #5f756a;
+  letter-spacing: 0.16em;
+  color: #70857a;
   font-weight: 700;
 }
 
 .event-meta p span:last-child {
   color: #4d6157;
-  font-size: 1.04rem;
+  font-size: 0.98rem;
   font-weight: 600;
+  line-height: 1.65;
 }
 
 .event-item.is-hidden {
@@ -1067,6 +1094,9 @@ h2 {
   margin: 0;
   color: var(--sage);
   font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .quran-card {
@@ -1087,7 +1117,8 @@ h2 {
 
 .faith-title {
   margin: 0 0 8px;
-  font-size: clamp(1.24rem, 2.9vw, 1.62rem);
+  font-size: clamp(1.35rem, 3vw, 1.78rem);
+  letter-spacing: -0.01em;
 }
 
 .quran-ar {
@@ -1101,12 +1132,18 @@ h2 {
 .faith-text {
   margin: 0;
   color: #4a5e55;
-  line-height: 1.75;
+  line-height: 1.88;
+  max-width: 52ch;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .quran-ref {
   color: var(--sage);
   font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .rsvp-form {
@@ -1170,7 +1207,8 @@ h2 {
 
 .wishes-head h3 {
   margin: 0;
-  font-size: clamp(1.2rem, 2.6vw, 1.6rem);
+  font-size: clamp(1.28rem, 2.8vw, 1.72rem);
+  letter-spacing: -0.01em;
 }
 
 .wishes-head p {
@@ -1210,9 +1248,9 @@ h2 {
 }
 
 .wish-presence {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   border-radius: 999px;
   padding: 4px 8px;
@@ -1269,11 +1307,11 @@ h2 {
 
 .gift-section .lead {
   margin: 0 auto;
-  max-width: 46ch;
+  max-width: 42ch;
   text-align: center;
   color: #63776c;
-  font-size: clamp(0.95rem, 2.5vw, 1.06rem);
-  line-height: 1.75;
+  font-size: clamp(0.94rem, 2.3vw, 1rem);
+  line-height: 1.9;
   text-wrap: pretty;
 }
 
