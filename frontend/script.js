@@ -1478,8 +1478,32 @@ function parseWeddingTimestamp() {
   return parsePrimaryWeddingTimestamp();
 }
 
+function parseCountdownTimestamp() {
+  const primary = parsePrimaryWeddingTimestamp();
+  if (Number.isNaN(primary)) return NaN;
+
+  const eventStartIso = String(currentConfig.eventStartISO || "").trim();
+  const weddingIso = String(currentConfig.weddingDateISO || "").trim();
+  const sourceIso = eventStartIso || weddingIso;
+  const resepsiTime = String((currentConfig.resepsi && currentConfig.resepsi.time) || "").trim();
+  const akadTime = String((currentConfig.akad && currentConfig.akad.time) || "").trim();
+  const hasExplicitEventTime = Boolean(
+    /(\d{1,2})[.:](\d{2})/.test(resepsiTime) ||
+    /(\d{1,2})[.:](\d{2})/.test(akadTime)
+  );
+  const isoLooksMidnight = /T00:00(?::00)?(?:Z|[+\-]\d{2}:\d{2})?$/i.test(sourceIso);
+
+  // Jika admin hanya memilih tanggal tanpa jam, countdown terasa lebih natural
+  // bila diarahkan ke akhir hari itu, bukan tepat jam 00:00.
+  if (sourceIso && isoLooksMidnight && !hasExplicitEventTime) {
+    return primary + ((24 * 60 * 60 * 1000) - 1000);
+  }
+
+  return primary;
+}
+
 function updateCountdown() {
-  const weddingDate = parseWeddingTimestamp();
+  const weddingDate = parseCountdownTimestamp();
 
   if (Number.isNaN(weddingDate)) {
     countdownNodes.forEach((node) => setCountdownNumber(node, "-"));
