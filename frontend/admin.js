@@ -55,6 +55,7 @@ const fields = {
   giftSectionTitle: document.getElementById("giftSectionTitle"),
   giftSectionSubtitle: document.getElementById("giftSectionSubtitle"),
   backgroundMusicUrl: document.getElementById("backgroundMusicUrl"),
+  musicPlaybackMode: document.getElementById("musicPlaybackMode"),
   musicStartSec: document.getElementById("musicStartSec"),
   musicLoopStartSec: document.getElementById("musicLoopStartSec"),
   musicLoopEndSec: document.getElementById("musicLoopEndSec")
@@ -98,6 +99,8 @@ const deleteFromDriveInput = document.getElementById("deleteFromDrive");
 const btnHeroFromGallery = document.getElementById("btnHeroFromGallery");
 const btnLoveStoryFromGallery = document.getElementById("btnLoveStoryFromGallery");
 const btnAddGiftAccount = document.getElementById("btnAddGiftAccount");
+const btnLoadMusicLibrary = document.getElementById("btnLoadMusicLibrary");
+const musicLibraryEditor = document.getElementById("musicLibraryEditor");
 const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
 
@@ -134,6 +137,9 @@ if (btnAddGiftAccount) {
     renderGiftAccountsEditor(current);
   });
 }
+if (btnLoadMusicLibrary) {
+  btnLoadMusicLibrary.addEventListener("click", loadMusicLibrary);
+}
 
 apiUrlInput.value = RSVP_API_URL;
 let currentGuests = [];
@@ -141,6 +147,7 @@ let currentRsvps = [];
 let selectedGalleryUrls = new Set();
 let galleryPhotoFocusMap = {};
 let giftAccountsDraft = [];
+let musicPlaylistDraft = [];
 let guestState = {
   total: 0,
   page: 1,
@@ -277,6 +284,204 @@ function buildMusicProxyUrl(fileMeta) {
   if (!params.toString()) return "";
 
   return `/api/music?${params.toString()}`;
+}
+
+function normalizeMusicPlaybackMode(value) {
+  return String(value || "").trim().toLowerCase() === "shuffle" ? "shuffle" : "ordered";
+}
+
+function normalizeMusicTrack(item, index = 0) {
+  const source = (item && typeof item === "object") ? item : {};
+  const sourceUrl = String(
+    source.url ||
+    source.audioStreamUrl ||
+    source.downloadUrl ||
+    source.publicUrl ||
+    source.webUrl ||
+    ""
+  ).trim();
+  const id = String(source.id || source.fileId || source.trackId || `music-track-${index + 1}`).trim();
+  const url = buildMusicProxyUrl(source) || sourceUrl;
+  const fallbackTitle = sourceUrl ? sourceUrl.split("/").pop() : `Track ${index + 1}`;
+  return {
+    id: id || `music-track-${index + 1}`,
+    title: String(source.title || source.name || fallbackTitle || `Track ${index + 1}`).trim(),
+    url,
+    sourceUrl,
+    isActive: source.isActive === undefined ? true : normalizeBoolean(source.isActive, true)
+  };
+}
+
+function normalizeMusicPlaylist(input, fallbackUrl = "") {
+  let source = input;
+  if (typeof source === "string") {
+    try {
+      source = JSON.parse(source);
+    } catch (error) {
+      source = [];
+    }
+  }
+
+  let tracks = Array.isArray(source)
+    ? source.map((item, index) => normalizeMusicTrack(item, index)).filter((item) => item.url || item.sourceUrl)
+    : [];
+
+  if (!tracks.length && fallbackUrl) {
+    tracks = [normalizeMusicTrack({
+      id: "legacy-track-1",
+      title: "Musik Utama",
+      url: fallbackUrl,
+      isActive: true
+    }, 0)];
+  }
+
+  return tracks;
+}
+
+function syncBackgroundMusicField() {
+  const activeTrack = musicPlaylistDraft.find((item) => item.isActive && item.url);
+  if (activeTrack) {
+    fields.backgroundMusicUrl.value = activeTrack.url;
+  }
+}
+
+function moveMusicTrack(index, direction) {
+  const nextIndex = index + direction;
+  if (nextIndex < 0 || nextIndex >= musicPlaylistDraft.length) return;
+  const next = [...musicPlaylistDraft];
+  const temp = next[index];
+  next[index] = next[nextIndex];
+  next[nextIndex] = temp;
+  musicPlaylistDraft = next;
+  renderMusicLibraryEditor();
+}
+
+function renderMusicLibraryEditor() {
+  if (!musicLibraryEditor) return;
+  musicLibraryEditor.innerHTML = "";
+
+  if (!musicPlaylistDraft.length) {
+    const empty = document.createElement("p");
+    empty.className = "preview-empty";
+    empty.textContent = "Belum ada musik di playlist. Upload musik atau muat library Drive.";
+    musicLibraryEditor.appendChild(empty);
+    return;
+  }
+
+  musicPlaylistDraft.forEach((track, index) => {
+    const item = document.createElement("article");
+    item.className = "music-track-item";
+
+    const head = document.createElement("div");
+    head.className = "music-track-head";
+
+    const titleWrap = document.createElement("div");
+    const title = document.createElement("p");
+    title.className = "music-track-title";
+    title.textContent = track.title || `Track ${index + 1}`;
+    const meta = document.createElement("p");
+    meta.className = "music-track-meta";
+    meta.textContent = track.sourceUrl || track.url || "-";
+    titleWrap.appendChild(title);
+    titleWrap.appendChild(meta);
+
+    const activeLabel = document.createElement("label");
+    activeLabel.className = "inline-check";
+    const activeInput = document.createElement("input");
+    activeInput.type = "checkbox";
+    activeInput.checked = Boolean(track.isActive);
+    activeInput.addEventListener("change", () => {
+      musicPlaylistDraft[index].isActive = activeInput.checked;
+      syncBackgroundMusicField();
+    });
+    const activeText = document.createElement("span");
+    activeText.textContent = "Aktif";
+    activeLabel.appendChild(activeInput);
+    activeLabel.appendChild(activeText);
+
+    head.appendChild(titleWrap);
+    head.appendChild(activeLabel);
+
+    const titleInput = document.createElement("input");
+    titleInput.type = "text";
+    titleInput.value = track.title || "";
+    titleInput.placeholder = "Judul lagu";
+    titleInput.addEventListener("input", () => {
+      musicPlaylistDraft[index].title = titleInput.value.trim();
+      title.textContent = musicPlaylistDraft[index].title || `Track ${index + 1}`;
+    });
+
+    const controls = document.createElement("div");
+    controls.className = "music-track-controls";
+
+    const upBtn = document.createElement("button");
+    upBtn.type = "button";
+    upBtn.className = "btn-mini";
+    upBtn.textContent = "Naik";
+    upBtn.disabled = index === 0;
+    upBtn.addEventListener("click", () => moveMusicTrack(index, -1));
+
+    const downBtn = document.createElement("button");
+    downBtn.type = "button";
+    downBtn.className = "btn-mini";
+    downBtn.textContent = "Turun";
+    downBtn.disabled = index === musicPlaylistDraft.length - 1;
+    downBtn.addEventListener("click", () => moveMusicTrack(index, 1));
+
+    const testLink = document.createElement("a");
+    testLink.className = "btn-mini";
+    testLink.href = track.url || track.sourceUrl || "#";
+    testLink.target = "_blank";
+    testLink.rel = "noopener noreferrer";
+    testLink.textContent = "Tes";
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "btn-mini";
+    removeBtn.textContent = "Hapus";
+    removeBtn.addEventListener("click", () => {
+      musicPlaylistDraft = musicPlaylistDraft.filter((_, itemIndex) => itemIndex !== index);
+      syncBackgroundMusicField();
+      renderMusicLibraryEditor();
+    });
+
+    controls.appendChild(upBtn);
+    controls.appendChild(downBtn);
+    controls.appendChild(testLink);
+    controls.appendChild(removeBtn);
+
+    item.appendChild(head);
+    item.appendChild(createLabeledInput("Judul Lagu", titleInput));
+    item.appendChild(controls);
+    musicLibraryEditor.appendChild(item);
+  });
+}
+
+async function loadMusicLibrary() {
+  try {
+    const adminKey = getAdminKeyOrThrow();
+    setStatus(statusConfig, "Memuat library musik dari Drive...");
+    const result = await postApi({
+      action: "listMusicLibrary",
+      adminKey
+    });
+
+    const existing = normalizeMusicPlaylist(musicPlaylistDraft, fields.backgroundMusicUrl.value.trim());
+    const existingMap = new Map(existing.map((item) => [item.id || item.url, item]));
+    const libraryTracks = normalizeMusicPlaylist(result.files || []);
+
+    libraryTracks.forEach((track) => {
+      const key = track.id || track.url;
+      if (existingMap.has(key)) return;
+      existing.push({ ...track, isActive: false });
+    });
+
+    musicPlaylistDraft = existing;
+    renderMusicLibraryEditor();
+    setStatus(statusConfig, `Library musik dimuat (${libraryTracks.length} file audio ditemukan).`);
+  } catch (error) {
+    setStatus(statusConfig, `Error: ${error.message}`);
+  }
 }
 
 function normalizeBaseUrl(value) {
@@ -739,7 +944,9 @@ function readConfigFromForm() {
     heroDatePlace: fields.heroDatePlace.value.trim(),
     heroBackgroundPhoto: fields.heroBackgroundPhoto.value.trim(),
     footerNames: fields.footerNames.value.trim(),
-    backgroundMusicUrl: fields.backgroundMusicUrl.value.trim(),
+    backgroundMusicUrl: (musicPlaylistDraft.find((item) => item.isActive && item.url) || {}).url || fields.backgroundMusicUrl.value.trim(),
+    musicPlaybackMode: normalizeMusicPlaybackMode(fields.musicPlaybackMode && fields.musicPlaybackMode.value),
+    musicPlaylist: normalizeMusicPlaylist(musicPlaylistDraft, fields.backgroundMusicUrl.value.trim()),
     musicStartSec: parseNonNegativeNumber(fields.musicStartSec.value.trim()),
     musicLoopStartSec: parseNonNegativeNumber(fields.musicLoopStartSec.value.trim()),
     musicLoopEndSec: parseNonNegativeNumber(fields.musicLoopEndSec.value.trim()),
@@ -823,9 +1030,14 @@ function fillForm(config) {
   fields.heroBackgroundPhoto.value = safeConfig.heroBackgroundPhoto || "";
   fields.footerNames.value = safeConfig.footerNames || "";
   fields.backgroundMusicUrl.value = safeConfig.backgroundMusicUrl || "";
+  if (fields.musicPlaybackMode) {
+    fields.musicPlaybackMode.value = normalizeMusicPlaybackMode(safeConfig.musicPlaybackMode || "ordered");
+  }
   fields.musicStartSec.value = safeConfig.musicStartSec || "";
   fields.musicLoopStartSec.value = safeConfig.musicLoopStartSec || "";
   fields.musicLoopEndSec.value = safeConfig.musicLoopEndSec || "";
+  musicPlaylistDraft = normalizeMusicPlaylist(safeConfig.musicPlaylist, safeConfig.backgroundMusicUrl || fields.backgroundMusicUrl.value.trim());
+  renderMusicLibraryEditor();
 
   const parsedWeddingDate = parseWeddingIso(safeConfig.weddingDateISO || "");
   fields.weddingDateTimeLocal.value = parsedWeddingDate.localDateTime;
@@ -1574,6 +1786,15 @@ async function uploadMusicToDrive() {
     if (!uploadedUrl) throw new Error("URL musik dari server kosong");
 
     fields.backgroundMusicUrl.value = uploadedUrl;
+    const uploadedTrack = normalizeMusicTrack({
+      ...(result.file || {}),
+      title: (result.file && result.file.name) || file.name,
+      url: uploadedUrl,
+      isActive: true
+    }, musicPlaylistDraft.length);
+    musicPlaylistDraft = musicPlaylistDraft.map((item) => ({ ...item, isActive: false }));
+    musicPlaylistDraft.unshift(uploadedTrack);
+    renderMusicLibraryEditor();
 
     await postApi({
       action: "saveConfig",
@@ -2176,4 +2397,5 @@ if (RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
   loadConfigFromServer();
   loadGuests();
   loadRsvps();
+  loadMusicLibrary();
 }

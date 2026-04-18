@@ -31,6 +31,15 @@ const WEDDING_CONFIG = {
   marriageDoaText: "\"Barakallahu laka, wa baraka 'alaika, wa jama'a bainakuma fii khair.\"",
   marriageDoaReference: "Semoga Allah memberkahimu, memberkahi atasmu, dan mengumpulkan kalian berdua dalam kebaikan.",
   backgroundMusicUrl: "https://drive.google.com/uc?export=view&id=1KqqNbJHmI4Qnhksh1Whoiuh0WTHAXZo_",
+  musicPlaybackMode: "ordered",
+  musicPlaylist: [
+    {
+      id: "default-track-1",
+      title: "Musik Utama",
+      url: "https://drive.google.com/uc?export=view&id=1KqqNbJHmI4Qnhksh1Whoiuh0WTHAXZo_",
+      isActive: true
+    }
+  ],
   musicStartSec: "",
   musicLoopStartSec: "",
   musicLoopEndSec: "",

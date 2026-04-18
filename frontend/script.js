@@ -69,7 +69,10 @@ const particleState = {
 const musicState = {
   startSec: 0,
   loopStartSec: null,
-  loopEndSec: null
+  loopEndSec: null,
+  activeTracks: [],
+  currentTrackIndex: 0,
+  playbackMode: "ordered"
 };
 const galleryState = {
   autoplayTimer: null
@@ -88,6 +91,9 @@ let currentConfig = {
   galleryPhotos: Array.isArray(WEDDING_CONFIG.galleryPhotos) ? [...WEDDING_CONFIG.galleryPhotos] : [],
   galleryPhotoFocus: {},
   eventStartISO: String(WEDDING_CONFIG.eventStartISO || WEDDING_CONFIG.weddingDateISO || "").trim(),
+  backgroundMusicUrl: String(WEDDING_CONFIG.backgroundMusicUrl || "").trim(),
+  musicPlaybackMode: String(WEDDING_CONFIG.musicPlaybackMode || "ordered").trim(),
+  musicPlaylist: Array.isArray(WEDDING_CONFIG.musicPlaylist) ? [...WEDDING_CONFIG.musicPlaylist] : [],
   giftEnabled: Boolean(WEDDING_CONFIG.giftEnabled),
   giftSectionTitle: String(WEDDING_CONFIG.giftSectionTitle || "Wedding Gift"),
   giftSectionSubtitle: String(WEDDING_CONFIG.giftSectionSubtitle || ""),
@@ -99,6 +105,55 @@ const CONFIG_CACHE_TTL_MS = 1000 * 30;
 function cleanPhotoArray(input) {
   if (!Array.isArray(input)) return [];
   return input.map((item) => String(item || "").trim()).filter(Boolean);
+}
+
+function normalizeMusicPlaybackMode(value) {
+  return String(value || "").trim().toLowerCase() === "shuffle" ? "shuffle" : "ordered";
+}
+
+function normalizeMusicTrack(item, index = 0) {
+  const source = (item && typeof item === "object") ? item : {};
+  const url = String(source.url || source.audioStreamUrl || source.downloadUrl || source.publicUrl || source.webUrl || "").trim();
+  const title = String(source.title || source.name || `Track ${index + 1}`).trim();
+  const id = String(source.id || source.fileId || `track-${index + 1}`).trim() || `track-${index + 1}`;
+  return {
+    id,
+    title: title || `Track ${index + 1}`,
+    url,
+    isActive: source.isActive === undefined ? true : normalizeBoolean(source.isActive, true)
+  };
+}
+
+function normalizeMusicPlaylist(input, fallbackUrl = "") {
+  let source = input;
+  if (typeof source === "string") {
+    try {
+      source = JSON.parse(source);
+    } catch (error) {
+      source = [];
+    }
+  }
+
+  let tracks = Array.isArray(source)
+    ? source.map((item, index) => normalizeMusicTrack(item, index)).filter((item) => item.url)
+    : [];
+
+  if (!tracks.length && fallbackUrl) {
+    tracks = [{
+      id: "legacy-track-1",
+      title: "Musik Utama",
+      url: String(fallbackUrl || "").trim(),
+      isActive: true
+    }];
+  }
+
+  return tracks;
+}
+
+function getActiveMusicTracks(config) {
+  const playlist = normalizeMusicPlaylist(config && config.musicPlaylist, config && config.backgroundMusicUrl);
+  const active = playlist.filter((item) => item.isActive && item.url);
+  return active.length ? active : playlist.filter((item) => item.url);
 }
 
 function healMisplacedPhotoConfig(config) {
@@ -318,10 +373,20 @@ function mergeConfig(base, incoming) {
 
   const incomingMusicUrl = String(incoming.backgroundMusicUrl || "").trim();
   const baseMusicUrl = String(base.backgroundMusicUrl || "").trim();
+  const incomingMusicPlaylist = incoming.musicPlaylist !== undefined
+    ? incoming.musicPlaylist
+    : (base.musicPlaylist !== undefined ? base.musicPlaylist : WEDDING_CONFIG.musicPlaylist);
   const merged = {
     ...base,
     ...incoming,
     backgroundMusicUrl: incomingMusicUrl || baseMusicUrl,
+    musicPlaybackMode: normalizeMusicPlaybackMode(
+      incoming.musicPlaybackMode || base.musicPlaybackMode || WEDDING_CONFIG.musicPlaybackMode || "ordered"
+    ),
+    musicPlaylist: normalizeMusicPlaylist(
+      incomingMusicPlaylist,
+      incomingMusicUrl || baseMusicUrl || WEDDING_CONFIG.backgroundMusicUrl
+    ),
     akad: {
       ...(base.akad || {}),
       ...(incoming.akad || {})
@@ -1209,9 +1274,9 @@ function applyWeddingConfig() {
   if (hadithBlock) hadithBlock.style.display = hasHadith ? "" : "none";
   if (doaBlock) doaBlock.style.display = hasDoa ? "" : "none";
 
-  const primaryMusicUrl = normalizeAudioUrl(currentConfig.backgroundMusicUrl);
-  const fallbackMusicUrl = normalizeAudioUrl(WEDDING_CONFIG.backgroundMusicUrl);
-  const resolvedMusicUrl = primaryMusicUrl || fallbackMusicUrl;
+  const activeTracks = getActiveMusicTracks(currentConfig);
+  const firstTrack = activeTracks[0];
+  const resolvedMusicUrl = firstTrack ? normalizeAudioUrl(firstTrack.url) : "";
   if (resolvedMusicUrl && bgMusic) {
     bgMusic.src = resolvedMusicUrl;
   }
@@ -1550,22 +1615,54 @@ function setupRevealAnimation() {
 function setupMusicControl() {
   if (!musicToggle || !bgMusic) return;
 
-  const configuredMusicUrl = String(currentConfig.backgroundMusicUrl || "").trim();
-  const primaryMusicCandidates = getAudioSourceCandidates(configuredMusicUrl);
-  const fallbackMusicCandidates = getAudioSourceCandidates(WEDDING_CONFIG.backgroundMusicUrl);
-  const allMusicCandidates = [];
-  const seenCandidate = new Set();
-  const candidateSource = [...primaryMusicCandidates, ...fallbackMusicCandidates];
-  candidateSource.forEach((item) => {
-    const value = String(item || "").trim();
-    if (!value || seenCandidate.has(value)) return;
-    seenCandidate.add(value);
-    allMusicCandidates.push(value);
-  });
-  const resolvedMusicUrl = allMusicCandidates[0] || "";
+  const activeTracks = getActiveMusicTracks(currentConfig);
+  musicState.activeTracks = activeTracks;
+  musicState.playbackMode = normalizeMusicPlaybackMode(currentConfig.musicPlaybackMode || "ordered");
+  musicState.currentTrackIndex = 0;
+  let allMusicCandidates = [];
   let currentMusicCandidateIndex = -1;
 
-  const hasMusic = Boolean(resolvedMusicUrl || bgMusic.src || allMusicCandidates.length);
+  function rebuildCandidateList(trackIndex) {
+    const track = musicState.activeTracks[trackIndex];
+    const primaryCandidates = track ? getAudioSourceCandidates(track.url) : [];
+    const fallbackCandidates = getAudioSourceCandidates(WEDDING_CONFIG.backgroundMusicUrl);
+    const nextCandidates = [];
+    const seenCandidate = new Set();
+    [...primaryCandidates, ...fallbackCandidates].forEach((item) => {
+      const value = String(item || "").trim();
+      if (!value || seenCandidate.has(value)) return;
+      seenCandidate.add(value);
+      nextCandidates.push(value);
+    });
+    allMusicCandidates = nextCandidates;
+    currentMusicCandidateIndex = -1;
+    return nextCandidates;
+  }
+
+  function pickNextTrackIndex() {
+    if (!musicState.activeTracks.length) return -1;
+    if (musicState.playbackMode === "shuffle" && musicState.activeTracks.length > 1) {
+      let nextIndex = musicState.currentTrackIndex;
+      while (nextIndex === musicState.currentTrackIndex) {
+        nextIndex = Math.floor(Math.random() * musicState.activeTracks.length);
+      }
+      return nextIndex;
+    }
+    const orderedIndex = musicState.currentTrackIndex + 1;
+    return orderedIndex >= musicState.activeTracks.length ? 0 : orderedIndex;
+  }
+
+  function loadTrack(trackIndex) {
+    const candidates = rebuildCandidateList(trackIndex);
+    if (!candidates.length) return false;
+    musicState.currentTrackIndex = trackIndex;
+    currentMusicCandidateIndex = 0;
+    bgMusic.src = candidates[0];
+    bgMusic.load();
+    return true;
+  }
+
+  const hasMusic = Boolean(activeTracks.length);
   if (!hasMusic) {
     musicToggle.disabled = true;
     musicToggle.textContent = "Musik belum diatur";
@@ -1594,17 +1691,7 @@ function setupMusicControl() {
     return true;
   }
 
-  if (!String(bgMusic.getAttribute("src") || "").trim() && allMusicCandidates.length) {
-    useMusicCandidate(0);
-  } else {
-    const currentAttrSrc = String(bgMusic.getAttribute("src") || "").trim();
-    if (currentAttrSrc) {
-      currentMusicCandidateIndex = allMusicCandidates.findIndex((item) => item === currentAttrSrc || item === bgMusic.src);
-    }
-    if (currentMusicCandidateIndex < 0 && resolvedMusicUrl) {
-      currentMusicCandidateIndex = 0;
-    }
-  }
+  loadTrack(0);
 
   async function startMusicFromGesture(recursionDepth = 0) {
     if (!bgMusic.src && allMusicCandidates.length) {
@@ -1628,6 +1715,13 @@ function setupMusicControl() {
       if (switched && recursionDepth < allMusicCandidates.length) {
         return startMusicFromGesture(recursionDepth + 1);
       }
+      const nextTrackIndex = pickNextTrackIndex();
+      if (nextTrackIndex >= 0 && nextTrackIndex !== musicState.currentTrackIndex) {
+        const loaded = loadTrack(nextTrackIndex);
+        if (loaded && recursionDepth < (allMusicCandidates.length + musicState.activeTracks.length)) {
+          return startMusicFromGesture(recursionDepth + 1);
+        }
+      }
       setPlayingState(false);
       musicToggle.textContent = "Musik gagal dimuat";
       return false;
@@ -1649,6 +1743,7 @@ function setupMusicControl() {
   musicState.loopEndSec = parsedLoopEnd;
 
   const hasSegmentLoop = (
+    musicState.activeTracks.length <= 1 &&
     musicState.loopStartSec !== null &&
     musicState.loopEndSec !== null &&
     musicState.loopEndSec > musicState.loopStartSec
@@ -1702,7 +1797,19 @@ function setupMusicControl() {
     }
   });
 
-  bgMusic.addEventListener("ended", () => setPlayingState(false));
+  bgMusic.addEventListener("ended", async () => {
+    if (musicState.activeTracks.length > 1) {
+      const nextTrackIndex = pickNextTrackIndex();
+      if (nextTrackIndex >= 0) {
+        const loaded = loadTrack(nextTrackIndex);
+        if (loaded) {
+          const started = await startMusicFromGesture();
+          if (started) return;
+        }
+      }
+    }
+    setPlayingState(false);
+  });
   bgMusic.addEventListener("error", () => {
     const nextIndex = currentMusicCandidateIndex + 1;
     const switched = useMusicCandidate(nextIndex);

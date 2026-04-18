@@ -240,12 +240,19 @@
       <div id="galleryPreview" class="gallery-preview"></div>
       <div class="grid two">
         <label>
-          Background Music URL
+          URL Musik Aktif (otomatis dari playlist / manual)
           <input id="backgroundMusicUrl" type="text" placeholder="https://.../music.mp3" />
         </label>
         <label>
           Upload Musik ke Google Drive
           <input id="musicFile" type="file" accept="audio/*" />
+        </label>
+        <label>
+          Mode Playlist
+          <select id="musicPlaybackMode">
+            <option value="ordered">Urutan</option>
+            <option value="shuffle">Acak</option>
+          </select>
         </label>
         <label>
           Mulai Musik Dari Detik
@@ -259,6 +266,12 @@
           </div>
         </label>
       </div>
+      <div class="row-between">
+        <h3>Playlist Musik</h3>
+        <button id="btnLoadMusicLibrary" class="btn btn-ghost" type="button">Muat Musik Drive</button>
+      </div>
+      <p class="hint-text">Centang lagu yang ingin diputar. Urutan kartu dipakai untuk mode urutan, atau dipilih acak jika mode playlist diset ke acak.</p>
+      <div id="musicLibraryEditor" class="music-library-list"></div>
       <div class="grid">
         <label>
           Upload Foto ke Google Drive
