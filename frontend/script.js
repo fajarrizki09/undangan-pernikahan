@@ -29,6 +29,7 @@ const addToCalendarLink = document.getElementById("addToCalendarLink");
 const giftSection = document.getElementById("giftSection");
 const giftSectionTitle = document.getElementById("giftSectionTitle");
 const giftSectionSubtitle = document.getElementById("giftSectionSubtitle");
+const giftCategoryTabs = document.getElementById("giftCategoryTabs");
 const giftAccountsList = document.getElementById("giftAccountsList");
 
 const BANK_CATALOG = {
@@ -73,6 +74,9 @@ const musicState = {
   activeTracks: [],
   currentTrackIndex: 0,
   playbackMode: "ordered"
+};
+const giftUiState = {
+  activeCategory: ""
 };
 const galleryState = {
   autoplayTimer: null
@@ -1139,6 +1143,61 @@ function getBankMeta(account) {
   return null;
 }
 
+function getGiftAccountCategory(account) {
+  const source = `${account && account.bankCode || ""} ${account && account.bankName || ""}`.toLowerCase();
+  const ewalletKeywords = ["dana", "ovo", "gopay", "go-pay", "shopeepay", "shopee pay", "linkaja", "link aja", "sakuku"];
+  return ewalletKeywords.some((keyword) => source.includes(keyword)) ? "ewallet" : "bank";
+}
+
+function createGiftHead(bankName, logoUrl) {
+  const head = document.createElement("div");
+  head.className = "gift-bank-row";
+
+  if (logoUrl) {
+    const logo = document.createElement("img");
+    logo.className = "gift-bank-logo";
+    logo.alt = `${bankName} logo`;
+    logo.loading = "lazy";
+    logo.src = logoUrl;
+    logo.onerror = () => {
+      const fallback = document.createElement("div");
+      fallback.className = "gift-bank-fallback";
+      fallback.textContent = bankName.slice(0, 3).toUpperCase();
+      logo.replaceWith(fallback);
+    };
+    head.appendChild(logo);
+  } else {
+    const fallback = document.createElement("div");
+    fallback.className = "gift-bank-fallback";
+    fallback.textContent = bankName.slice(0, 3).toUpperCase();
+    head.appendChild(fallback);
+  }
+
+  return head;
+}
+
+function renderGiftCategoryTabs(categoryEntries, activeCategory) {
+  if (!giftCategoryTabs) return;
+  giftCategoryTabs.innerHTML = "";
+  giftCategoryTabs.style.display = categoryEntries.length > 1 ? "flex" : (categoryEntries.length === 1 ? "grid" : "none");
+
+  categoryEntries.forEach(([key, items]) => {
+    if (!items.length) return;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "gift-category-tab";
+    if (key === activeCategory) button.classList.add("is-active");
+    button.setAttribute("role", "tab");
+    button.setAttribute("aria-selected", key === activeCategory ? "true" : "false");
+    button.textContent = key === "ewallet" ? `E-Wallet (${items.length})` : `Bank (${items.length})`;
+    button.addEventListener("click", () => {
+      giftUiState.activeCategory = key;
+      renderGiftSection();
+    });
+    giftCategoryTabs.appendChild(button);
+  });
+}
+
 function renderGiftSection() {
   if (!giftSection || !giftAccountsList) return;
 
@@ -1146,11 +1205,11 @@ function renderGiftSection() {
   const accounts = normalizeGiftAccounts(currentConfig.giftAccounts).filter((item) => item.isActive);
   if (!enabled || !accounts.length) {
     giftSection.style.display = "none";
+    if (giftCategoryTabs) giftCategoryTabs.innerHTML = "";
     return;
   }
 
   giftSection.style.display = "";
-  giftAccountsList.classList.toggle("is-single", accounts.length === 1);
   let sectionTitleText = String(currentConfig.giftSectionTitle || "Wedding Gift").trim() || "Wedding Gift";
   let sectionSubtitleText = String(currentConfig.giftSectionSubtitle || "").trim();
   if (sectionTitleText.length > 60 && !sectionSubtitleText) {
@@ -1165,42 +1224,55 @@ function renderGiftSection() {
     giftSectionSubtitle.textContent = sectionSubtitleText || "Doa restu Anda adalah hadiah terindah.";
   }
 
-  giftAccountsList.innerHTML = "";
-  accounts.forEach((account) => {
-    const card = document.createElement("article");
-    card.className = "gift-account-card";
+  const groupedAccounts = {
+    bank: accounts.filter((account) => getGiftAccountCategory(account) === "bank"),
+    ewallet: accounts.filter((account) => getGiftAccountCategory(account) === "ewallet")
+  };
+  const categoryEntries = Object.entries(groupedAccounts).filter(([, items]) => items.length);
+  const defaultCategory = categoryEntries[0] ? categoryEntries[0][0] : "";
+  const activeCategory = groupedAccounts[giftUiState.activeCategory] && groupedAccounts[giftUiState.activeCategory].length
+    ? giftUiState.activeCategory
+    : defaultCategory;
+  giftUiState.activeCategory = activeCategory;
+  renderGiftCategoryTabs(categoryEntries, activeCategory);
 
+  giftAccountsList.innerHTML = "";
+  giftAccountsList.classList.toggle("is-single", (groupedAccounts[activeCategory] || []).length === 1);
+  (groupedAccounts[activeCategory] || []).forEach((account) => {
     const bankMeta = getBankMeta(account);
     const bankName = String(account.bankName || (bankMeta && bankMeta.name) || "Bank").trim();
     const logoUrl = String(account.logoUrl || (bankMeta && bankMeta.logoUrl) || "").trim();
+    const card = document.createElement("details");
+    card.className = "gift-account-card gift-account-dropdown";
 
-    const head = document.createElement("div");
-    head.className = "gift-bank-row";
+    const summary = document.createElement("summary");
+    summary.className = "gift-account-summary";
 
-    if (logoUrl) {
-      const logo = document.createElement("img");
-      logo.className = "gift-bank-logo";
-      logo.alt = `${bankName} logo`;
-      logo.loading = "lazy";
-      logo.src = logoUrl;
-      logo.onerror = () => {
-        const fallback = document.createElement("div");
-        fallback.className = "gift-bank-fallback";
-        fallback.textContent = bankName.slice(0, 3).toUpperCase();
-        logo.replaceWith(fallback);
-      };
-      head.appendChild(logo);
-    } else {
-      const fallback = document.createElement("div");
-      fallback.className = "gift-bank-fallback";
-      fallback.textContent = bankName.slice(0, 3).toUpperCase();
-      head.appendChild(fallback);
-    }
+    const head = createGiftHead(bankName, logoUrl);
 
     const bankText = document.createElement("p");
     bankText.className = "gift-bank-name";
     bankText.textContent = bankName;
     head.appendChild(bankText);
+
+    const summaryMeta = document.createElement("div");
+    summaryMeta.className = "gift-summary-meta";
+    const summaryHint = document.createElement("p");
+    summaryHint.className = "gift-summary-hint";
+    summaryHint.textContent = "Klik untuk lihat rincian";
+    summaryMeta.appendChild(summaryHint);
+
+    const chevron = document.createElement("span");
+    chevron.className = "gift-summary-chevron";
+    chevron.setAttribute("aria-hidden", "true");
+    chevron.textContent = "▾";
+    summaryMeta.appendChild(chevron);
+
+    summary.appendChild(head);
+    summary.appendChild(summaryMeta);
+
+    const body = document.createElement("div");
+    body.className = "gift-account-body";
 
     const accountNumber = document.createElement("p");
     accountNumber.className = "gift-account-number";
@@ -1229,10 +1301,11 @@ function renderGiftSection() {
       }
     });
 
-    card.appendChild(head);
-    card.appendChild(accountNumber);
-    card.appendChild(holder);
-    card.appendChild(copyBtn);
+    body.appendChild(accountNumber);
+    body.appendChild(holder);
+    body.appendChild(copyBtn);
+    card.appendChild(summary);
+    card.appendChild(body);
     giftAccountsList.appendChild(card);
   });
 }

@@ -1255,6 +1255,41 @@ h2 {
   text-wrap: pretty;
 }
 
+.gift-category-tabs {
+  margin: 4px auto 0;
+  width: min(100%, 420px);
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.gift-category-tab {
+  flex: 1 1 0;
+  min-width: 140px;
+  border: 1px solid rgba(79, 119, 100, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 252, 247, 0.9);
+  color: #456052;
+  padding: 11px 16px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.gift-category-tab:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(52, 86, 69, 0.12);
+}
+
+.gift-category-tab.is-active {
+  background: linear-gradient(135deg, #5f826e, #8db39b);
+  color: #fffdf8;
+  border-color: rgba(95, 130, 110, 0.5);
+  box-shadow: 0 14px 26px rgba(52, 86, 69, 0.18);
+}
+
 .gift-accounts-list {
   margin-top: 6px;
   display: grid;
@@ -1276,10 +1311,10 @@ h2 {
   border: 1px solid rgba(79, 119, 100, 0.22);
   border-radius: 16px;
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(242, 248, 244, 0.82));
-  padding: 14px;
   display: grid;
   gap: 9px;
   box-shadow: 0 10px 26px rgba(45, 71, 58, 0.12);
+  overflow: hidden;
 }
 
 .gift-account-card::before {
@@ -1289,6 +1324,30 @@ h2 {
   height: 4px;
   border-radius: 999px;
   background: linear-gradient(90deg, #7ca38f, #c2d8c9);
+}
+
+.gift-account-dropdown[open] {
+  box-shadow: 0 16px 34px rgba(45, 71, 58, 0.16);
+}
+
+.gift-account-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  cursor: pointer;
+}
+
+.gift-account-summary::-webkit-details-marker {
+  display: none;
+}
+
+.gift-account-summary:focus-visible {
+  outline: 2px solid rgba(121, 162, 141, 0.55);
+  outline-offset: -4px;
+  border-radius: 14px;
 }
 
 .gift-bank-row {
@@ -1324,6 +1383,37 @@ h2 {
   font-weight: 700;
   color: #2f4239;
   line-height: 1.15;
+}
+
+.gift-summary-meta {
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+.gift-summary-hint {
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.03em;
+  color: #6d8377;
+}
+
+.gift-summary-chevron {
+  font-size: 1.08rem;
+  color: #557162;
+  transition: transform 0.2s ease;
+}
+
+.gift-account-dropdown[open] .gift-summary-chevron {
+  transform: rotate(180deg);
+}
+
+.gift-account-body {
+  display: grid;
+  gap: 9px;
+  padding: 0 14px 14px;
 }
 
 .gift-account-number {
@@ -1723,8 +1813,28 @@ body.is-loading .page-loader {
     gap: 10px;
   }
 
-  .gift-account-card {
-    padding: 12px;
+  .gift-category-tabs {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .gift-category-tab {
+    min-width: 0;
+    padding: 10px 12px;
+    font-size: 0.92rem;
+  }
+
+  .gift-account-summary,
+  .gift-account-body {
+    padding-inline: 12px;
+  }
+
+  .gift-account-summary {
+    align-items: start;
+  }
+
+  .gift-summary-meta {
+    justify-items: end;
   }
 
   .gift-copy-btn {
