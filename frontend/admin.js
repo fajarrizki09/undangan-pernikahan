@@ -117,12 +117,12 @@ const BANK_OPTIONS = [
   { code: "panin", name: "Panin", logoUrl: "assets/bank/panin.svg", aliases: ["panin bank", "bank panin"] }
 ];
 const EWALLET_OPTIONS = [
-  { code: "dana", name: "DANA", aliases: ["dana"] },
-  { code: "ovo", name: "OVO", aliases: ["ovo"] },
-  { code: "gopay", name: "GoPay", aliases: ["gopay", "go-pay"] },
-  { code: "shopeepay", name: "ShopeePay", aliases: ["shopeepay", "shopee pay"] },
-  { code: "linkaja", name: "LinkAja", aliases: ["linkaja", "link aja"] },
-  { code: "sakuku", name: "Sakuku", aliases: ["sakuku"] }
+  { code: "dana", name: "DANA", logoUrl: "assets/ewallet/dana.svg", aliases: ["dana"] },
+  { code: "ovo", name: "OVO", logoUrl: "assets/ewallet/ovo.svg", aliases: ["ovo"] },
+  { code: "gopay", name: "GoPay", logoUrl: "assets/ewallet/gopay.svg", aliases: ["gopay", "go-pay"] },
+  { code: "shopeepay", name: "ShopeePay", logoUrl: "assets/ewallet/shopeepay.svg", aliases: ["shopeepay", "shopee pay"] },
+  { code: "linkaja", name: "LinkAja", logoUrl: "assets/ewallet/linkaja.svg", aliases: ["linkaja", "link aja"] },
+  { code: "sakuku", name: "Sakuku", logoUrl: "assets/ewallet/sakuku.svg", aliases: ["sakuku"] }
 ];
 
 document.getElementById("btnLoadConfig").addEventListener("click", loadConfigFromServer);
