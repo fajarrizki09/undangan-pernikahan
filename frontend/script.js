@@ -1631,6 +1631,7 @@ function setupMusicControl() {
   musicState.playbackMode = normalizeMusicPlaybackMode(currentConfig.musicPlaybackMode || "ordered");
   musicState.currentTrackIndex = 0;
   let allMusicCandidates = [];
+  let primaryCandidateCount = 0;
   let currentMusicCandidateIndex = -1;
 
   function rebuildCandidateList(trackIndex) {
@@ -1645,6 +1646,7 @@ function setupMusicControl() {
       seenCandidate.add(value);
       nextCandidates.push(value);
     });
+    primaryCandidateCount = primaryCandidates.length;
     allMusicCandidates = nextCandidates;
     currentMusicCandidateIndex = -1;
     return nextCandidates;
@@ -1696,7 +1698,7 @@ function setupMusicControl() {
       bgMusic.load();
     }
 
-    if (index >= primaryMusicCandidates.length) {
+    if (index >= primaryCandidateCount) {
       musicToggle.textContent = "Play Music (Sumber Cadangan)";
     }
     return true;
@@ -1759,7 +1761,7 @@ function setupMusicControl() {
     musicState.loopEndSec !== null &&
     musicState.loopEndSec > musicState.loopStartSec
   );
-  bgMusic.loop = !hasSegmentLoop;
+  bgMusic.loop = musicState.activeTracks.length <= 1 && !hasSegmentLoop;
 
   function seekAudio(second) {
     const target = Number(second);
