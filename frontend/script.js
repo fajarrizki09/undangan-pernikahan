@@ -111,6 +111,11 @@ function normalizeMusicPlaybackMode(value) {
   return String(value || "").trim().toLowerCase() === "shuffle" ? "shuffle" : "ordered";
 }
 
+function isLikelyDriveFileId(value) {
+  const clean = String(value || "").trim();
+  return /^[a-zA-Z0-9_-]{20,}$/.test(clean);
+}
+
 function normalizeMusicTrack(item, index = 0) {
   const source = (item && typeof item === "object") ? item : {};
   const url = String(source.url || source.audioStreamUrl || source.downloadUrl || source.publicUrl || source.webUrl || "").trim();
@@ -137,6 +142,11 @@ function normalizeMusicPlaylist(input, fallbackUrl = "") {
   let tracks = Array.isArray(source)
     ? source.map((item, index) => normalizeMusicTrack(item, index)).filter((item) => item.url)
     : [];
+
+  const hasRealDriveTrack = tracks.some((item) => isLikelyDriveFileId(item.id) || extractDriveFileId(item.url));
+  if (hasRealDriveTrack) {
+    tracks = tracks.filter((item) => item.id !== "default-track-1" && item.id !== "legacy-track-1");
+  }
 
   if (!tracks.length && fallbackUrl) {
     tracks = [{
@@ -990,7 +1000,8 @@ function extractDriveResourceKey(url) {
 }
 
 function buildMusicProxyUrl(fileId, resourceKey, sourceUrl) {
-  const cleanFileId = String(fileId || "").trim();
+  const rawFileId = String(fileId || "").trim();
+  const cleanFileId = isLikelyDriveFileId(rawFileId) ? rawFileId : "";
   const cleanResourceKey = String(resourceKey || "").trim();
   const cleanSourceUrl = String(sourceUrl || "").trim();
   const params = new URLSearchParams();
