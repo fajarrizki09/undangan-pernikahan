@@ -105,16 +105,16 @@ const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
 
 const BANK_OPTIONS = [
-  { code: "bca", name: "BCA", logoUrl: "https://logo.clearbit.com/bca.co.id" },
-  { code: "bri", name: "BRI", logoUrl: "https://logo.clearbit.com/bri.co.id" },
-  { code: "bni", name: "BNI", logoUrl: "https://logo.clearbit.com/bni.co.id" },
-  { code: "mandiri", name: "Mandiri", logoUrl: "https://logo.clearbit.com/bankmandiri.co.id" },
-  { code: "bsi", name: "BSI", logoUrl: "https://logo.clearbit.com/bankbsi.co.id" },
-  { code: "cimb", name: "CIMB Niaga", logoUrl: "https://logo.clearbit.com/cimbniaga.co.id" },
-  { code: "permata", name: "Permata", logoUrl: "https://logo.clearbit.com/permatabank.com" },
-  { code: "btn", name: "BTN", logoUrl: "https://logo.clearbit.com/btn.co.id" },
-  { code: "danamon", name: "Danamon", logoUrl: "https://logo.clearbit.com/danamon.co.id" },
-  { code: "panin", name: "Panin", logoUrl: "https://logo.clearbit.com/panin.co.id" }
+  { code: "bca", name: "BCA", logoUrl: "assets/bank/bca.svg", aliases: ["bank central asia"] },
+  { code: "bri", name: "BRI", logoUrl: "assets/bank/bri.svg", aliases: ["bank rakyat indonesia"] },
+  { code: "bni", name: "BNI", logoUrl: "assets/bank/bni.svg", aliases: ["bank negara indonesia"] },
+  { code: "mandiri", name: "Mandiri", logoUrl: "assets/bank/mandiri.svg", aliases: ["bank mandiri"] },
+  { code: "bsi", name: "BSI", logoUrl: "assets/bank/bsi.svg", aliases: ["bank syariah indonesia"] },
+  { code: "cimb", name: "CIMB Niaga", logoUrl: "assets/bank/cimb.svg", aliases: ["cimb", "cimb niaga"] },
+  { code: "permata", name: "Permata", logoUrl: "assets/bank/permata.svg", aliases: ["permata bank"] },
+  { code: "btn", name: "BTN", logoUrl: "assets/bank/btn.svg", aliases: ["bank tabungan negara"] },
+  { code: "danamon", name: "Danamon", logoUrl: "assets/bank/danamon.svg", aliases: ["bank danamon"] },
+  { code: "panin", name: "Panin", logoUrl: "assets/bank/panin.svg", aliases: ["panin bank", "bank panin"] }
 ];
 
 document.getElementById("btnLoadConfig").addEventListener("click", loadConfigFromServer);
@@ -578,6 +578,15 @@ function getBankOptionByCode(code) {
   return BANK_OPTIONS.find((item) => item.code === clean) || null;
 }
 
+function getBankOptionByName(name) {
+  const clean = String(name || "").trim().toLowerCase();
+  if (!clean) return null;
+  return BANK_OPTIONS.find((item) =>
+    item.name.toLowerCase() === clean
+    || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === clean))
+  ) || null;
+}
+
 function createDefaultGiftAccount() {
   const fallbackBank = BANK_OPTIONS[0];
   return {
@@ -603,14 +612,14 @@ function normalizeGiftAccounts(input) {
 
   return source.map((item) => {
     const bankCode = String(item && item.bankCode || "").trim().toLowerCase();
-    const bankMeta = getBankOptionByCode(bankCode);
+    const bankMeta = getBankOptionByCode(bankCode) || getBankOptionByName(item && item.bankName);
     const accountNumber = String(item && item.accountNumber || "").replace(/\D+/g, "");
     return {
       bankCode: bankMeta ? bankMeta.code : bankCode,
       bankName: String(item && item.bankName || (bankMeta && bankMeta.name) || "").trim(),
       accountNumber,
       accountHolder: String(item && item.accountHolder || "").trim(),
-      logoUrl: String(item && item.logoUrl || (bankMeta && bankMeta.logoUrl) || "").trim(),
+      logoUrl: String((bankMeta && bankMeta.logoUrl) || item && item.logoUrl || "").trim(),
       isActive: normalizeBoolean(item && item.isActive, true)
     };
   });

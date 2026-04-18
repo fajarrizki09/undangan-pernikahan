@@ -33,16 +33,16 @@ const giftCategoryTabs = document.getElementById("giftCategoryTabs");
 const giftAccountsList = document.getElementById("giftAccountsList");
 
 const BANK_CATALOG = {
-  bca: { code: "bca", name: "BCA", logoUrl: "https://logo.clearbit.com/bca.co.id" },
-  bri: { code: "bri", name: "BRI", logoUrl: "https://logo.clearbit.com/bri.co.id" },
-  bni: { code: "bni", name: "BNI", logoUrl: "https://logo.clearbit.com/bni.co.id" },
-  mandiri: { code: "mandiri", name: "Mandiri", logoUrl: "https://logo.clearbit.com/bankmandiri.co.id" },
-  bsi: { code: "bsi", name: "BSI", logoUrl: "https://logo.clearbit.com/bankbsi.co.id" },
-  cimb: { code: "cimb", name: "CIMB Niaga", logoUrl: "https://logo.clearbit.com/cimbniaga.co.id" },
-  permata: { code: "permata", name: "Permata", logoUrl: "https://logo.clearbit.com/permatabank.com" },
-  btn: { code: "btn", name: "BTN", logoUrl: "https://logo.clearbit.com/btn.co.id" },
-  danamon: { code: "danamon", name: "Danamon", logoUrl: "https://logo.clearbit.com/danamon.co.id" },
-  panin: { code: "panin", name: "Panin", logoUrl: "https://logo.clearbit.com/panin.co.id" }
+  bca: { code: "bca", name: "BCA", logoUrl: "assets/bank/bca.svg", aliases: ["bank central asia"] },
+  bri: { code: "bri", name: "BRI", logoUrl: "assets/bank/bri.svg", aliases: ["bank rakyat indonesia"] },
+  bni: { code: "bni", name: "BNI", logoUrl: "assets/bank/bni.svg", aliases: ["bank negara indonesia"] },
+  mandiri: { code: "mandiri", name: "Mandiri", logoUrl: "assets/bank/mandiri.svg", aliases: ["bank mandiri"] },
+  bsi: { code: "bsi", name: "BSI", logoUrl: "assets/bank/bsi.svg", aliases: ["bank syariah indonesia"] },
+  cimb: { code: "cimb", name: "CIMB Niaga", logoUrl: "assets/bank/cimb.svg", aliases: ["cimb", "cimb niaga"] },
+  permata: { code: "permata", name: "Permata", logoUrl: "assets/bank/permata.svg", aliases: ["permata bank"] },
+  btn: { code: "btn", name: "BTN", logoUrl: "assets/bank/btn.svg", aliases: ["bank tabungan negara"] },
+  danamon: { code: "danamon", name: "Danamon", logoUrl: "assets/bank/danamon.svg", aliases: ["bank danamon"] },
+  panin: { code: "panin", name: "Panin", logoUrl: "assets/bank/panin.svg", aliases: ["panin bank", "bank panin"] }
 };
 const lightbox = document.createElement("div");
 lightbox.className = "gallery-lightbox";
@@ -1140,7 +1140,20 @@ function applyCalendarLink() {
 function getBankMeta(account) {
   const code = String(account && account.bankCode || "").trim().toLowerCase();
   if (code && BANK_CATALOG[code]) return BANK_CATALOG[code];
+  const bankName = String(account && account.bankName || "").trim().toLowerCase();
+  if (bankName) {
+    const byName = Object.values(BANK_CATALOG).find((item) =>
+      item.name.toLowerCase() === bankName
+      || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === bankName))
+    );
+    if (byName) return byName;
+  }
   return null;
+}
+
+function getGiftLogoUrl(account, bankMeta) {
+  if (bankMeta && bankMeta.logoUrl) return bankMeta.logoUrl;
+  return String(account && account.logoUrl || "").trim();
 }
 
 function getGiftAccountCategory(account) {
@@ -1241,7 +1254,7 @@ function renderGiftSection() {
   (groupedAccounts[activeCategory] || []).forEach((account) => {
     const bankMeta = getBankMeta(account);
     const bankName = String(account.bankName || (bankMeta && bankMeta.name) || "Bank").trim();
-    const logoUrl = String(account.logoUrl || (bankMeta && bankMeta.logoUrl) || "").trim();
+    const logoUrl = getGiftLogoUrl(account, bankMeta);
     const card = document.createElement("details");
     card.className = "gift-account-card gift-account-dropdown";
 

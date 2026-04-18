@@ -91,7 +91,7 @@ const WEDDING_CONFIG = {
       bankName: "BCA",
       accountNumber: "",
       accountHolder: "",
-      logoUrl: "https://logo.clearbit.com/bca.co.id",
+      logoUrl: "assets/bank/bca.svg",
       isActive: true
     }
   ],
