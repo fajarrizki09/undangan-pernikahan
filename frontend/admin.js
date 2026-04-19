@@ -204,15 +204,16 @@ function sharedNormalizeGiftAccounts(input, options = {}) {
     .filter((item) => options.keepEmpty || item.accountNumber);
 }
 
-function sharedCreateDefaultGiftAccount() {
-  const fallbackBank = SHARED_BANK_OPTIONS[0];
+function sharedCreateDefaultGiftAccount(type = "bank") {
+  const cleanType = sharedNormalizeGiftType(type);
+  const fallbackProvider = cleanType === "ewallet" ? SHARED_EWALLET_OPTIONS[0] : SHARED_BANK_OPTIONS[0];
   return {
-    type: "bank",
-    providerCode: fallbackBank.code,
-    providerName: fallbackBank.name,
+    type: cleanType,
+    providerCode: fallbackProvider.code,
+    providerName: fallbackProvider.name,
     accountNumber: "",
     accountHolder: "",
-    logoUrl: fallbackBank.logoUrl,
+    logoUrl: fallbackProvider.logoUrl,
     isActive: true
   };
 }
@@ -381,7 +382,8 @@ const giftAccountsEditor = document.getElementById("giftAccountsEditor");
 const deleteFromDriveInput = document.getElementById("deleteFromDrive");
 const btnHeroFromGallery = document.getElementById("btnHeroFromGallery");
 const btnLoveStoryFromGallery = document.getElementById("btnLoveStoryFromGallery");
-const btnAddGiftAccount = document.getElementById("btnAddGiftAccount");
+const btnAddGiftBank = document.getElementById("btnAddGiftBank");
+const btnAddGiftEwallet = document.getElementById("btnAddGiftEwallet");
 const btnLoadMusicLibrary = document.getElementById("btnLoadMusicLibrary");
 const musicLibraryEditor = document.getElementById("musicLibraryEditor");
 const adminTabs = Array.from(document.querySelectorAll(".admin-tab"));
@@ -420,8 +422,31 @@ document.getElementById("btnExportGuestsCsv").addEventListener("click", exportGu
 document.getElementById("btnLoadRsvps").addEventListener("click", loadRsvps);
 document.getElementById("btnGenerateHeroDate").addEventListener("click", generateHeroDatePlaceFromInputs);
 document.getElementById("btnApplyGallerySelection").addEventListener("click", applySelectedGalleryUrls);
-if (btnAddGiftAccount) {
-  btnAddGiftAccount.addEventListener("click", () => {
+function addGiftAccount(type) {
+  const label = normalizeGiftType(type) === "ewallet" ? "e-wallet" : "bank";
+  const current = readGiftAccountsFromEditor();
+  current.push(createDefaultGiftAccount(type));
+  renderGiftAccountsEditor(current);
+  setStatus(statusGift, `Akun ${label} baru ditambahkan.`);
+  markDirty();
+  schedulePreviewRefresh();
+}
+
+if (btnAddGiftBank) {
+  btnAddGiftBank.addEventListener("click", () => {
+    addGiftAccount("bank");
+  });
+}
+
+if (btnAddGiftEwallet) {
+  btnAddGiftEwallet.addEventListener("click", () => {
+    addGiftAccount("ewallet");
+  });
+}
+
+const legacyBtnAddGiftAccount = document.getElementById("btnAddGiftAccount");
+if (legacyBtnAddGiftAccount) {
+  legacyBtnAddGiftAccount.addEventListener("click", () => {
     const current = readGiftAccountsFromEditor();
     current.push(createDefaultGiftAccount());
     renderGiftAccountsEditor(current);
@@ -1062,8 +1087,8 @@ function inferGiftAccountType(account) {
   return sharedInferGiftAccountType(account);
 }
 
-function createDefaultGiftAccount() {
-  return sharedCreateDefaultGiftAccount();
+function createDefaultGiftAccount(type = "bank") {
+  return sharedCreateDefaultGiftAccount(type);
 }
 
 function normalizeGiftAccounts(input) {
