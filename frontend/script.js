@@ -1445,7 +1445,7 @@ if (form) {
           "Content-Type": "text/plain;charset=utf-8"
         },
         body: JSON.stringify(payload)
-      }, 10000);
+      }, 45000);
 
       const result = await response.json();
 
@@ -1458,6 +1458,11 @@ if (form) {
       setFormStatus("RSVP berhasil dikirim. Terima kasih.", "is-success");
       loadWishes();
     } catch (error) {
+      if (/terlalu lama|aborted|abort/i.test(error.message || "")) {
+        setFormStatus("RSVP kemungkinan sudah terkirim, tetapi server lambat memberi balasan. Silakan cek daftar ucapan atau coba refresh sebelum mengirim ulang.", "is-error");
+        loadWishes();
+        return;
+      }
       setFormStatus(`Terjadi kesalahan: ${error.message}`, "is-error");
     } finally {
       if (submitRsvpBtn) submitRsvpBtn.disabled = false;

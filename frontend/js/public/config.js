@@ -4,13 +4,20 @@ export function createPublicConfigRuntime(options = {}) {
 
   async function fetchWithTimeout(url, fetchOptions = {}, timeoutMs = 7000) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    const timeoutId = setTimeout(() => {
+      controller.abort(new Error("Koneksi ke server terlalu lama. Silakan coba lagi."));
+    }, timeoutMs);
 
     try {
       return await fetch(url, {
         ...fetchOptions,
         signal: controller.signal
       });
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw new Error("Koneksi ke server terlalu lama. Silakan coba lagi.");
+      }
+      throw error;
     } finally {
       clearTimeout(timeoutId);
     }
