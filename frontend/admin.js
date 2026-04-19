@@ -1279,7 +1279,18 @@ function readGiftAccountsFromEditor() {
     const accountHolder = String(item.querySelector('[data-role="account-holder"]')?.value || "").trim();
     const logoUrl = String(item.querySelector('[data-role="logo-url"]')?.value || "").trim();
     const isActive = Boolean(item.querySelector('[data-role="is-active"]')?.checked);
-    return { type, providerCode, providerName, accountNumber, accountHolder, logoUrl, isActive };
+    return {
+      type,
+      category: type,
+      providerCode,
+      providerName,
+      bankCode: providerCode,
+      bankName: providerName,
+      accountNumber,
+      accountHolder,
+      logoUrl,
+      isActive
+    };
   }).filter((item) => item.accountNumber);
 }
 
