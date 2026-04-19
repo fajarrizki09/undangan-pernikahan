@@ -24,9 +24,15 @@ export function getGiftProviderName(account) {
 
 export function inferGiftAccountType(account) {
   const explicit = String(account && (account.type || account.category) || "").trim().toLowerCase();
+  const providerCode = getGiftProviderCode(account);
+  const providerName = getGiftProviderName(account);
+  if (providerCode && EWALLET_CATALOG[providerCode]) return "ewallet";
+  if (providerCode && BANK_CATALOG[providerCode]) return "bank";
+  if (findProviderByName(EWALLET_CATALOG, providerName)) return "ewallet";
+  if (findProviderByName(BANK_CATALOG, providerName)) return "bank";
   if (explicit === "bank" || explicit === "ewallet") return explicit;
 
-  const source = `${getGiftProviderCode(account)} ${getGiftProviderName(account)}`.toLowerCase();
+  const source = `${providerCode} ${providerName}`.toLowerCase();
   const ewalletKeywords = ["dana", "ovo", "gopay", "go-pay", "shopeepay", "shopee pay", "linkaja", "link aja", "sakuku"];
   return ewalletKeywords.some((keyword) => source.includes(keyword)) ? "ewallet" : "bank";
 }

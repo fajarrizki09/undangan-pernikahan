@@ -160,8 +160,14 @@ function sharedGetGiftProviderName(account) {
 
 function sharedInferGiftAccountType(account) {
   const explicit = String(account && (account.type || account.category) || "").trim().toLowerCase();
+  const providerCode = sharedGetGiftProviderCode(account);
+  const providerName = sharedGetGiftProviderName(account);
+  if (providerCode && SHARED_EWALLET_CATALOG[providerCode]) return "ewallet";
+  if (providerCode && SHARED_BANK_CATALOG[providerCode]) return "bank";
+  if (findProviderByName(SHARED_EWALLET_CATALOG, providerName)) return "ewallet";
+  if (findProviderByName(SHARED_BANK_CATALOG, providerName)) return "bank";
   if (explicit === "bank" || explicit === "ewallet") return explicit;
-  const source = `${sharedGetGiftProviderCode(account)} ${sharedGetGiftProviderName(account)}`.toLowerCase();
+  const source = `${providerCode} ${providerName}`.toLowerCase();
   const ewalletKeywords = ["dana", "ovo", "gopay", "go-pay", "shopeepay", "shopee pay", "linkaja", "link aja", "sakuku"];
   return ewalletKeywords.some((keyword) => source.includes(keyword)) ? "ewallet" : "bank";
 }
