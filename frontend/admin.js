@@ -1,3 +1,30 @@
+import { createAdminApiClient } from "./js/admin/api.js";
+import {
+  BANK_OPTIONS as SHARED_BANK_OPTIONS,
+  EWALLET_OPTIONS as SHARED_EWALLET_OPTIONS
+} from "./js/shared/catalogs.js";
+import { extractDriveFileId as sharedExtractDriveFileId, extractDriveResourceKey, isLikelyDriveFileId as sharedIsLikelyDriveFileId } from "./js/shared/drive.js";
+import { cleanPhotoArray as sharedCleanPhotoArray, clampPercent as sharedClampPercent, normalizeBoolean as sharedNormalizeBoolean } from "./js/shared/utils.js";
+import { normalizeGalleryMode as sharedNormalizeGalleryMode, normalizeGalleryPhotoFocusMap as sharedNormalizeGalleryPhotoFocusMap, normalizeGalleryStyle as sharedNormalizeGalleryStyle } from "./js/shared/schema/gallery.js";
+import {
+  createDefaultGiftAccount as sharedCreateDefaultGiftAccount,
+  getBankOptionByCode as sharedGetBankOptionByCode,
+  getBankOptionByName as sharedGetBankOptionByName,
+  getEwalletOptionByCode as sharedGetEwalletOptionByCode,
+  getEwalletOptionByName as sharedGetEwalletOptionByName,
+  getGiftProviderCode as sharedGetGiftProviderCode,
+  getGiftProviderName as sharedGetGiftProviderName,
+  inferGiftAccountType as sharedInferGiftAccountType,
+  normalizeGiftAccounts as sharedNormalizeGiftAccounts,
+  normalizeGiftType as sharedNormalizeGiftType
+} from "./js/shared/schema/gift.js";
+import { normalizeMusicPlaybackMode as sharedNormalizeMusicPlaybackMode, normalizeMusicPlaylist as sharedNormalizeMusicPlaylist, normalizeMusicTrack as sharedNormalizeMusicTrack } from "./js/shared/schema/music.js";
+
+const RSVP_API_URL = window.RSVP_API_URL || "";
+const ADMIN_CONFIG = window.ADMIN_CONFIG || {};
+const WEDDING_CONFIG = window.WEDDING_CONFIG || {};
+const adminApiClient = createAdminApiClient({ rsvpApiUrl: RSVP_API_URL });
+
 const fields = {
   brandInitials: document.getElementById("brandInitials"),
   seoTitle: document.getElementById("seoTitle"),
@@ -117,26 +144,8 @@ const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
 const ADMIN_PREVIEW_DRAFT_KEY = "wedding_admin_preview_draft_v1";
 
-const BANK_OPTIONS = [
-  { code: "bca", name: "BCA", logoUrl: "assets/bank/bca.svg", aliases: ["bank central asia"] },
-  { code: "bri", name: "BRI", logoUrl: "assets/bank/bri.svg", aliases: ["bank rakyat indonesia"] },
-  { code: "bni", name: "BNI", logoUrl: "assets/bank/bni.svg", aliases: ["bank negara indonesia"] },
-  { code: "mandiri", name: "Mandiri", logoUrl: "assets/bank/mandiri.svg", aliases: ["bank mandiri"] },
-  { code: "bsi", name: "BSI", logoUrl: "assets/bank/bsi.svg", aliases: ["bank syariah indonesia"] },
-  { code: "cimb", name: "CIMB Niaga", logoUrl: "assets/bank/cimb.svg", aliases: ["cimb", "cimb niaga"] },
-  { code: "permata", name: "Permata", logoUrl: "assets/bank/permata.svg", aliases: ["permata bank"] },
-  { code: "btn", name: "BTN", logoUrl: "assets/bank/btn.svg", aliases: ["bank tabungan negara"] },
-  { code: "danamon", name: "Danamon", logoUrl: "assets/bank/danamon.svg", aliases: ["bank danamon"] },
-  { code: "panin", name: "Panin", logoUrl: "assets/bank/panin.svg", aliases: ["panin bank", "bank panin"] }
-];
-const EWALLET_OPTIONS = [
-  { code: "dana", name: "DANA", logoUrl: "assets/ewallet/dana.svg", aliases: ["dana"] },
-  { code: "ovo", name: "OVO", logoUrl: "assets/ewallet/ovo.svg", aliases: ["ovo"] },
-  { code: "gopay", name: "GoPay", logoUrl: "assets/ewallet/gopay.svg", aliases: ["gopay", "go-pay"] },
-  { code: "shopeepay", name: "ShopeePay", logoUrl: "assets/ewallet/shopeepay.svg", aliases: ["shopeepay", "shopee pay"] },
-  { code: "linkaja", name: "LinkAja", logoUrl: "assets/ewallet/linkaja.svg", aliases: ["linkaja", "link aja"] },
-  { code: "sakuku", name: "Sakuku", logoUrl: "assets/ewallet/sakuku.svg", aliases: ["sakuku"] }
-];
+const BANK_OPTIONS = SHARED_BANK_OPTIONS;
+const EWALLET_OPTIONS = SHARED_EWALLET_OPTIONS;
 
 document.getElementById("btnLoadConfig").addEventListener("click", loadConfigFromServer);
 document.getElementById("btnSaveConfig").addEventListener("click", saveConfigToServer);
@@ -351,29 +360,11 @@ function togglePreviewPanel(forceOpen) {
 }
 
 function extractDriveFileId(value) {
-  const clean = String(value || "").trim();
-  if (!clean) return "";
-
-  const idFromQuery = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (idFromQuery && idFromQuery[1]) return idFromQuery[1];
-
-  const idFromPath = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (idFromPath && idFromPath[1]) return idFromPath[1];
-
-  return "";
+  return sharedExtractDriveFileId(value);
 }
 
 function isLikelyDriveFileId(value) {
-  const clean = String(value || "").trim();
-  return /^[a-zA-Z0-9_-]{20,}$/.test(clean);
-}
-
-function extractDriveResourceKey(value) {
-  const clean = String(value || "").trim();
-  if (!clean) return "";
-
-  const keyMatch = clean.match(/[?&]resourcekey=([a-zA-Z0-9._-]+)/i);
-  return (keyMatch && keyMatch[1]) || "";
+  return sharedIsLikelyDriveFileId(value);
 }
 
 function buildMusicProxyUrl(fileMeta) {
@@ -392,60 +383,21 @@ function buildMusicProxyUrl(fileMeta) {
 }
 
 function normalizeMusicPlaybackMode(value) {
-  return String(value || "").trim().toLowerCase() === "shuffle" ? "shuffle" : "ordered";
+  return sharedNormalizeMusicPlaybackMode(value);
 }
 
 function normalizeMusicTrack(item, index = 0) {
-  const source = (item && typeof item === "object") ? item : {};
-  const sourceUrl = String(
-    source.url ||
-    source.audioStreamUrl ||
-    source.downloadUrl ||
-    source.publicUrl ||
-    source.webUrl ||
-    ""
-  ).trim();
-  const id = String(source.id || source.fileId || source.trackId || `music-track-${index + 1}`).trim();
-  const url = buildMusicProxyUrl(source) || sourceUrl;
-  const fallbackTitle = sourceUrl ? sourceUrl.split("/").pop() : `Track ${index + 1}`;
-  return {
-    id: id || `music-track-${index + 1}`,
-    title: String(source.title || source.name || fallbackTitle || `Track ${index + 1}`).trim(),
-    url,
-    sourceUrl,
-    isActive: source.isActive === undefined ? true : normalizeBoolean(source.isActive, true)
-  };
+  return sharedNormalizeMusicTrack(item, index, {
+    buildUrl: buildMusicProxyUrl,
+    idPrefix: "music-track"
+  });
 }
 
 function normalizeMusicPlaylist(input, fallbackUrl = "") {
-  let source = input;
-  if (typeof source === "string") {
-    try {
-      source = JSON.parse(source);
-    } catch (error) {
-      source = [];
-    }
-  }
-
-  let tracks = Array.isArray(source)
-    ? source.map((item, index) => normalizeMusicTrack(item, index)).filter((item) => item.url || item.sourceUrl)
-    : [];
-
-  const hasRealDriveTrack = tracks.some((item) => isLikelyDriveFileId(item.id) || extractDriveFileId(item.sourceUrl || item.url));
-  if (hasRealDriveTrack) {
-    tracks = tracks.filter((item) => item.id !== "default-track-1" && item.id !== "legacy-track-1");
-  }
-
-  if (!tracks.length && fallbackUrl) {
-    tracks = [normalizeMusicTrack({
-      id: "legacy-track-1",
-      title: "Musik Utama",
-      url: fallbackUrl,
-      isActive: true
-    }, 0)];
-  }
-
-  return tracks;
+  return sharedNormalizeMusicPlaylist(input, fallbackUrl, {
+    buildUrl: buildMusicProxyUrl,
+    idPrefix: "music-track"
+  });
 }
 
 function syncBackgroundMusicField() {
@@ -666,104 +618,47 @@ function updateEventStartIsoPreview() {
 }
 
 function normalizeBoolean(value, fallback = false) {
-  if (typeof value === "boolean") return value;
-  const text = String(value || "").trim().toLowerCase();
-  if (!text) return fallback;
-  return ["1", "true", "yes", "y", "on"].includes(text);
+  return sharedNormalizeBoolean(value, fallback);
 }
 
 function getBankOptionByCode(code) {
-  const clean = String(code || "").trim().toLowerCase();
-  return BANK_OPTIONS.find((item) => item.code === clean) || null;
+  return sharedGetBankOptionByCode(code);
 }
 
 function getBankOptionByName(name) {
-  const clean = String(name || "").trim().toLowerCase();
-  if (!clean) return null;
-  return BANK_OPTIONS.find((item) =>
-    item.name.toLowerCase() === clean
-    || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === clean))
-  ) || null;
+  return sharedGetBankOptionByName(name);
 }
 
 function getEwalletOptionByCode(code) {
-  const clean = String(code || "").trim().toLowerCase();
-  return EWALLET_OPTIONS.find((item) => item.code === clean) || null;
+  return sharedGetEwalletOptionByCode(code);
 }
 
 function getEwalletOptionByName(name) {
-  const clean = String(name || "").trim().toLowerCase();
-  if (!clean) return null;
-  return EWALLET_OPTIONS.find((item) =>
-    item.name.toLowerCase() === clean
-    || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === clean))
-  ) || null;
+  return sharedGetEwalletOptionByName(name);
 }
 
 function normalizeGiftType(value) {
-  const clean = String(value || "").trim().toLowerCase();
-  return clean === "ewallet" ? "ewallet" : "bank";
+  return sharedNormalizeGiftType(value);
 }
 
 function getGiftProviderCode(account) {
-  return String(account && (account.providerCode || account.bankCode) || "").trim().toLowerCase();
+  return sharedGetGiftProviderCode(account);
 }
 
 function getGiftProviderName(account) {
-  return String(account && (account.providerName || account.bankName) || "").trim();
+  return sharedGetGiftProviderName(account);
 }
 
 function inferGiftAccountType(account) {
-  const explicit = String(account && (account.type || account.category) || "").trim().toLowerCase();
-  if (explicit === "bank" || explicit === "ewallet") return explicit;
-
-  const source = `${getGiftProviderCode(account)} ${getGiftProviderName(account)}`.toLowerCase();
-  const ewalletKeywords = ["dana", "ovo", "gopay", "go-pay", "shopeepay", "shopee pay", "linkaja", "link aja", "sakuku"];
-  return ewalletKeywords.some((keyword) => source.includes(keyword)) ? "ewallet" : "bank";
+  return sharedInferGiftAccountType(account);
 }
 
 function createDefaultGiftAccount() {
-  const fallbackBank = BANK_OPTIONS[0];
-  return {
-    type: "bank",
-    providerCode: fallbackBank.code,
-    providerName: fallbackBank.name,
-    accountNumber: "",
-    accountHolder: "",
-    logoUrl: fallbackBank.logoUrl,
-    isActive: true
-  };
+  return sharedCreateDefaultGiftAccount();
 }
 
 function normalizeGiftAccounts(input) {
-  let source = input;
-  if (typeof source === "string") {
-    try {
-      source = JSON.parse(source);
-    } catch (error) {
-      source = [];
-    }
-  }
-  if (!Array.isArray(source)) return [];
-
-  return source.map((item) => {
-    const type = inferGiftAccountType(item);
-    const providerCode = getGiftProviderCode(item);
-    const providerName = getGiftProviderName(item);
-    const providerMeta = type === "ewallet"
-      ? (getEwalletOptionByCode(providerCode) || getEwalletOptionByName(providerName))
-      : (getBankOptionByCode(providerCode) || getBankOptionByName(providerName));
-    const accountNumber = String(item && item.accountNumber || "").replace(/\D+/g, "");
-      return {
-      type,
-      providerCode: providerMeta ? providerMeta.code : providerCode,
-      providerName: String((providerMeta && providerMeta.name) || providerName || "").trim(),
-      accountNumber,
-      accountHolder: String(item && item.accountHolder || "").trim(),
-      logoUrl: String((providerMeta && providerMeta.logoUrl) || item && item.logoUrl || "").trim(),
-      isActive: normalizeBoolean(item && item.isActive, true)
-    };
-  });
+  return sharedNormalizeGiftAccounts(input, { keepEmpty: true });
 }
 
 function suggestBankByAccountNumber(accountNumber) {
@@ -1057,45 +952,19 @@ function parsePositiveNumber(value) {
 }
 
 function normalizeGalleryMode(value) {
-  return String(value || "").toLowerCase() === "carousel" ? "carousel" : "grid";
+  return sharedNormalizeGalleryMode(value);
 }
 
 function normalizeGalleryStyle(value) {
-  const style = String(value || "").toLowerCase();
-  if (["elegant", "soft", "polaroid", "clean"].includes(style)) return style;
-  return "elegant";
+  return sharedNormalizeGalleryStyle(value);
 }
 
 function clampPercent(value, fallback = 50) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return fallback;
-  return Math.max(0, Math.min(100, num));
+  return sharedClampPercent(value, fallback);
 }
 
 function normalizeGalleryPhotoFocusMap(input) {
-  let source = input;
-  if (typeof source === "string") {
-    try {
-      source = JSON.parse(source);
-    } catch (error) {
-      source = {};
-    }
-  }
-  if (!source || typeof source !== "object" || Array.isArray(source)) return {};
-
-  const normalized = {};
-  Object.keys(source).forEach((rawKey) => {
-    const key = String(rawKey || "").trim();
-    if (!key) return;
-    const item = source[rawKey];
-    if (!item || typeof item !== "object") return;
-    normalized[key] = {
-      x: clampPercent(item.x, 50),
-      y: clampPercent(item.y, 50)
-    };
-  });
-
-  return normalized;
+  return sharedNormalizeGalleryPhotoFocusMap(input);
 }
 
 function getGalleryPhotoFocus(url) {
@@ -1212,8 +1081,7 @@ function readConfigFromForm() {
 }
 
 function cleanPhotoArray(input) {
-  if (!Array.isArray(input)) return [];
-  return input.map((item) => String(item || "").trim()).filter(Boolean);
+  return sharedCleanPhotoArray(input);
 }
 
 function healMisplacedPhotoConfig(config) {
@@ -1324,22 +1192,7 @@ function fillForm(config) {
 }
 
 async function postApi(payload) {
-  if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
-    throw new Error("Isi RSVP_API_URL di config.js terlebih dahulu");
-  }
-
-  const response = await fetch(RSVP_API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload)
-  });
-
-  const result = await response.json();
-  if (!result.success) {
-    throw new Error(result.message || "Request gagal");
-  }
-
-  return result;
+  return adminApiClient.postApi(payload);
 }
 
 guestAdminModule = window.WeddingGuestAdminModule.createGuestAdminModule({
@@ -1387,20 +1240,8 @@ async function loadConfigFromServer() {
     }
 
     setStatus(statusConfig, "Memuat konfigurasi...");
-    const url = new URL(RSVP_API_URL);
-    url.searchParams.set("action", "config");
-    url.searchParams.set("_ts", String(Date.now()));
-
-    const response = await fetch(url.toString(), {
-      cache: "no-store"
-    });
-    const result = await response.json();
-
-    if (!result.success) {
-      throw new Error(result.message || "Gagal mengambil config");
-    }
-
-    fillForm(result.config || {});
+    const config = await adminApiClient.getConfig();
+    fillForm(config);
     setStatus(statusConfig, "Konfigurasi berhasil dimuat");
     schedulePreviewRefresh();
   } catch (error) {
@@ -1563,19 +1404,6 @@ function applySelectedGalleryUrls() {
   syncSelectedGalleryUrls(finalUrls);
   renderGalleryPreview();
   setStatus(statusGallery, `${finalUrls.length} foto dipilih untuk ditampilkan di galeri.`);
-}
-
-function extractDriveFileId(url) {
-  const clean = String(url || "").trim();
-  if (!clean) return "";
-
-  const idFromQuery = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (idFromQuery && idFromQuery[1]) return idFromQuery[1];
-
-  const idFromPath = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (idFromPath && idFromPath[1]) return idFromPath[1];
-
-  return "";
 }
 
 function getDrivePreviewCandidates(fileId) {

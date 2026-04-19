@@ -1,4 +1,11 @@
 import { setMetaDescription as updateMetaDescription } from "./js/shared/meta.js";
+import { createInitialWeddingConfig, healMisplacedPhotoConfig as sharedHealMisplacedPhotoConfig, mergeWeddingConfig } from "./js/shared/config-normalizer.js";
+import { BANK_CATALOG, findProviderByName } from "./js/shared/catalogs.js";
+import { extractDriveFileId as sharedExtractDriveFileId, isLikelyDriveFileId as sharedIsLikelyDriveFileId } from "./js/shared/drive.js";
+import { cleanPhotoArray as sharedCleanPhotoArray, clampPercent as sharedClampPercent, normalizeBoolean as sharedNormalizeBoolean, normalizeCountString as sharedNormalizeCountString, normalizePositiveNumberString as sharedNormalizePositiveNumberString } from "./js/shared/utils.js";
+import { normalizeGalleryMode as sharedNormalizeGalleryMode, normalizeGalleryPhotoFocusMap as sharedNormalizeGalleryPhotoFocusMap, normalizeGalleryStyle as sharedNormalizeGalleryStyle } from "./js/shared/schema/gallery.js";
+import { getGiftProviderCode as sharedGetGiftProviderCode, getGiftProviderMeta as sharedGetGiftProviderMeta, getGiftProviderName as sharedGetGiftProviderName, inferGiftAccountType as sharedInferGiftAccountType, normalizeGiftAccounts as sharedNormalizeGiftAccounts, normalizeGiftType as sharedNormalizeGiftType } from "./js/shared/schema/gift.js";
+import { getActiveMusicTracks as sharedGetActiveMusicTracks, normalizeMusicPlaybackMode as sharedNormalizeMusicPlaybackMode, normalizeMusicPlaylist as sharedNormalizeMusicPlaylist, normalizeMusicTrack as sharedNormalizeMusicTrack } from "./js/shared/schema/music.js";
 import { createPublicConfigRuntime } from "./js/public/config.js";
 import { createGalleryController } from "./js/public/gallery.js";
 import { createMusicController } from "./js/public/music.js";
@@ -43,26 +50,6 @@ const giftSectionSubtitle = document.getElementById("giftSectionSubtitle");
 const giftCategoryTabs = document.getElementById("giftCategoryTabs");
 const giftAccountsList = document.getElementById("giftAccountsList");
 
-const BANK_CATALOG = {
-  bca: { code: "bca", name: "BCA", logoUrl: "assets/bank/bca.svg", aliases: ["bank central asia"] },
-  bri: { code: "bri", name: "BRI", logoUrl: "assets/bank/bri.svg", aliases: ["bank rakyat indonesia"] },
-  bni: { code: "bni", name: "BNI", logoUrl: "assets/bank/bni.svg", aliases: ["bank negara indonesia"] },
-  mandiri: { code: "mandiri", name: "Mandiri", logoUrl: "assets/bank/mandiri.svg", aliases: ["bank mandiri"] },
-  bsi: { code: "bsi", name: "BSI", logoUrl: "assets/bank/bsi.svg", aliases: ["bank syariah indonesia"] },
-  cimb: { code: "cimb", name: "CIMB Niaga", logoUrl: "assets/bank/cimb.svg", aliases: ["cimb", "cimb niaga"] },
-  permata: { code: "permata", name: "Permata", logoUrl: "assets/bank/permata.svg", aliases: ["permata bank"] },
-  btn: { code: "btn", name: "BTN", logoUrl: "assets/bank/btn.svg", aliases: ["bank tabungan negara"] },
-  danamon: { code: "danamon", name: "Danamon", logoUrl: "assets/bank/danamon.svg", aliases: ["bank danamon"] },
-  panin: { code: "panin", name: "Panin", logoUrl: "assets/bank/panin.svg", aliases: ["panin bank", "bank panin"] }
-};
-const EWALLET_CATALOG = {
-  dana: { code: "dana", name: "DANA", logoUrl: "assets/ewallet/dana.svg", aliases: ["dana"] },
-  ovo: { code: "ovo", name: "OVO", logoUrl: "assets/ewallet/ovo.svg", aliases: ["ovo"] },
-  gopay: { code: "gopay", name: "GoPay", logoUrl: "assets/ewallet/gopay.svg", aliases: ["gopay", "go-pay"] },
-  shopeepay: { code: "shopeepay", name: "ShopeePay", logoUrl: "assets/ewallet/shopeepay.svg", aliases: ["shopeepay", "shopee pay"] },
-  linkaja: { code: "linkaja", name: "LinkAja", logoUrl: "assets/ewallet/linkaja.svg", aliases: ["linkaja", "link aja"] },
-  sakuku: { code: "sakuku", name: "Sakuku", logoUrl: "assets/ewallet/sakuku.svg", aliases: ["sakuku"] }
-};
 const lightbox = document.createElement("div");
 lightbox.className = "gallery-lightbox";
 lightbox.setAttribute("aria-hidden", "true");
@@ -106,23 +93,7 @@ let wishesAutoScrollTimer = null;
 let wishesAutoPauseUntil = 0;
 let wishesRefreshTimer = null;
 
-let currentConfig = {
-  ...WEDDING_CONFIG,
-  akad: { ...(WEDDING_CONFIG.akad || {}) },
-  resepsi: { ...(WEDDING_CONFIG.resepsi || {}) },
-  loveStoryPhotos: Array.isArray(WEDDING_CONFIG.loveStoryPhotos) ? [...WEDDING_CONFIG.loveStoryPhotos] : [],
-  loveStoryItems: Array.isArray(WEDDING_CONFIG.loveStoryItems) ? [...WEDDING_CONFIG.loveStoryItems] : [],
-  galleryPhotos: Array.isArray(WEDDING_CONFIG.galleryPhotos) ? [...WEDDING_CONFIG.galleryPhotos] : [],
-  galleryPhotoFocus: {},
-  eventStartISO: String(WEDDING_CONFIG.eventStartISO || WEDDING_CONFIG.weddingDateISO || "").trim(),
-  backgroundMusicUrl: String(WEDDING_CONFIG.backgroundMusicUrl || "").trim(),
-  musicPlaybackMode: String(WEDDING_CONFIG.musicPlaybackMode || "ordered").trim(),
-  musicPlaylist: Array.isArray(WEDDING_CONFIG.musicPlaylist) ? [...WEDDING_CONFIG.musicPlaylist] : [],
-  giftEnabled: Boolean(WEDDING_CONFIG.giftEnabled),
-  giftSectionTitle: String(WEDDING_CONFIG.giftSectionTitle || "Wedding Gift"),
-  giftSectionSubtitle: String(WEDDING_CONFIG.giftSectionSubtitle || ""),
-  giftAccounts: Array.isArray(WEDDING_CONFIG.giftAccounts) ? [...WEDDING_CONFIG.giftAccounts] : []
-};
+let currentConfig = createInitialWeddingConfig(WEDDING_CONFIG);
 const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
 const CONFIG_CACHE_TTL_MS = 1000 * 30;
 const ADMIN_PREVIEW_DRAFT_KEY = "wedding_admin_preview_draft_v1";
@@ -159,85 +130,31 @@ const musicController = createMusicController({
 });
 
 function cleanPhotoArray(input) {
-  if (!Array.isArray(input)) return [];
-  return input.map((item) => String(item || "").trim()).filter(Boolean);
+  return sharedCleanPhotoArray(input);
 }
 
 function normalizeMusicPlaybackMode(value) {
-  return String(value || "").trim().toLowerCase() === "shuffle" ? "shuffle" : "ordered";
+  return sharedNormalizeMusicPlaybackMode(value);
 }
 
 function isLikelyDriveFileId(value) {
-  const clean = String(value || "").trim();
-  return /^[a-zA-Z0-9_-]{20,}$/.test(clean);
+  return sharedIsLikelyDriveFileId(value);
 }
 
 function normalizeMusicTrack(item, index = 0) {
-  const source = (item && typeof item === "object") ? item : {};
-  const url = String(source.url || source.audioStreamUrl || source.downloadUrl || source.publicUrl || source.webUrl || "").trim();
-  const title = String(source.title || source.name || `Track ${index + 1}`).trim();
-  const id = String(source.id || source.fileId || `track-${index + 1}`).trim() || `track-${index + 1}`;
-  return {
-    id,
-    title: title || `Track ${index + 1}`,
-    url,
-    isActive: source.isActive === undefined ? true : normalizeBoolean(source.isActive, true)
-  };
+  return sharedNormalizeMusicTrack(item, index);
 }
 
 function normalizeMusicPlaylist(input, fallbackUrl = "") {
-  let source = input;
-  if (typeof source === "string") {
-    try {
-      source = JSON.parse(source);
-    } catch (error) {
-      source = [];
-    }
-  }
-
-  let tracks = Array.isArray(source)
-    ? source.map((item, index) => normalizeMusicTrack(item, index)).filter((item) => item.url)
-    : [];
-
-  const hasRealDriveTrack = tracks.some((item) => isLikelyDriveFileId(item.id) || extractDriveFileId(item.url));
-  if (hasRealDriveTrack) {
-    tracks = tracks.filter((item) => item.id !== "default-track-1" && item.id !== "legacy-track-1");
-  }
-
-  if (!tracks.length && fallbackUrl) {
-    tracks = [{
-      id: "legacy-track-1",
-      title: "Musik Utama",
-      url: String(fallbackUrl || "").trim(),
-      isActive: true
-    }];
-  }
-
-  return tracks;
+  return sharedNormalizeMusicPlaylist(input, fallbackUrl);
 }
 
 function getActiveMusicTracks(config) {
-  const playlist = normalizeMusicPlaylist(config && config.musicPlaylist, config && config.backgroundMusicUrl);
-  const active = playlist.filter((item) => item.isActive && item.url);
-  return active.length ? active : playlist.filter((item) => item.url);
+  return sharedGetActiveMusicTracks(config);
 }
 
 function healMisplacedPhotoConfig(config) {
-  const fallbackStory = cleanPhotoArray(WEDDING_CONFIG.loveStoryPhotos).slice(0, 3);
-  const source = (config && typeof config === "object") ? config : {};
-  const loveStory = cleanPhotoArray(source.loveStoryPhotos);
-  const gallery = cleanPhotoArray(source.galleryPhotos);
-
-  const likelyShiftedColumn = gallery.length === 0 && loveStory.length > 3;
-  if (!likelyShiftedColumn) {
-    return source;
-  }
-
-  return {
-    ...source,
-    loveStoryPhotos: fallbackStory.length ? fallbackStory : loveStory.slice(0, 3),
-    galleryPhotos: loveStory
-  };
+  return sharedHealMisplacedPhotoConfig(config, WEDDING_CONFIG);
 }
 
 function setText(id, value) {
@@ -377,104 +294,39 @@ function getGuestInviteTypeFromUrl() {
 }
 
 function clampPercent(value, fallback = 50) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return fallback;
-  return Math.max(0, Math.min(100, num));
+  return sharedClampPercent(value, fallback);
 }
 
 function normalizeGalleryPhotoFocusMap(input) {
-  let source = input;
-  if (typeof source === "string") {
-    try {
-      source = JSON.parse(source);
-    } catch (error) {
-      source = {};
-    }
-  }
-  if (!source || typeof source !== "object" || Array.isArray(source)) return {};
-
-  const normalized = {};
-  Object.keys(source).forEach((rawKey) => {
-    const key = String(rawKey || "").trim();
-    if (!key) return;
-    const item = source[rawKey];
-    if (!item || typeof item !== "object") return;
-    normalized[key] = {
-      x: clampPercent(item.x, 50),
-      y: clampPercent(item.y, 50)
-    };
-  });
-
-  return normalized;
+  return sharedNormalizeGalleryPhotoFocusMap(input);
 }
 
 function normalizeBoolean(value, fallback = false) {
-  if (typeof value === "boolean") return value;
-  const text = String(value || "").trim().toLowerCase();
-  if (!text) return fallback;
-  return ["1", "true", "yes", "y", "on"].includes(text);
+  return sharedNormalizeBoolean(value, fallback);
 }
 
 function normalizeGiftType(value) {
-  const clean = String(value || "").trim().toLowerCase();
-  return clean === "ewallet" ? "ewallet" : "bank";
+  return sharedNormalizeGiftType(value);
 }
 
 function getGiftProviderCode(account) {
-  return String(account && (account.providerCode || account.bankCode) || "").trim().toLowerCase();
+  return sharedGetGiftProviderCode(account);
 }
 
 function getGiftProviderName(account) {
-  return String(account && (account.providerName || account.bankName) || "").trim();
+  return sharedGetGiftProviderName(account);
 }
 
 function findGiftProviderByName(catalog, name) {
-  const clean = String(name || "").trim().toLowerCase();
-  if (!clean) return null;
-  return Object.values(catalog).find((item) =>
-    item.name.toLowerCase() === clean
-    || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === clean))
-  ) || null;
+  return findProviderByName(catalog, name);
 }
 
 function inferGiftAccountType(account) {
-  const explicit = String(account && (account.type || account.category) || "").trim().toLowerCase();
-  if (explicit === "bank" || explicit === "ewallet") return explicit;
-
-  const source = `${getGiftProviderCode(account)} ${getGiftProviderName(account)}`.toLowerCase();
-  const ewalletKeywords = ["dana", "ovo", "gopay", "go-pay", "shopeepay", "shopee pay", "linkaja", "link aja", "sakuku"];
-  return ewalletKeywords.some((keyword) => source.includes(keyword)) ? "ewallet" : "bank";
+  return sharedInferGiftAccountType(account);
 }
 
 function normalizeGiftAccounts(input) {
-  let source = input;
-  if (typeof source === "string") {
-    try {
-      source = JSON.parse(source);
-    } catch (error) {
-      source = [];
-    }
-  }
-  if (!Array.isArray(source)) return [];
-
-  return source
-    .map((item) => {
-      const type = inferGiftAccountType(item);
-      const providerCode = getGiftProviderCode(item);
-      const providerName = getGiftProviderName(item);
-      const catalog = type === "ewallet" ? EWALLET_CATALOG : BANK_CATALOG;
-      const providerMeta = (providerCode && catalog[providerCode]) || findGiftProviderByName(catalog, providerName);
-      return {
-        type,
-        providerCode: providerMeta ? providerMeta.code : providerCode,
-        providerName: String((providerMeta && providerMeta.name) || providerName || "").trim(),
-        accountNumber: String(item && item.accountNumber || "").replace(/\D+/g, ""),
-        accountHolder: String(item && item.accountHolder || "").trim(),
-        logoUrl: String((providerMeta && providerMeta.logoUrl) || item && item.logoUrl || "").trim(),
-        isActive: normalizeBoolean(item && item.isActive, true)
-      };
-    })
-    .filter((item) => item.accountNumber);
+  return sharedNormalizeGiftAccounts(input);
 }
 
 function getGalleryObjectPosition(photoUrl) {
@@ -486,82 +338,7 @@ function getGalleryObjectPosition(photoUrl) {
 }
 
 function mergeConfig(base, incoming) {
-  if (!incoming || typeof incoming !== "object") return base;
-
-  const incomingMusicUrl = String(incoming.backgroundMusicUrl || "").trim();
-  const baseMusicUrl = String(base.backgroundMusicUrl || "").trim();
-  const incomingMusicPlaylist = incoming.musicPlaylist !== undefined
-    ? incoming.musicPlaylist
-    : (base.musicPlaylist !== undefined ? base.musicPlaylist : WEDDING_CONFIG.musicPlaylist);
-  const merged = {
-    ...base,
-    ...incoming,
-    backgroundMusicUrl: incomingMusicUrl || baseMusicUrl,
-    musicPlaybackMode: normalizeMusicPlaybackMode(
-      incoming.musicPlaybackMode || base.musicPlaybackMode || WEDDING_CONFIG.musicPlaybackMode || "ordered"
-    ),
-    musicPlaylist: normalizeMusicPlaylist(
-      incomingMusicPlaylist,
-      incomingMusicUrl || baseMusicUrl || WEDDING_CONFIG.backgroundMusicUrl
-    ),
-    akad: {
-      ...(base.akad || {}),
-      ...(incoming.akad || {})
-    },
-    resepsi: {
-      ...(base.resepsi || {}),
-      ...(incoming.resepsi || {})
-    },
-    loveStoryPhotos: Array.isArray(incoming.loveStoryPhotos) && incoming.loveStoryPhotos.length
-      ? incoming.loveStoryPhotos
-      : base.loveStoryPhotos,
-    loveStoryItems: Array.isArray(incoming.loveStoryItems) && incoming.loveStoryItems.length
-      ? incoming.loveStoryItems
-      : base.loveStoryItems,
-    galleryPhotos: Array.isArray(incoming.galleryPhotos) && incoming.galleryPhotos.length
-      ? incoming.galleryPhotos
-      : base.galleryPhotos,
-    galleryPhotoFocus: normalizeGalleryPhotoFocusMap(
-      incoming.galleryPhotoFocus || base.galleryPhotoFocus || WEDDING_CONFIG.galleryPhotoFocus || {}
-    ),
-    eventStartISO: String(
-      incoming.eventStartISO ||
-      base.eventStartISO ||
-      WEDDING_CONFIG.eventStartISO ||
-      incoming.weddingDateISO ||
-      base.weddingDateISO ||
-      WEDDING_CONFIG.weddingDateISO ||
-      ""
-    ).trim(),
-    giftEnabled: normalizeBoolean(
-      (incoming.giftEnabled !== undefined ? incoming.giftEnabled : base.giftEnabled),
-      normalizeBoolean(WEDDING_CONFIG.giftEnabled, false)
-    ),
-    giftSectionTitle: String(incoming.giftSectionTitle || base.giftSectionTitle || WEDDING_CONFIG.giftSectionTitle || "Wedding Gift").trim(),
-    giftSectionSubtitle: String(incoming.giftSectionSubtitle || base.giftSectionSubtitle || WEDDING_CONFIG.giftSectionSubtitle || "").trim(),
-    giftAccounts: normalizeGiftAccounts(
-      incoming.giftAccounts !== undefined
-        ? incoming.giftAccounts
-        : (base.giftAccounts !== undefined ? base.giftAccounts : WEDDING_CONFIG.giftAccounts)
-    )
-  };
-
-  merged.galleryMode = normalizeGalleryMode(incoming.galleryMode || base.galleryMode || WEDDING_CONFIG.galleryMode);
-  merged.galleryStyle = normalizeGalleryStyle(incoming.galleryStyle || base.galleryStyle || WEDDING_CONFIG.galleryStyle);
-  merged.galleryMaxItems = normalizeCountString(incoming.galleryMaxItems || base.galleryMaxItems || WEDDING_CONFIG.galleryMaxItems);
-  merged.galleryAutoplaySec = normalizePositiveNumberString(
-    incoming.galleryAutoplaySec || base.galleryAutoplaySec || WEDDING_CONFIG.galleryAutoplaySec
-  );
-
-  merged.quranVerseArabic = String(merged.quranVerseArabic || "").trim() || String(base.quranVerseArabic || "").trim();
-  merged.quranVerseTranslation = String(merged.quranVerseTranslation || "").trim() || String(base.quranVerseTranslation || "").trim();
-  merged.quranVerseReference = String(merged.quranVerseReference || "").trim() || String(base.quranVerseReference || "").trim();
-  merged.hadithText = String(merged.hadithText || "").trim() || String(base.hadithText || "").trim();
-  merged.hadithReference = String(merged.hadithReference || "").trim() || String(base.hadithReference || "").trim();
-  merged.marriageDoaText = String(merged.marriageDoaText || "").trim() || String(base.marriageDoaText || "").trim();
-  merged.marriageDoaReference = String(merged.marriageDoaReference || "").trim() || String(base.marriageDoaReference || "").trim();
-
-  return healMisplacedPhotoConfig(merged);
+  return healMisplacedPhotoConfig(mergeWeddingConfig(base, incoming, WEDDING_CONFIG));
 }
 
 function formatStoryDateDisplay(value) {
@@ -594,29 +371,19 @@ function setMetaDescription(content) {
 }
 
 function normalizeGalleryMode(value) {
-  return String(value || "").toLowerCase() === "carousel" ? "carousel" : "grid";
+  return sharedNormalizeGalleryMode(value);
 }
 
 function normalizeGalleryStyle(value) {
-  const style = String(value || "").toLowerCase();
-  if (["elegant", "soft", "polaroid", "clean"].includes(style)) return style;
-  return "elegant";
+  return sharedNormalizeGalleryStyle(value);
 }
 
 function normalizeCountString(value) {
-  const text = String(value || "").trim();
-  if (!text) return "";
-  const num = Number(text);
-  if (!Number.isFinite(num) || num < 0) return "";
-  return String(Math.floor(num));
+  return sharedNormalizeCountString(value);
 }
 
 function normalizePositiveNumberString(value) {
-  const text = String(value || "").trim();
-  if (!text) return "";
-  const num = Number(text);
-  if (!Number.isFinite(num) || num <= 0) return "";
-  return String(num);
+  return sharedNormalizePositiveNumberString(value);
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
@@ -848,11 +615,7 @@ function renderGalleryGrid(photos) {
 }
 
 function extractDriveFileId(url) {
-  const clean = String(url || "").trim();
-  if (!clean) return "";
-  const queryIdMatch = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  const pathIdMatch = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  return (queryIdMatch && queryIdMatch[1]) || (pathIdMatch && pathIdMatch[1]) || "";
+  return sharedExtractDriveFileId(url);
 }
 
 function extractDriveResourceKey(url) {
@@ -960,12 +723,7 @@ function getGiftAccountCategory(account) {
 }
 
 function getGiftProviderMeta(account) {
-  const category = getGiftAccountCategory(account);
-  const catalog = category === "ewallet" ? EWALLET_CATALOG : BANK_CATALOG;
-  const rawCode = getGiftProviderCode(account);
-  if (rawCode && catalog[rawCode]) return catalog[rawCode];
-
-  return findGiftProviderByName(catalog, getGiftProviderName(account));
+  return sharedGetGiftProviderMeta(account);
 }
 
 function createGiftHead(bankName, logoUrl) {
