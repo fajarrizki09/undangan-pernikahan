@@ -215,6 +215,49 @@ h3 {
   font-size: 0.88rem;
 }
 
+.admin-action-meta {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+
+.admin-dirty-state {
+  margin: 0;
+  width: max-content;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.admin-dirty-state.is-clean {
+  color: #5d7052;
+  background: #eef6e8;
+}
+
+.admin-dirty-state.is-dirty {
+  color: #8a5836;
+  background: #fff0df;
+}
+
+.draft-restore-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-color: #e0ba89;
+  background: linear-gradient(135deg, #fff8ed, #fffdfb);
+}
+
+.draft-restore-banner[hidden] {
+  display: none;
+}
+
+.draft-restore-text {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
 /* ==========================================================================
    Forms
    ========================================================================== */
@@ -323,6 +366,64 @@ textarea:focus,
   min-height: 1.4rem;
   margin: 8px 0 0;
   color: var(--muted);
+}
+
+.toast-root {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 20;
+  display: grid;
+  gap: 10px;
+  width: min(360px, calc(100vw - 36px));
+  pointer-events: none;
+}
+
+.admin-toast {
+  border: 1px solid rgba(228, 203, 192, 0.92);
+  border-radius: 16px;
+  padding: 12px 14px;
+  color: var(--ink);
+  background: rgba(255, 253, 251, 0.96);
+  box-shadow: 0 16px 34px rgba(76, 48, 34, 0.16);
+  backdrop-filter: blur(10px);
+  animation: toast-in 0.2s ease;
+}
+
+.admin-toast.is-success {
+  border-color: #cddfbf;
+}
+
+.admin-toast.is-error {
+  border-color: #e6b8aa;
+}
+
+.admin-toast.is-info {
+  border-color: #dec9af;
+}
+
+.admin-toast-title {
+  margin: 0;
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+
+.admin-toast-message {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ==========================================================================
@@ -565,6 +666,15 @@ textarea:focus,
 
   .admin-action-bar {
     top: 76px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-action-meta {
+    justify-items: start;
+  }
+
+  .draft-restore-banner {
     align-items: flex-start;
     flex-direction: column;
   }

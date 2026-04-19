@@ -53,8 +53,22 @@
         <button id="btnPreviewToggle" class="btn btn-ghost" type="button">Lihat Preview</button>
         <button id="btnScrollTop" class="btn btn-ghost" type="button">Scroll ke Atas</button>
       </div>
-      <p class="admin-action-note">Draft preview bisa dilihat tanpa simpan ke server.</p>
+      <div class="admin-action-meta">
+        <p class="admin-action-note">Draft preview bisa dilihat tanpa simpan ke server.</p>
+        <p class="admin-dirty-state is-clean" id="dirtyState">Semua perubahan tersimpan</p>
+      </div>
       <p class="status" id="statusConfig"></p>
+    </section>
+
+    <section id="draftRestoreBanner" class="card draft-restore-banner" hidden>
+      <div>
+        <p class="section-label">Draft Lokal</p>
+        <p class="draft-restore-text" id="draftRestoreText">Ada draft lokal yang belum disimpan.</p>
+      </div>
+      <div class="admin-action-group">
+        <button id="btnRestoreDraft" class="btn" type="button">Pulihkan Draft</button>
+        <button id="btnDiscardDraft" class="btn btn-ghost" type="button">Buang Draft</button>
+      </div>
     </section>
 
     <section id="previewPanel" class="card admin-preview-panel" hidden>
@@ -568,9 +582,11 @@
     </section>
   </main>
 
+  <div id="toastRoot" class="toast-root" aria-live="polite" aria-atomic="true"></div>
+
   <script src="config.js"></script>
   <script src="js/admin/guest.js"></script>
   <script src="js/admin/rsvp.js"></script>
-  <script type="module" src="admin.js"></script>
+  <script src="admin.js"></script>
 </body>
 </html>

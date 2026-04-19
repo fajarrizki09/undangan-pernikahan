@@ -6,6 +6,7 @@ import { normalizeMusicPlaybackMode, normalizeMusicPlaylist } from "./schema/mus
 export function createInitialWeddingConfig(defaultConfig = {}) {
   return {
     ...defaultConfig,
+    invitationBaseUrl: String(defaultConfig.invitationBaseUrl || "").trim(),
     akad: { ...(defaultConfig.akad || {}) },
     resepsi: { ...(defaultConfig.resepsi || {}) },
     loveStoryPhotos: cleanPhotoArray(defaultConfig.loveStoryPhotos),
@@ -51,6 +52,7 @@ export function mergeWeddingConfig(baseConfig = {}, incomingConfig = {}, default
   const merged = {
     ...baseConfig,
     ...incomingConfig,
+    invitationBaseUrl: String(incomingConfig.invitationBaseUrl || baseConfig.invitationBaseUrl || defaultConfig.invitationBaseUrl || "").trim(),
     backgroundMusicUrl: incomingMusicUrl || baseMusicUrl,
     musicPlaybackMode: normalizeMusicPlaybackMode(
       incomingConfig.musicPlaybackMode || baseConfig.musicPlaybackMode || defaultConfig.musicPlaybackMode || "ordered"

@@ -1,29 +1,276 @@
-import { createAdminApiClient } from "./js/admin/api.js";
-import {
-  BANK_OPTIONS as SHARED_BANK_OPTIONS,
-  EWALLET_OPTIONS as SHARED_EWALLET_OPTIONS
-} from "./js/shared/catalogs.js";
-import { extractDriveFileId as sharedExtractDriveFileId, extractDriveResourceKey, isLikelyDriveFileId as sharedIsLikelyDriveFileId } from "./js/shared/drive.js";
-import { cleanPhotoArray as sharedCleanPhotoArray, clampPercent as sharedClampPercent, normalizeBoolean as sharedNormalizeBoolean } from "./js/shared/utils.js";
-import { normalizeGalleryMode as sharedNormalizeGalleryMode, normalizeGalleryPhotoFocusMap as sharedNormalizeGalleryPhotoFocusMap, normalizeGalleryStyle as sharedNormalizeGalleryStyle } from "./js/shared/schema/gallery.js";
-import {
-  createDefaultGiftAccount as sharedCreateDefaultGiftAccount,
-  getBankOptionByCode as sharedGetBankOptionByCode,
-  getBankOptionByName as sharedGetBankOptionByName,
-  getEwalletOptionByCode as sharedGetEwalletOptionByCode,
-  getEwalletOptionByName as sharedGetEwalletOptionByName,
-  getGiftProviderCode as sharedGetGiftProviderCode,
-  getGiftProviderName as sharedGetGiftProviderName,
-  inferGiftAccountType as sharedInferGiftAccountType,
-  normalizeGiftAccounts as sharedNormalizeGiftAccounts,
-  normalizeGiftType as sharedNormalizeGiftType
-} from "./js/shared/schema/gift.js";
-import { normalizeMusicPlaybackMode as sharedNormalizeMusicPlaybackMode, normalizeMusicPlaylist as sharedNormalizeMusicPlaylist, normalizeMusicTrack as sharedNormalizeMusicTrack } from "./js/shared/schema/music.js";
+const ADMIN_RSVP_API_URL = window.RSVP_API_URL || "";
+const ADMIN_LOCAL_CONFIG = window.ADMIN_CONFIG || {};
+const ADMIN_WEDDING_CONFIG = window.WEDDING_CONFIG || {};
 
-const RSVP_API_URL = window.RSVP_API_URL || "";
-const ADMIN_CONFIG = window.ADMIN_CONFIG || {};
-const WEDDING_CONFIG = window.WEDDING_CONFIG || {};
-const adminApiClient = createAdminApiClient({ rsvpApiUrl: RSVP_API_URL });
+const SHARED_BANK_OPTIONS = [
+  { code: "bca", name: "BCA", logoUrl: "assets/bank/bca.svg", aliases: ["bank central asia"] },
+  { code: "bri", name: "BRI", logoUrl: "assets/bank/bri.svg", aliases: ["bank rakyat indonesia"] },
+  { code: "bni", name: "BNI", logoUrl: "assets/bank/bni.svg", aliases: ["bank negara indonesia"] },
+  { code: "mandiri", name: "Mandiri", logoUrl: "assets/bank/mandiri.svg", aliases: ["bank mandiri"] },
+  { code: "bsi", name: "BSI", logoUrl: "assets/bank/bsi.svg", aliases: ["bank syariah indonesia"] },
+  { code: "cimb", name: "CIMB Niaga", logoUrl: "assets/bank/cimb.svg", aliases: ["cimb", "cimb niaga"] },
+  { code: "permata", name: "Permata", logoUrl: "assets/bank/permata.svg", aliases: ["permata bank"] },
+  { code: "btn", name: "BTN", logoUrl: "assets/bank/btn.svg", aliases: ["bank tabungan negara"] },
+  { code: "danamon", name: "Danamon", logoUrl: "assets/bank/danamon.svg", aliases: ["bank danamon"] },
+  { code: "panin", name: "Panin", logoUrl: "assets/bank/panin.svg", aliases: ["panin bank", "bank panin"] }
+];
+const SHARED_EWALLET_OPTIONS = [
+  { code: "dana", name: "DANA", logoUrl: "assets/ewallet/dana.svg", aliases: ["dana"] },
+  { code: "ovo", name: "OVO", logoUrl: "assets/ewallet/ovo.svg", aliases: ["ovo"] },
+  { code: "gopay", name: "GoPay", logoUrl: "assets/ewallet/gopay.svg", aliases: ["gopay", "go-pay"] },
+  { code: "shopeepay", name: "ShopeePay", logoUrl: "assets/ewallet/shopeepay.svg", aliases: ["shopeepay", "shopee pay"] },
+  { code: "linkaja", name: "LinkAja", logoUrl: "assets/ewallet/linkaja.svg", aliases: ["linkaja", "link aja"] },
+  { code: "sakuku", name: "Sakuku", logoUrl: "assets/ewallet/sakuku.svg", aliases: ["sakuku"] }
+];
+const SHARED_BANK_CATALOG = Object.fromEntries(SHARED_BANK_OPTIONS.map((item) => [item.code, item]));
+const SHARED_EWALLET_CATALOG = Object.fromEntries(SHARED_EWALLET_OPTIONS.map((item) => [item.code, item]));
+
+function createAdminApiClient(options = {}) {
+  const rsvpApiUrl = String(options.rsvpApiUrl || "").trim();
+  function getValidApiUrl() {
+    if (!rsvpApiUrl || rsvpApiUrl.includes("PASTE_WEB_APP_URL")) {
+      throw new Error("Isi RSVP_API_URL di config.js terlebih dahulu");
+    }
+    return rsvpApiUrl;
+  }
+  async function postApi(payload) {
+    const response = await fetch(getValidApiUrl(), {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message || "Request gagal");
+    return result;
+  }
+  async function getConfig() {
+    const url = new URL(getValidApiUrl());
+    url.searchParams.set("action", "config");
+    url.searchParams.set("_ts", String(Date.now()));
+    const response = await fetch(url.toString(), { cache: "no-store" });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message || "Gagal memuat config");
+    return result.config || {};
+  }
+  return { postApi, getConfig };
+}
+
+function parseJsonValue(input, fallback) {
+  if (typeof input !== "string") return input;
+  try {
+    return JSON.parse(input);
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function sharedCleanPhotoArray(input) {
+  if (!Array.isArray(input)) return [];
+  return input.map((item) => String(item || "").trim()).filter(Boolean);
+}
+
+function sharedNormalizeBoolean(value, fallback = false) {
+  if (typeof value === "boolean") return value;
+  const text = String(value || "").trim().toLowerCase();
+  if (!text) return fallback;
+  return ["1", "true", "yes", "y", "on"].includes(text);
+}
+
+function sharedClampPercent(value, fallback = 50) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return fallback;
+  return Math.max(0, Math.min(100, num));
+}
+
+function sharedExtractDriveFileId(value) {
+  const clean = String(value || "").trim();
+  if (!clean) return "";
+  const idFromQuery = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (idFromQuery && idFromQuery[1]) return idFromQuery[1];
+  const idFromPath = clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (idFromPath && idFromPath[1]) return idFromPath[1];
+  return "";
+}
+
+function sharedIsLikelyDriveFileId(value) {
+  const clean = String(value || "").trim();
+  return /^[a-zA-Z0-9_-]{20,}$/.test(clean);
+}
+
+function extractDriveResourceKey(value) {
+  const clean = String(value || "").trim();
+  if (!clean) return "";
+  const keyMatch = clean.match(/[?&]resourcekey=([a-zA-Z0-9._-]+)/i);
+  return (keyMatch && keyMatch[1]) || "";
+}
+
+function sharedNormalizeGalleryMode(value) {
+  return String(value || "").toLowerCase() === "carousel" ? "carousel" : "grid";
+}
+
+function sharedNormalizeGalleryStyle(value) {
+  const style = String(value || "").toLowerCase();
+  if (["elegant", "soft", "polaroid", "clean"].includes(style)) return style;
+  return "elegant";
+}
+
+function sharedNormalizeGalleryPhotoFocusMap(input) {
+  const source = parseJsonValue(input, {});
+  if (!source || typeof source !== "object" || Array.isArray(source)) return {};
+  const normalized = {};
+  Object.keys(source).forEach((rawKey) => {
+    const key = String(rawKey || "").trim();
+    if (!key) return;
+    const item = source[rawKey];
+    if (!item || typeof item !== "object") return;
+    normalized[key] = {
+      x: sharedClampPercent(item.x, 50),
+      y: sharedClampPercent(item.y, 50)
+    };
+  });
+  return normalized;
+}
+
+function findProviderOptionByCode(options, code) {
+  const clean = String(code || "").trim().toLowerCase();
+  return options.find((item) => item.code === clean) || null;
+}
+
+function findProviderOptionByName(options, name) {
+  const clean = String(name || "").trim().toLowerCase();
+  if (!clean) return null;
+  return options.find((item) =>
+    item.name.toLowerCase() === clean
+    || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === clean))
+  ) || null;
+}
+
+function sharedNormalizeGiftType(value) {
+  const clean = String(value || "").trim().toLowerCase();
+  return clean === "ewallet" ? "ewallet" : "bank";
+}
+
+function sharedGetGiftProviderCode(account) {
+  return String(account && (account.providerCode || account.bankCode) || "").trim().toLowerCase();
+}
+
+function sharedGetGiftProviderName(account) {
+  return String(account && (account.providerName || account.bankName) || "").trim();
+}
+
+function sharedInferGiftAccountType(account) {
+  const explicit = String(account && (account.type || account.category) || "").trim().toLowerCase();
+  if (explicit === "bank" || explicit === "ewallet") return explicit;
+  const source = `${sharedGetGiftProviderCode(account)} ${sharedGetGiftProviderName(account)}`.toLowerCase();
+  const ewalletKeywords = ["dana", "ovo", "gopay", "go-pay", "shopeepay", "shopee pay", "linkaja", "link aja", "sakuku"];
+  return ewalletKeywords.some((keyword) => source.includes(keyword)) ? "ewallet" : "bank";
+}
+
+function findProviderByName(catalog, name) {
+  const clean = String(name || "").trim().toLowerCase();
+  if (!clean) return null;
+  return Object.values(catalog).find((item) =>
+    item.name.toLowerCase() === clean
+    || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === clean))
+  ) || null;
+}
+
+function sharedNormalizeGiftAccounts(input, options = {}) {
+  const source = parseJsonValue(input, []);
+  if (!Array.isArray(source)) return [];
+  return source
+    .map((item) => {
+      const type = sharedInferGiftAccountType(item);
+      const providerCode = sharedGetGiftProviderCode(item);
+      const providerName = sharedGetGiftProviderName(item);
+      const catalog = type === "ewallet" ? SHARED_EWALLET_CATALOG : SHARED_BANK_CATALOG;
+      const providerMeta = (providerCode && catalog[providerCode]) || findProviderByName(catalog, providerName);
+      return {
+        type,
+        providerCode: providerMeta ? providerMeta.code : providerCode,
+        providerName: String((providerMeta && providerMeta.name) || providerName || "").trim(),
+        accountNumber: String(item && item.accountNumber || "").replace(/\D+/g, ""),
+        accountHolder: String(item && item.accountHolder || "").trim(),
+        logoUrl: String((providerMeta && providerMeta.logoUrl) || item && item.logoUrl || "").trim(),
+        isActive: sharedNormalizeBoolean(item && item.isActive, true)
+      };
+    })
+    .filter((item) => options.keepEmpty || item.accountNumber);
+}
+
+function sharedCreateDefaultGiftAccount() {
+  const fallbackBank = SHARED_BANK_OPTIONS[0];
+  return {
+    type: "bank",
+    providerCode: fallbackBank.code,
+    providerName: fallbackBank.name,
+    accountNumber: "",
+    accountHolder: "",
+    logoUrl: fallbackBank.logoUrl,
+    isActive: true
+  };
+}
+
+function sharedGetBankOptionByCode(code) {
+  return findProviderOptionByCode(SHARED_BANK_OPTIONS, code);
+}
+
+function sharedGetBankOptionByName(name) {
+  return findProviderOptionByName(SHARED_BANK_OPTIONS, name);
+}
+
+function sharedGetEwalletOptionByCode(code) {
+  return findProviderOptionByCode(SHARED_EWALLET_OPTIONS, code);
+}
+
+function sharedGetEwalletOptionByName(name) {
+  return findProviderOptionByName(SHARED_EWALLET_OPTIONS, name);
+}
+
+function sharedNormalizeMusicPlaybackMode(value) {
+  return String(value || "").trim().toLowerCase() === "shuffle" ? "shuffle" : "ordered";
+}
+
+function sharedNormalizeMusicTrack(item, index = 0, options = {}) {
+  const source = (item && typeof item === "object") ? item : {};
+  const sourceUrl = String(source.url || source.audioStreamUrl || source.downloadUrl || source.publicUrl || source.webUrl || "").trim();
+  const buildUrl = typeof options.buildUrl === "function" ? options.buildUrl : null;
+  const url = (buildUrl && buildUrl(source)) || sourceUrl;
+  const fallbackId = options.idPrefix ? `${options.idPrefix}-${index + 1}` : `track-${index + 1}`;
+  const id = String(source.id || source.fileId || source.trackId || fallbackId).trim() || fallbackId;
+  const fallbackTitle = sourceUrl ? sourceUrl.split("/").pop() : `Track ${index + 1}`;
+  return {
+    id,
+    title: String(source.title || source.name || fallbackTitle || `Track ${index + 1}`).trim(),
+    url,
+    sourceUrl,
+    isActive: source.isActive === undefined ? true : sharedNormalizeBoolean(source.isActive, true)
+  };
+}
+
+function sharedNormalizeMusicPlaylist(input, fallbackUrl = "", options = {}) {
+  const source = parseJsonValue(input, []);
+  let tracks = Array.isArray(source)
+    ? source
+      .map((item, index) => sharedNormalizeMusicTrack(item, index, options))
+      .filter((item) => item.url || item.sourceUrl)
+    : [];
+  const hasRealDriveTrack = tracks.some((item) => sharedIsLikelyDriveFileId(item.id) || sharedExtractDriveFileId(item.sourceUrl || item.url));
+  if (hasRealDriveTrack) {
+    tracks = tracks.filter((item) => item.id !== "default-track-1" && item.id !== "legacy-track-1");
+  }
+  if (!tracks.length && fallbackUrl) {
+    tracks = [sharedNormalizeMusicTrack({
+      id: "legacy-track-1",
+      title: "Musik Utama",
+      url: fallbackUrl,
+      isActive: true
+    }, 0, options)];
+  }
+  return tracks;
+}
+
+const adminApiClient = createAdminApiClient({ rsvpApiUrl: ADMIN_RSVP_API_URL });
 
 const fields = {
   brandInitials: document.getElementById("brandInitials"),
@@ -140,9 +387,16 @@ const btnActionLoad = document.getElementById("btnActionLoad");
 const btnPreviewToggle = document.getElementById("btnPreviewToggle");
 const btnPreviewRefresh = document.getElementById("btnPreviewRefresh");
 const btnScrollTop = document.getElementById("btnScrollTop");
+const dirtyState = document.getElementById("dirtyState");
+const draftRestoreBanner = document.getElementById("draftRestoreBanner");
+const draftRestoreText = document.getElementById("draftRestoreText");
+const btnRestoreDraft = document.getElementById("btnRestoreDraft");
+const btnDiscardDraft = document.getElementById("btnDiscardDraft");
+const toastRoot = document.getElementById("toastRoot");
 const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
 const ADMIN_PREVIEW_DRAFT_KEY = "wedding_admin_preview_draft_v1";
+const ADMIN_LOCAL_DRAFT_KEY = "wedding_admin_local_draft_v1";
 
 const BANK_OPTIONS = SHARED_BANK_OPTIONS;
 const EWALLET_OPTIONS = SHARED_EWALLET_OPTIONS;
@@ -166,6 +420,8 @@ if (btnAddGiftAccount) {
     current.push(createDefaultGiftAccount());
     renderGiftAccountsEditor(current);
     setStatus(statusGift, "Akun gift baru ditambahkan.");
+    markDirty();
+    schedulePreviewRefresh();
   });
 }
 if (btnLoadMusicLibrary) {
@@ -178,16 +434,20 @@ if (btnActionLoad) {
   btnActionLoad.addEventListener("click", loadConfigFromServer);
 }
 
-apiUrlInput.value = RSVP_API_URL;
+apiUrlInput.value = ADMIN_RSVP_API_URL;
 let selectedGalleryUrls = new Set();
 let galleryPhotoFocusMap = {};
 let giftAccountsDraft = [];
 let musicPlaylistDraft = [];
 let guestAdminModule = null;
 let rsvpAdminModule = null;
+let isDirty = false;
+let isHydratingForm = false;
+let autosaveTimer = null;
+let pendingLocalDraft = null;
 
 function getDefaultInvitationBaseUrl() {
-  const fromConfig = (ADMIN_CONFIG && ADMIN_CONFIG.invitationBaseUrl) || "";
+  const fromConfig = (ADMIN_LOCAL_CONFIG && ADMIN_LOCAL_CONFIG.invitationBaseUrl) || "";
   if (fromConfig.trim()) return fromConfig.trim();
   const path = String(window.location.pathname || "/");
   if (/\/admin\.html?$/i.test(path)) {
@@ -211,6 +471,15 @@ function loadSavedInvitationBaseUrl() {
   }
 
   invitationBaseUrlInput.value = getDefaultInvitationBaseUrl();
+}
+
+function applyInvitationBaseUrl(value, shouldPersist = true) {
+  const clean = String(value || "").trim();
+  if (!clean) return false;
+  invitationBaseUrlInput.value = clean;
+  if (shouldPersist) saveInvitationBaseUrl(clean);
+  refreshGuestViews();
+  return true;
 }
 
 function saveInvitationBaseUrl(value) {
@@ -274,6 +543,126 @@ function setStatus(el, message) {
   el.textContent = message;
 }
 
+function showToast(title, message = "", type = "info") {
+  if (!toastRoot) return;
+  const toast = document.createElement("article");
+  toast.className = `admin-toast is-${type}`;
+
+  const titleEl = document.createElement("p");
+  titleEl.className = "admin-toast-title";
+  titleEl.textContent = title;
+  toast.appendChild(titleEl);
+
+  if (message) {
+    const messageEl = document.createElement("p");
+    messageEl.className = "admin-toast-message";
+    messageEl.textContent = message;
+    toast.appendChild(messageEl);
+  }
+
+  toastRoot.appendChild(toast);
+  window.setTimeout(() => {
+    toast.remove();
+  }, 3600);
+}
+
+function updateDirtyStateLabel() {
+  if (!dirtyState) return;
+  dirtyState.classList.toggle("is-dirty", isDirty);
+  dirtyState.classList.toggle("is-clean", !isDirty);
+  dirtyState.textContent = isDirty ? "Belum disimpan" : "Semua perubahan tersimpan";
+}
+
+function readLocalDraft() {
+  try {
+    const raw = localStorage.getItem(ADMIN_LOCAL_DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || !parsed.data) return null;
+    return parsed;
+  } catch (error) {
+    return null;
+  }
+}
+
+function writeLocalDraft() {
+  try {
+    localStorage.setItem(ADMIN_LOCAL_DRAFT_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      data: readConfigFromForm()
+    }));
+  } catch (error) {
+    // Abaikan jika localStorage penuh/terblokir.
+  }
+}
+
+function clearLocalDraft() {
+  pendingLocalDraft = null;
+  try {
+    localStorage.removeItem(ADMIN_LOCAL_DRAFT_KEY);
+  } catch (error) {
+    // Abaikan jika localStorage tidak tersedia.
+  }
+  if (draftRestoreBanner) draftRestoreBanner.hidden = true;
+}
+
+function scheduleLocalDraftAutosave() {
+  if (isHydratingForm) return;
+  if (autosaveTimer) window.clearTimeout(autosaveTimer);
+  autosaveTimer = window.setTimeout(() => {
+    writeLocalDraft();
+  }, 650);
+}
+
+function markDirty() {
+  if (isHydratingForm) return;
+  isDirty = true;
+  updateDirtyStateLabel();
+  scheduleLocalDraftAutosave();
+}
+
+function markClean(clearDraft = true) {
+  isDirty = false;
+  updateDirtyStateLabel();
+  if (clearDraft) clearLocalDraft();
+}
+
+function isConfigEditTarget(target) {
+  if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) return false;
+  if (target instanceof HTMLInputElement && target.type === "file") return false;
+  if (target === adminKeyInput || target === apiUrlInput || target === invitationBaseUrlInput) return false;
+  const section = target.closest(".admin-panel-section");
+  if (!section) return false;
+  return section.id !== "tamuRsvpCard";
+}
+
+function formatDraftTime(timestamp) {
+  const date = new Date(Number(timestamp || 0));
+  if (Number.isNaN(date.getTime())) return "";
+  try {
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(date);
+  } catch (error) {
+    return "";
+  }
+}
+
+function showDraftRestoreBanner(draft) {
+  pendingLocalDraft = draft;
+  if (!draftRestoreBanner) return;
+  const timeText = formatDraftTime(draft && draft.savedAt);
+  if (draftRestoreText) {
+    draftRestoreText.textContent = timeText
+      ? `Ada draft lokal dari ${timeText} yang belum disimpan ke server.`
+      : "Ada draft lokal yang belum disimpan ke server.";
+  }
+  draftRestoreBanner.hidden = false;
+}
+
 function setActiveAdminSection(targetId) {
   const safeTarget = String(targetId || "").trim();
   if (!safeTarget) return;
@@ -312,10 +701,12 @@ function writePreviewDraftToStorage() {
 }
 
 let previewRefreshTimer = null;
+let previewHasPendingDraft = false;
 
 function refreshPreviewFrame(forceReload = false) {
   if (!previewFrame) return;
   writePreviewDraftToStorage();
+  previewHasPendingDraft = false;
 
   if (!previewFrame.src || forceReload) {
     const previewUrl = new URL(getAdminPreviewUrl());
@@ -338,11 +729,10 @@ function schedulePreviewRefresh() {
     clearTimeout(previewRefreshTimer);
   }
   previewRefreshTimer = window.setTimeout(() => {
-    if (!previewPanel || previewPanel.hidden) {
-      writePreviewDraftToStorage();
-      return;
-    }
-    refreshPreviewFrame();
+    writePreviewDraftToStorage();
+    if (!previewPanel || previewPanel.hidden) return;
+    previewHasPendingDraft = true;
+    setStatus(statusConfig, "Draft preview diperbarui. Klik Refresh Preview untuk memuat ulang tampilan.");
   }, 420);
 }
 
@@ -354,7 +744,7 @@ function togglePreviewPanel(forceOpen) {
     btnPreviewToggle.textContent = shouldOpen ? "Sembunyikan Preview" : "Lihat Preview";
   }
   if (shouldOpen) {
-    refreshPreviewFrame(!previewFrame.src);
+    refreshPreviewFrame(!previewFrame.src || previewHasPendingDraft);
     previewPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
@@ -416,6 +806,8 @@ function moveMusicTrack(index, direction) {
   next[nextIndex] = temp;
   musicPlaylistDraft = next;
   renderMusicLibraryEditor();
+  markDirty();
+  schedulePreviewRefresh();
 }
 
 function renderMusicLibraryEditor() {
@@ -455,6 +847,8 @@ function renderMusicLibraryEditor() {
     activeInput.addEventListener("change", () => {
       musicPlaylistDraft[index].isActive = activeInput.checked;
       syncBackgroundMusicField();
+      markDirty();
+      schedulePreviewRefresh();
     });
     const activeText = document.createElement("span");
     activeText.textContent = "Aktif";
@@ -471,6 +865,8 @@ function renderMusicLibraryEditor() {
     titleInput.addEventListener("input", () => {
       musicPlaylistDraft[index].title = titleInput.value.trim();
       title.textContent = musicPlaylistDraft[index].title || `Track ${index + 1}`;
+      markDirty();
+      schedulePreviewRefresh();
     });
 
     const controls = document.createElement("div");
@@ -505,6 +901,8 @@ function renderMusicLibraryEditor() {
       musicPlaylistDraft = musicPlaylistDraft.filter((_, itemIndex) => itemIndex !== index);
       syncBackgroundMusicField();
       renderMusicLibraryEditor();
+      markDirty();
+      schedulePreviewRefresh();
     });
 
     controls.appendChild(upBtn);
@@ -519,7 +917,8 @@ function renderMusicLibraryEditor() {
   });
 }
 
-async function loadMusicLibrary() {
+async function loadMusicLibrary(options = {}) {
+  const markAsDirty = options.markAsDirty !== false;
   try {
     const adminKey = getAdminKeyOrThrow();
     setStatus(statusMusic, "Memuat library musik dari Drive...");
@@ -541,6 +940,10 @@ async function loadMusicLibrary() {
     musicPlaylistDraft = existing;
     renderMusicLibraryEditor();
     setStatus(statusMusic, `Library musik dimuat (${libraryTracks.length} file audio ditemukan).`);
+    if (markAsDirty) {
+      markDirty();
+      schedulePreviewRefresh();
+    }
   } catch (error) {
     setStatus(statusMusic, `Error: ${error.message}`);
   }
@@ -761,6 +1164,8 @@ function renderGiftAccountsEditor(accounts) {
         logoInput.value = bankMeta.logoUrl;
       }
       setStatus(statusGift, `Bank terdeteksi: ${bankMeta.name} (silakan verifikasi).`);
+      markDirty();
+      schedulePreviewRefresh();
     });
 
     const removeBtn = document.createElement("button");
@@ -772,6 +1177,8 @@ function renderGiftAccountsEditor(accounts) {
       next.splice(index, 1);
       renderGiftAccountsEditor(next.length ? next : [createDefaultGiftAccount()]);
       setStatus(statusGift, "Akun gift dihapus dari editor. Klik Simpan agar permanen.");
+      markDirty();
+      schedulePreviewRefresh();
     });
 
     controls.appendChild(detectBtn);
@@ -931,6 +1338,8 @@ function generateHeroDatePlaceFromInputs() {
     updateEventStartIsoPreview();
   }
   setStatus(statusGallery, "Tanggal hero berhasil digenerate.");
+  markDirty();
+  schedulePreviewRefresh();
 }
 
 function parseNonNegativeNumber(value) {
@@ -989,7 +1398,9 @@ function setGalleryPhotoFocus(url, x, y) {
 function updateGalleryModeFields() {
   const isCarousel = normalizeGalleryMode(fields.galleryMode.value) === "carousel";
   fields.galleryAutoplaySec.disabled = !isCarousel;
-  if (!isCarousel) {
+  if (isCarousel && !String(fields.galleryAutoplaySec.value || "").trim()) {
+    fields.galleryAutoplaySec.value = "3.5";
+  } else if (!isCarousel) {
     fields.galleryAutoplaySec.value = "";
   }
 }
@@ -1025,6 +1436,7 @@ function readConfigFromForm() {
   }));
 
   return {
+    invitationBaseUrl: invitationBaseUrlInput.value.trim(),
     brandInitials: fields.brandInitials.value.trim(),
     seoTitle: fields.seoTitle.value.trim(),
     seoDescription: fields.seoDescription.value.trim(),
@@ -1080,6 +1492,32 @@ function readConfigFromForm() {
   };
 }
 
+function validateConfigBeforeSave(config) {
+  const errors = [];
+  if (!String(config.invitationBaseUrl || "").trim()) errors.push("Base URL undangan wajib diisi.");
+  if (!String(config.brideShortName || "").trim()) errors.push("Nama pendek mempelai wanita wajib diisi.");
+  if (!String(config.groomShortName || "").trim()) errors.push("Nama pendek mempelai pria wajib diisi.");
+  if (!String(config.brideFullName || "").trim()) errors.push("Nama lengkap mempelai wanita wajib diisi.");
+  if (!String(config.groomFullName || "").trim()) errors.push("Nama lengkap mempelai pria wajib diisi.");
+  if (!String(config.heroDatePlace || "").trim()) errors.push("Tanggal & lokasi hero wajib diisi.");
+  if (!String(config.eventStartISO || config.weddingDateISO || "").trim()) errors.push("Tanggal acara utama wajib diisi.");
+
+  if (config.giftEnabled) {
+    const activeGiftAccounts = normalizeGiftAccounts(config.giftAccounts).filter((item) => item.isActive && item.accountNumber);
+    if (!activeGiftAccounts.length) {
+      errors.push("Section Gift aktif, tapi belum ada akun gift aktif yang bernomor.");
+    }
+  }
+
+  const loopStart = Number(config.musicLoopStartSec || 0);
+  const loopEnd = Number(config.musicLoopEndSec || 0);
+  if (loopStart && loopEnd && loopEnd <= loopStart) {
+    errors.push("Loop musik selesai harus lebih besar dari detik mulai.");
+  }
+
+  return errors;
+}
+
 function cleanPhotoArray(input) {
   return sharedCleanPhotoArray(input);
 }
@@ -1088,7 +1526,7 @@ function healMisplacedPhotoConfig(config) {
   const source = (config && typeof config === "object") ? config : {};
   const storyRaw = cleanPhotoArray(source.loveStoryPhotos);
   const galleryRaw = cleanPhotoArray(source.galleryPhotos);
-  const defaultStory = cleanPhotoArray((WEDDING_CONFIG && WEDDING_CONFIG.loveStoryPhotos) || []).slice(0, 3);
+  const defaultStory = cleanPhotoArray((ADMIN_WEDDING_CONFIG && ADMIN_WEDDING_CONFIG.loveStoryPhotos) || []).slice(0, 3);
 
   const likelyShiftedColumn = galleryRaw.length === 0 && storyRaw.length > 3;
   if (!likelyShiftedColumn) return source;
@@ -1101,9 +1539,13 @@ function healMisplacedPhotoConfig(config) {
 }
 
 function fillForm(config) {
+  isHydratingForm = true;
   const safeConfig = healMisplacedPhotoConfig(config || {});
+  if (safeConfig.invitationBaseUrl) {
+    applyInvitationBaseUrl(safeConfig.invitationBaseUrl);
+  }
   galleryPhotoFocusMap = normalizeGalleryPhotoFocusMap(
-    safeConfig.galleryPhotoFocus || (WEDDING_CONFIG && WEDDING_CONFIG.galleryPhotoFocus) || {}
+    safeConfig.galleryPhotoFocus || (ADMIN_WEDDING_CONFIG && ADMIN_WEDDING_CONFIG.galleryPhotoFocus) || {}
   );
 
   fields.brandInitials.value = safeConfig.brandInitials || "";
@@ -1158,7 +1600,7 @@ function fillForm(config) {
   fields.hadithReference.value = safeConfig.hadithReference || "";
   fields.marriageDoaText.value = safeConfig.marriageDoaText || "";
   fields.marriageDoaReference.value = safeConfig.marriageDoaReference || "";
-  const fallbackStoryItems = Array.isArray(WEDDING_CONFIG.loveStoryItems) ? WEDDING_CONFIG.loveStoryItems : [];
+  const fallbackStoryItems = Array.isArray(ADMIN_WEDDING_CONFIG.loveStoryItems) ? ADMIN_WEDDING_CONFIG.loveStoryItems : [];
   const storyItems = Array.isArray(safeConfig.loveStoryItems) && safeConfig.loveStoryItems.length
     ? safeConfig.loveStoryItems
     : fallbackStoryItems;
@@ -1172,23 +1614,24 @@ function fillForm(config) {
   fields.loveStoryPhotos.value = Array.isArray(safeConfig.loveStoryPhotos) ? safeConfig.loveStoryPhotos.slice(0, 3).join("\n") : "";
   fields.galleryPhotos.value = Array.isArray(safeConfig.galleryPhotos) ? safeConfig.galleryPhotos.join("\n") : "";
   syncSelectedGalleryUrls(getGalleryUrls());
-  fields.galleryMode.value = normalizeGalleryMode(safeConfig.galleryMode || (WEDDING_CONFIG.galleryMode || "grid"));
+  fields.galleryMode.value = normalizeGalleryMode(safeConfig.galleryMode || (ADMIN_WEDDING_CONFIG.galleryMode || "grid"));
   fields.galleryMaxItems.value = safeConfig.galleryMaxItems || "";
   fields.galleryAutoplaySec.value = safeConfig.galleryAutoplaySec || "";
-  fields.galleryStyle.value = normalizeGalleryStyle(safeConfig.galleryStyle || (WEDDING_CONFIG.galleryStyle || "elegant"));
-  fields.giftEnabled.checked = normalizeBoolean(safeConfig.giftEnabled, normalizeBoolean(WEDDING_CONFIG.giftEnabled, false));
-  fields.giftSectionTitle.value = String(safeConfig.giftSectionTitle || WEDDING_CONFIG.giftSectionTitle || "Wedding Gift");
+  fields.galleryStyle.value = normalizeGalleryStyle(safeConfig.galleryStyle || (ADMIN_WEDDING_CONFIG.galleryStyle || "elegant"));
+  fields.giftEnabled.checked = normalizeBoolean(safeConfig.giftEnabled, normalizeBoolean(ADMIN_WEDDING_CONFIG.giftEnabled, false));
+  fields.giftSectionTitle.value = String(safeConfig.giftSectionTitle || ADMIN_WEDDING_CONFIG.giftSectionTitle || "Wedding Gift");
   fields.giftSectionSubtitle.value = String(
-    safeConfig.giftSectionSubtitle || WEDDING_CONFIG.giftSectionSubtitle || "Doa restu Anda adalah hadiah terindah."
+    safeConfig.giftSectionSubtitle || ADMIN_WEDDING_CONFIG.giftSectionSubtitle || "Doa restu Anda adalah hadiah terindah."
   );
   renderGiftAccountsEditor(
     normalizeGiftAccounts(
-      safeConfig.giftAccounts !== undefined ? safeConfig.giftAccounts : (WEDDING_CONFIG.giftAccounts || [])
+      safeConfig.giftAccounts !== undefined ? safeConfig.giftAccounts : (ADMIN_WEDDING_CONFIG.giftAccounts || [])
     )
   );
   updateGalleryModeFields();
   renderGalleryPreview();
   writePreviewDraftToStorage();
+  isHydratingForm = false;
 }
 
 async function postApi(payload) {
@@ -1230,12 +1673,20 @@ rsvpAdminModule = window.WeddingRsvpAdminModule.createRsvpAdminModule({
   getAdminKeyOrThrow,
   setStatus,
   postApi,
-  rsvpApiUrl: RSVP_API_URL
+  rsvpApiUrl: ADMIN_RSVP_API_URL
 });
 
-async function loadConfigFromServer() {
+async function loadConfigFromServer(options = {}) {
+  const promptBeforeOverwrite = options.promptBeforeOverwrite !== false;
+  const clearDraftAfterLoad = options.clearDraftAfterLoad !== false;
   try {
-    if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
+    if (promptBeforeOverwrite && isDirty && !window.confirm("Ada perubahan lokal yang belum disimpan. Muat dari server dan timpa form sekarang?")) {
+      return;
+    }
+    if (promptBeforeOverwrite && !isDirty && pendingLocalDraft && !window.confirm("Ada draft lokal yang belum dipulihkan. Muat dari server dan buang draft lokal?")) {
+      return;
+    }
+    if (!ADMIN_RSVP_API_URL || ADMIN_RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
       throw new Error("Isi RSVP_API_URL di config.js terlebih dahulu");
     }
 
@@ -1243,9 +1694,12 @@ async function loadConfigFromServer() {
     const config = await adminApiClient.getConfig();
     fillForm(config);
     setStatus(statusConfig, "Konfigurasi berhasil dimuat");
+    markClean(clearDraftAfterLoad);
+    showToast("Config dimuat", "Data terbaru dari server sudah masuk ke form.", "success");
     schedulePreviewRefresh();
   } catch (error) {
     setStatus(statusConfig, `Error: ${error.message}`);
+    showToast("Gagal memuat config", error.message, "error");
   }
 }
 
@@ -1253,6 +1707,13 @@ async function saveConfigToServer() {
   try {
     const adminKey = getAdminKeyOrThrow();
     const config = readConfigFromForm();
+    const validationErrors = validateConfigBeforeSave(config);
+    if (validationErrors.length) {
+      const message = validationErrors.slice(0, 3).join(" ");
+      setStatus(statusConfig, `Validasi gagal: ${message}`);
+      showToast("Validasi belum lolos", validationErrors[0], "error");
+      return;
+    }
 
     setStatus(statusConfig, "Menyimpan konfigurasi...");
     await postApi({
@@ -1262,10 +1723,13 @@ async function saveConfigToServer() {
     });
 
     setStatus(statusConfig, "Konfigurasi berhasil disimpan");
+    markClean();
+    showToast("Config tersimpan", "Perubahan sudah dikirim ke server.", "success");
     writePreviewDraftToStorage();
     schedulePreviewRefresh();
   } catch (error) {
     setStatus(statusConfig, `Error: ${error.message}`);
+    showToast("Gagal menyimpan", error.message, "error");
   }
 }
 
@@ -1404,6 +1868,8 @@ function applySelectedGalleryUrls() {
   syncSelectedGalleryUrls(finalUrls);
   renderGalleryPreview();
   setStatus(statusGallery, `${finalUrls.length} foto dipilih untuk ditampilkan di galeri.`);
+  markDirty();
+  schedulePreviewRefresh();
 }
 
 function getDrivePreviewCandidates(fileId) {
@@ -1531,8 +1997,11 @@ async function deleteSinglePhoto(url) {
     setStatus(statusGallery, alsoDeleteDrive
       ? "Foto berhasil dihapus dari Drive dan galeri."
       : "Foto berhasil dihapus dari galeri.");
+    markClean();
+    showToast("Foto dihapus", "Konfigurasi galeri sudah otomatis disimpan.", "success");
   } catch (error) {
     setStatus(statusGallery, `Error: ${error.message}`);
+    showToast("Gagal hapus foto", error.message, "error");
   }
 }
 
@@ -1597,6 +2066,8 @@ function renderGalleryPreview() {
     heroBtn.addEventListener("click", () => {
       if (setHeroFromGallery(url)) {
         setStatus(statusGallery, "Foto dipilih untuk background hero.");
+        markDirty();
+        schedulePreviewRefresh();
       }
     });
 
@@ -1608,6 +2079,8 @@ function renderGalleryPreview() {
       const ok = appendOneLoveStoryUrl(url);
       if (ok) {
         setStatus(statusGallery, "Foto ditambahkan ke Love Story.");
+        markDirty();
+        schedulePreviewRefresh();
       } else {
         setStatus(statusGallery, "Love Story sudah penuh (maksimal 3) atau foto sudah ada.");
       }
@@ -1639,6 +2112,8 @@ function renderGalleryPreview() {
       const next = getGalleryPhotoFocus(url);
       img.style.objectPosition = `${next.x}% ${next.y}%`;
       setStatus(statusGallery, `Posisi foto diatur ke X:${next.x}% Y:${next.y}%. Klik Simpan Konfigurasi untuk permanen.`);
+      markDirty();
+      schedulePreviewRefresh();
     });
 
     const removeBtn = document.createElement("button");
@@ -1723,8 +2198,11 @@ async function uploadPhotosToDrive() {
     if (autoStoryCount > 0) autoNotes.push(`Love Story +${autoStoryCount} foto`);
     const tail = autoNotes.length ? ` (${autoNotes.join(", ")})` : "";
     setStatus(statusGallery, `${uploadedUrls.length} foto berhasil diupload dan konfigurasi galeri otomatis disimpan${tail}`);
+    markClean();
+    showToast("Foto terupload", "Galeri dan konfigurasi sudah otomatis disimpan.", "success");
   } catch (error) {
     setStatus(statusGallery, `Error: ${error.message}`);
+    showToast("Upload foto gagal", error.message, "error");
   }
 }
 
@@ -1761,8 +2239,11 @@ async function uploadHeroPhotoToDrive() {
 
     if (heroPhotoFileInput) heroPhotoFileInput.value = "";
     setStatus(statusGallery, "Foto hero berhasil diupload, diset, dan disimpan.");
+    markClean();
+    showToast("Foto hero tersimpan", "Hero sudah memakai foto baru.", "success");
   } catch (error) {
     setStatus(statusGallery, `Error: ${error.message}`);
+    showToast("Upload hero gagal", error.message, "error");
   }
 }
 
@@ -1806,8 +2287,11 @@ async function uploadLoveStoryPhotosToDrive() {
 
     if (loveStoryPhotoFilesInput) loveStoryPhotoFilesInput.value = "";
     setStatus(statusGallery, `${uploadedUrls.length} foto love story berhasil diupload, diset, dan disimpan.`);
+    markClean();
+    showToast("Love Story tersimpan", "Foto love story baru sudah disimpan.", "success");
   } catch (error) {
     setStatus(statusGallery, `Error: ${error.message}`);
+    showToast("Upload love story gagal", error.message, "error");
   }
 }
 
@@ -1841,11 +2325,15 @@ async function deletePhotosFromDriveAndGallery() {
     const failedCount = Array.isArray(result.failed) ? result.failed.length : 0;
     if (failedCount > 0) {
       setStatus(statusGallery, `${deletedCount} foto dihapus. ${failedCount} foto gagal dihapus (cek izin/link).`);
+      showToast("Hapus foto sebagian", `${failedCount} foto gagal dihapus.`, "error");
     } else {
       setStatus(statusGallery, `${deletedCount} foto berhasil dihapus dari Drive dan galeri.`);
+      showToast("Foto dihapus", "Konfigurasi galeri sudah otomatis disimpan.", "success");
     }
+    markClean();
   } catch (error) {
     setStatus(statusGallery, `Error: ${error.message}`);
+    showToast("Hapus foto gagal", error.message, "error");
   }
 }
 
@@ -1900,8 +2388,11 @@ async function uploadMusicToDrive() {
 
     musicFileInput.value = "";
     setStatus(statusMusic, "Musik berhasil diupload dan konfigurasi tersimpan");
+    markClean();
+    showToast("Musik tersimpan", "Playlist dan konfigurasi sudah diperbarui.", "success");
   } catch (error) {
     setStatus(statusMusic, `Error: ${error.message}`);
+    showToast("Upload musik gagal", error.message, "error");
   }
 }
 
@@ -1941,18 +2432,24 @@ async function loadRsvps() {
   }
 }
 
-if (!RSVP_API_URL || RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
+if (!ADMIN_RSVP_API_URL || ADMIN_RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
   setStatus(statusConn, "Isi RSVP_API_URL di config.js agar admin panel aktif.");
 } else {
   setStatus(statusConn, "Terhubung. Konfigurasi server akan dimuat otomatis.");
 }
 
-fillForm(WEDDING_CONFIG);
+fillForm(ADMIN_WEDDING_CONFIG);
 loadSavedAdminKey();
 loadSavedInvitationBaseUrl();
 renderGalleryPreview();
 renderLoveStoryPreview();
 writePreviewDraftToStorage();
+markClean(false);
+
+const savedLocalDraft = readLocalDraft();
+if (savedLocalDraft) {
+  showDraftRestoreBanner(savedLocalDraft);
+}
 
 adminTabs.forEach((button) => {
   button.setAttribute("aria-selected", button.classList.contains("is-active") ? "true" : "false");
@@ -1976,17 +2473,44 @@ if (btnScrollTop) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
+if (btnRestoreDraft) {
+  btnRestoreDraft.addEventListener("click", () => {
+    if (!pendingLocalDraft || !pendingLocalDraft.data) return;
+    fillForm(pendingLocalDraft.data);
+    isDirty = true;
+    updateDirtyStateLabel();
+    writePreviewDraftToStorage();
+    schedulePreviewRefresh();
+    if (draftRestoreBanner) draftRestoreBanner.hidden = true;
+    showToast("Draft dipulihkan", "Cek kembali lalu klik Simpan untuk mengirim ke server.", "success");
+  });
+}
+if (btnDiscardDraft) {
+  btnDiscardDraft.addEventListener("click", () => {
+    clearLocalDraft();
+    showToast("Draft dibuang", "Draft lokal sudah dihapus.", "info");
+  });
+}
 
 document.addEventListener("input", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) return;
+  if (isConfigEditTarget(target)) markDirty();
   schedulePreviewRefresh();
 });
 
 document.addEventListener("change", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) return;
+  if (isConfigEditTarget(target)) markDirty();
   schedulePreviewRefresh();
+});
+
+window.addEventListener("beforeunload", (event) => {
+  if (!isDirty) return;
+  writeLocalDraft();
+  event.preventDefault();
+  event.returnValue = "";
 });
 
 adminKeyInput.addEventListener("change", () => {
@@ -2103,6 +2627,8 @@ if (btnHeroFromGallery) {
     }
     setHeroFromGallery(galleryUrls[0]);
     setStatus(statusGallery, "Hero background diisi dari foto galeri pertama.");
+    markDirty();
+    schedulePreviewRefresh();
   });
 }
 if (btnLoveStoryFromGallery) {
@@ -2113,11 +2639,16 @@ if (btnLoveStoryFromGallery) {
       return;
     }
     setStatus(statusGallery, `${count} foto Love Story diisi dari galeri.`);
+    markDirty();
+    schedulePreviewRefresh();
   });
 }
-if (RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
-  loadConfigFromServer();
+if (ADMIN_RSVP_API_URL && !ADMIN_RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
+  loadConfigFromServer({
+    promptBeforeOverwrite: false,
+    clearDraftAfterLoad: !savedLocalDraft
+  });
   loadGuests();
   loadRsvps();
-  loadMusicLibrary();
+  loadMusicLibrary({ markAsDirty: false });
 }
