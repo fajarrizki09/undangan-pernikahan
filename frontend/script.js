@@ -415,6 +415,37 @@ function normalizeBoolean(value, fallback = false) {
   return ["1", "true", "yes", "y", "on"].includes(text);
 }
 
+function normalizeGiftType(value) {
+  const clean = String(value || "").trim().toLowerCase();
+  return clean === "ewallet" ? "ewallet" : "bank";
+}
+
+function getGiftProviderCode(account) {
+  return String(account && (account.providerCode || account.bankCode) || "").trim().toLowerCase();
+}
+
+function getGiftProviderName(account) {
+  return String(account && (account.providerName || account.bankName) || "").trim();
+}
+
+function findGiftProviderByName(catalog, name) {
+  const clean = String(name || "").trim().toLowerCase();
+  if (!clean) return null;
+  return Object.values(catalog).find((item) =>
+    item.name.toLowerCase() === clean
+    || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === clean))
+  ) || null;
+}
+
+function inferGiftAccountType(account) {
+  const explicit = String(account && (account.type || account.category) || "").trim().toLowerCase();
+  if (explicit === "bank" || explicit === "ewallet") return explicit;
+
+  const source = `${getGiftProviderCode(account)} ${getGiftProviderName(account)}`.toLowerCase();
+  const ewalletKeywords = ["dana", "ovo", "gopay", "go-pay", "shopeepay", "shopee pay", "linkaja", "link aja", "sakuku"];
+  return ewalletKeywords.some((keyword) => source.includes(keyword)) ? "ewallet" : "bank";
+}
+
 function normalizeGiftAccounts(input) {
   let source = input;
   if (typeof source === "string") {
@@ -427,15 +458,22 @@ function normalizeGiftAccounts(input) {
   if (!Array.isArray(source)) return [];
 
   return source
-    .map((item) => ({
-      category: getGiftAccountCategory(item),
-      bankCode: String(item && item.bankCode || "").trim().toLowerCase(),
-      bankName: String(item && item.bankName || "").trim(),
-      accountNumber: String(item && item.accountNumber || "").replace(/\D+/g, ""),
-      accountHolder: String(item && item.accountHolder || "").trim(),
-      logoUrl: String(item && item.logoUrl || "").trim(),
-      isActive: normalizeBoolean(item && item.isActive, true)
-    }))
+    .map((item) => {
+      const type = inferGiftAccountType(item);
+      const providerCode = getGiftProviderCode(item);
+      const providerName = getGiftProviderName(item);
+      const catalog = type === "ewallet" ? EWALLET_CATALOG : BANK_CATALOG;
+      const providerMeta = (providerCode && catalog[providerCode]) || findGiftProviderByName(catalog, providerName);
+      return {
+        type,
+        providerCode: providerMeta ? providerMeta.code : providerCode,
+        providerName: String((providerMeta && providerMeta.name) || providerName || "").trim(),
+        accountNumber: String(item && item.accountNumber || "").replace(/\D+/g, ""),
+        accountHolder: String(item && item.accountHolder || "").trim(),
+        logoUrl: String((providerMeta && providerMeta.logoUrl) || item && item.logoUrl || "").trim(),
+        isActive: normalizeBoolean(item && item.isActive, true)
+      };
+    })
     .filter((item) => item.accountNumber);
 }
 
@@ -907,49 +945,27 @@ function applyCalendarLink() {
 }
 
 function getBankMeta(account) {
-  const code = String(account && account.bankCode || "").trim().toLowerCase();
+  const code = getGiftProviderCode(account);
   if (code && BANK_CATALOG[code]) return BANK_CATALOG[code];
-  const bankName = String(account && account.bankName || "").trim().toLowerCase();
-  if (bankName) {
-    const byName = Object.values(BANK_CATALOG).find((item) =>
-      item.name.toLowerCase() === bankName
-      || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === bankName))
-    );
-    if (byName) return byName;
-  }
-  return null;
+  return findGiftProviderByName(BANK_CATALOG, getGiftProviderName(account));
 }
 
-function getGiftLogoUrl(account, bankMeta) {
-  if (bankMeta && bankMeta.logoUrl) return bankMeta.logoUrl;
+function getGiftLogoUrl(account, providerMeta) {
+  if (providerMeta && providerMeta.logoUrl) return providerMeta.logoUrl;
   return String(account && account.logoUrl || "").trim();
 }
 
 function getGiftAccountCategory(account) {
-  if (String(account && account.category || "").trim().toLowerCase() === "ewallet") {
-    return "ewallet";
-  }
-  if (String(account && account.category || "").trim().toLowerCase() === "bank") {
-    return "bank";
-  }
-  const source = `${account && account.bankCode || ""} ${account && account.bankName || ""}`.toLowerCase();
-  const ewalletKeywords = ["dana", "ovo", "gopay", "go-pay", "shopeepay", "shopee pay", "linkaja", "link aja", "sakuku"];
-  return ewalletKeywords.some((keyword) => source.includes(keyword)) ? "ewallet" : "bank";
+  return normalizeGiftType(account && account.type || inferGiftAccountType(account));
 }
 
 function getGiftProviderMeta(account) {
   const category = getGiftAccountCategory(account);
   const catalog = category === "ewallet" ? EWALLET_CATALOG : BANK_CATALOG;
-  const rawCode = String(account && account.bankCode || "").trim().toLowerCase();
+  const rawCode = getGiftProviderCode(account);
   if (rawCode && catalog[rawCode]) return catalog[rawCode];
 
-  const rawName = String(account && account.bankName || "").trim().toLowerCase();
-  if (!rawName) return null;
-
-  return Object.values(catalog).find((item) =>
-    item.name.toLowerCase() === rawName
-    || (Array.isArray(item.aliases) && item.aliases.some((alias) => alias.toLowerCase() === rawName))
-  ) || null;
+  return findGiftProviderByName(catalog, getGiftProviderName(account));
 }
 
 function createGiftHead(bankName, logoUrl) {
@@ -1065,10 +1081,9 @@ function renderGiftSection() {
   if (!giftUiState.isExpanded) return;
   giftAccountsList.classList.toggle("is-single", (groupedAccounts[activeCategory] || []).length === 1);
   (groupedAccounts[activeCategory] || []).forEach((account) => {
-    const bankMeta = getBankMeta(account);
-    const providerMeta = getGiftProviderMeta(account) || bankMeta;
     const category = getGiftAccountCategory(account);
-    const providerName = String(account.bankName || (providerMeta && providerMeta.name) || (category === "ewallet" ? "E-Wallet" : "Bank")).trim();
+    const providerMeta = getGiftProviderMeta(account) || (category === "bank" ? getBankMeta(account) : null);
+    const providerName = String(account.providerName || (providerMeta && providerMeta.name) || (category === "ewallet" ? "E-Wallet" : "Bank")).trim();
     const logoUrl = getGiftLogoUrl(account, providerMeta);
     const card = document.createElement("article");
     card.className = "gift-account-card";
