@@ -67,6 +67,9 @@ const invitationBaseUrlInput = document.getElementById("invitationBaseUrl");
 
 const statusConn = document.getElementById("statusConn");
 const statusConfig = document.getElementById("statusConfig");
+const statusGallery = document.getElementById("statusGallery");
+const statusGift = document.getElementById("statusGift");
+const statusMusic = document.getElementById("statusMusic");
 const statusGuests = document.getElementById("statusGuests");
 const statusRsvps = document.getElementById("statusRsvps");
 
@@ -153,6 +156,7 @@ if (btnAddGiftAccount) {
     const current = readGiftAccountsFromEditor();
     current.push(createDefaultGiftAccount());
     renderGiftAccountsEditor(current);
+    setStatus(statusGift, "Akun gift baru ditambahkan.");
   });
 }
 if (btnLoadMusicLibrary) {
@@ -257,6 +261,7 @@ function getAdminKeyOrThrow() {
 }
 
 function setStatus(el, message) {
+  if (!el) return;
   el.textContent = message;
 }
 
@@ -565,7 +570,7 @@ function renderMusicLibraryEditor() {
 async function loadMusicLibrary() {
   try {
     const adminKey = getAdminKeyOrThrow();
-    setStatus(statusConfig, "Memuat library musik dari Drive...");
+    setStatus(statusMusic, "Memuat library musik dari Drive...");
     const result = await postApi({
       action: "listMusicLibrary",
       adminKey
@@ -583,9 +588,9 @@ async function loadMusicLibrary() {
 
     musicPlaylistDraft = existing;
     renderMusicLibraryEditor();
-    setStatus(statusConfig, `Library musik dimuat (${libraryTracks.length} file audio ditemukan).`);
+    setStatus(statusMusic, `Library musik dimuat (${libraryTracks.length} file audio ditemukan).`);
   } catch (error) {
-    setStatus(statusConfig, `Error: ${error.message}`);
+    setStatus(statusMusic, `Error: ${error.message}`);
   }
 }
 
@@ -850,7 +855,7 @@ function renderGiftAccountsEditor(accounts) {
     detectBtn.addEventListener("click", () => {
       const suggestion = suggestBankByAccountNumber(accountNumberInput.value);
       if (!suggestion) {
-        setStatus(statusConfig, "Bank tidak bisa dideteksi otomatis. Pilih manual.");
+        setStatus(statusGift, "Bank tidak bisa dideteksi otomatis. Pilih manual.");
         return;
       }
       const bankMeta = getBankOptionByCode(suggestion);
@@ -860,7 +865,7 @@ function renderGiftAccountsEditor(accounts) {
       if (!logoInput.value.trim()) {
         logoInput.value = bankMeta.logoUrl;
       }
-      setStatus(statusConfig, `Bank terdeteksi: ${bankMeta.name} (silakan verifikasi).`);
+      setStatus(statusGift, `Bank terdeteksi: ${bankMeta.name} (silakan verifikasi).`);
     });
 
     const removeBtn = document.createElement("button");
@@ -871,6 +876,7 @@ function renderGiftAccountsEditor(accounts) {
       const next = readGiftAccountsFromEditor();
       next.splice(index, 1);
       renderGiftAccountsEditor(next.length ? next : [createDefaultGiftAccount()]);
+      setStatus(statusGift, "Akun gift dihapus dari editor. Klik Simpan agar permanen.");
     });
 
     controls.appendChild(detectBtn);
@@ -1012,7 +1018,7 @@ function formatHeroDatePlace(startDate, endDate, city) {
 function generateHeroDatePlaceFromInputs() {
   const start = parseDateInput(fields.heroDateStart.value);
   if (!start) {
-    setStatus(statusConfig, "Isi Tanggal Hero Mulai dulu.");
+    setStatus(statusGallery, "Isi Tanggal Hero Mulai dulu.");
     return;
   }
 
@@ -1029,7 +1035,7 @@ function generateHeroDatePlaceFromInputs() {
     fields.eventStartDateTimeLocal.value = `${yyyy}-${mm}-${dd}T08:00`;
     updateEventStartIsoPreview();
   }
-  setStatus(statusConfig, "Tanggal hero berhasil digenerate.");
+  setStatus(statusGallery, "Tanggal hero berhasil digenerate.");
 }
 
 function parseNonNegativeNumber(value) {
@@ -1556,7 +1562,7 @@ function applySelectedGalleryUrls() {
   fields.galleryPhotos.value = finalUrls.join("\n");
   syncSelectedGalleryUrls(finalUrls);
   renderGalleryPreview();
-  setStatus(statusConfig, `${finalUrls.length} foto dipilih untuk ditampilkan di galeri.`);
+  setStatus(statusGallery, `${finalUrls.length} foto dipilih untuk ditampilkan di galeri.`);
 }
 
 function extractDriveFileId(url) {
@@ -1673,7 +1679,7 @@ async function deleteSinglePhoto(url) {
 
   try {
     const adminKey = getAdminKeyOrThrow();
-    setStatus(statusConfig, "Menghapus foto...");
+    setStatus(statusGallery, "Menghapus foto...");
 
     if (alsoDeleteDrive) {
       const result = await postApi({
@@ -1694,11 +1700,11 @@ async function deleteSinglePhoto(url) {
       config: readConfigFromForm()
     });
 
-    setStatus(statusConfig, alsoDeleteDrive
+    setStatus(statusGallery, alsoDeleteDrive
       ? "Foto berhasil dihapus dari Drive dan galeri."
       : "Foto berhasil dihapus dari galeri.");
   } catch (error) {
-    setStatus(statusConfig, `Error: ${error.message}`);
+    setStatus(statusGallery, `Error: ${error.message}`);
   }
 }
 
@@ -1762,7 +1768,7 @@ function renderGalleryPreview() {
     heroBtn.textContent = "Set Hero";
     heroBtn.addEventListener("click", () => {
       if (setHeroFromGallery(url)) {
-        setStatus(statusConfig, "Foto dipilih untuk background hero.");
+        setStatus(statusGallery, "Foto dipilih untuk background hero.");
       }
     });
 
@@ -1773,9 +1779,9 @@ function renderGalleryPreview() {
     storyBtn.addEventListener("click", () => {
       const ok = appendOneLoveStoryUrl(url);
       if (ok) {
-        setStatus(statusConfig, "Foto ditambahkan ke Love Story.");
+        setStatus(statusGallery, "Foto ditambahkan ke Love Story.");
       } else {
-        setStatus(statusConfig, "Love Story sudah penuh (maksimal 3) atau foto sudah ada.");
+        setStatus(statusGallery, "Love Story sudah penuh (maksimal 3) atau foto sudah ada.");
       }
     });
 
@@ -1792,19 +1798,19 @@ function renderGalleryPreview() {
       if (input === null) return;
       const parts = String(input).split(",").map((item) => item.trim());
       if (parts.length !== 2) {
-        setStatus(statusConfig, "Format posisi harus X,Y. Contoh: 50,35");
+        setStatus(statusGallery, "Format posisi harus X,Y. Contoh: 50,35");
         return;
       }
       const x = Number(parts[0]);
       const y = Number(parts[1]);
       if (!Number.isFinite(x) || !Number.isFinite(y)) {
-        setStatus(statusConfig, "Nilai posisi harus angka 0 sampai 100.");
+        setStatus(statusGallery, "Nilai posisi harus angka 0 sampai 100.");
         return;
       }
       setGalleryPhotoFocus(url, x, y);
       const next = getGalleryPhotoFocus(url);
       img.style.objectPosition = `${next.x}% ${next.y}%`;
-      setStatus(statusConfig, `Posisi foto diatur ke X:${next.x}% Y:${next.y}%. Klik Simpan Konfigurasi untuk permanen.`);
+      setStatus(statusGallery, `Posisi foto diatur ke X:${next.x}% Y:${next.y}%. Klik Simpan Konfigurasi untuk permanen.`);
     });
 
     const removeBtn = document.createElement("button");
@@ -1838,7 +1844,7 @@ async function uploadPhotosToDrive() {
     const tooLarge = files.find((file) => file.size > 8 * 1024 * 1024);
     if (tooLarge) throw new Error(`Ukuran file maksimal 8MB per foto. Terlalu besar: ${tooLarge.name}`);
 
-    setStatus(statusConfig, `Mengupload ${files.length} foto...`);
+    setStatus(statusGallery, `Mengupload ${files.length} foto...`);
 
     const payloadFiles = await Promise.all(
       files.map(async (file) => ({
@@ -1888,9 +1894,9 @@ async function uploadPhotosToDrive() {
     if (autoHero) autoNotes.push("Hero background terisi otomatis");
     if (autoStoryCount > 0) autoNotes.push(`Love Story +${autoStoryCount} foto`);
     const tail = autoNotes.length ? ` (${autoNotes.join(", ")})` : "";
-    setStatus(statusConfig, `${uploadedUrls.length} foto berhasil diupload dan konfigurasi galeri otomatis disimpan${tail}`);
+    setStatus(statusGallery, `${uploadedUrls.length} foto berhasil diupload dan konfigurasi galeri otomatis disimpan${tail}`);
   } catch (error) {
-    setStatus(statusConfig, `Error: ${error.message}`);
+    setStatus(statusGallery, `Error: ${error.message}`);
   }
 }
 
@@ -1901,7 +1907,7 @@ async function uploadHeroPhotoToDrive() {
     if (!file) throw new Error("Pilih 1 foto hero dulu");
     if (file.size > 8 * 1024 * 1024) throw new Error("Ukuran file hero maksimal 8MB");
 
-    setStatus(statusConfig, "Mengupload foto hero...");
+    setStatus(statusGallery, "Mengupload foto hero...");
 
     const result = await postApi({
       action: "uploadPhotos",
@@ -1926,9 +1932,9 @@ async function uploadHeroPhotoToDrive() {
     });
 
     if (heroPhotoFileInput) heroPhotoFileInput.value = "";
-    setStatus(statusConfig, "Foto hero berhasil diupload, diset, dan disimpan.");
+    setStatus(statusGallery, "Foto hero berhasil diupload, diset, dan disimpan.");
   } catch (error) {
-    setStatus(statusConfig, `Error: ${error.message}`);
+    setStatus(statusGallery, `Error: ${error.message}`);
   }
 }
 
@@ -1942,7 +1948,7 @@ async function uploadLoveStoryPhotosToDrive() {
     const tooLarge = files.find((file) => file.size > 8 * 1024 * 1024);
     if (tooLarge) throw new Error(`Ukuran file maksimal 8MB per foto. Terlalu besar: ${tooLarge.name}`);
 
-    setStatus(statusConfig, `Mengupload ${files.length} foto love story...`);
+    setStatus(statusGallery, `Mengupload ${files.length} foto love story...`);
 
     const payloadFiles = await Promise.all(
       files.map(async (file) => ({
@@ -1971,9 +1977,9 @@ async function uploadLoveStoryPhotosToDrive() {
     });
 
     if (loveStoryPhotoFilesInput) loveStoryPhotoFilesInput.value = "";
-    setStatus(statusConfig, `${uploadedUrls.length} foto love story berhasil diupload, diset, dan disimpan.`);
+    setStatus(statusGallery, `${uploadedUrls.length} foto love story berhasil diupload, diset, dan disimpan.`);
   } catch (error) {
-    setStatus(statusConfig, `Error: ${error.message}`);
+    setStatus(statusGallery, `Error: ${error.message}`);
   }
 }
 
@@ -1987,7 +1993,7 @@ async function deletePhotosFromDriveAndGallery() {
 
     if (!targetUrls.length) throw new Error("Isi minimal 1 URL foto yang ingin dihapus");
 
-    setStatus(statusConfig, `Menghapus ${targetUrls.length} foto dari Drive...`);
+    setStatus(statusGallery, `Menghapus ${targetUrls.length} foto dari Drive...`);
     const result = await postApi({
       action: "deletePhotos",
       adminKey,
@@ -2006,12 +2012,12 @@ async function deletePhotosFromDriveAndGallery() {
     const deletedCount = Number(result.deletedCount || 0);
     const failedCount = Array.isArray(result.failed) ? result.failed.length : 0;
     if (failedCount > 0) {
-      setStatus(statusConfig, `${deletedCount} foto dihapus. ${failedCount} foto gagal dihapus (cek izin/link).`);
+      setStatus(statusGallery, `${deletedCount} foto dihapus. ${failedCount} foto gagal dihapus (cek izin/link).`);
     } else {
-      setStatus(statusConfig, `${deletedCount} foto berhasil dihapus dari Drive dan galeri.`);
+      setStatus(statusGallery, `${deletedCount} foto berhasil dihapus dari Drive dan galeri.`);
     }
   } catch (error) {
-    setStatus(statusConfig, `Error: ${error.message}`);
+    setStatus(statusGallery, `Error: ${error.message}`);
   }
 }
 
@@ -2025,7 +2031,7 @@ async function uploadMusicToDrive() {
     if (!allowedAudio) throw new Error("File harus format audio (mp3/m4a/wav, dll)");
     if (file.size > 15 * 1024 * 1024) throw new Error("Ukuran file musik maksimal 15MB");
 
-    setStatus(statusConfig, "Mengupload musik...");
+    setStatus(statusMusic, "Mengupload musik...");
 
     const result = await postApi({
       action: "uploadMusic",
@@ -2065,9 +2071,9 @@ async function uploadMusicToDrive() {
     });
 
     musicFileInput.value = "";
-    setStatus(statusConfig, "Musik berhasil diupload dan konfigurasi tersimpan");
+    setStatus(statusMusic, "Musik berhasil diupload dan konfigurasi tersimpan");
   } catch (error) {
-    setStatus(statusConfig, `Error: ${error.message}`);
+    setStatus(statusMusic, `Error: ${error.message}`);
   }
 }
 
@@ -2264,21 +2270,21 @@ if (btnHeroFromGallery) {
   btnHeroFromGallery.addEventListener("click", () => {
     const galleryUrls = getGalleryUrls();
     if (!galleryUrls.length) {
-      setStatus(statusConfig, "Galeri kosong. Upload foto dulu.");
+      setStatus(statusGallery, "Galeri kosong. Upload foto dulu.");
       return;
     }
     setHeroFromGallery(galleryUrls[0]);
-    setStatus(statusConfig, "Hero background diisi dari foto galeri pertama.");
+    setStatus(statusGallery, "Hero background diisi dari foto galeri pertama.");
   });
 }
 if (btnLoveStoryFromGallery) {
   btnLoveStoryFromGallery.addEventListener("click", () => {
     const count = fillLoveStoryFromGallery();
     if (!count) {
-      setStatus(statusConfig, "Galeri kosong. Upload foto dulu.");
+      setStatus(statusGallery, "Galeri kosong. Upload foto dulu.");
       return;
     }
-    setStatus(statusConfig, `${count} foto Love Story diisi dari galeri.`);
+    setStatus(statusGallery, `${count} foto Love Story diisi dari galeri.`);
   });
 }
 if (RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL")) {
