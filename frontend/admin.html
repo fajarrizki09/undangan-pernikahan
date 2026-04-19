@@ -14,7 +14,7 @@
     <header>
       <p class="eyebrow">Admin Panel</p>
       <h1>Kelola Undangan Pernikahan</h1>
-      <p>Panel admin dibagi per blok agar identitas, acara, galeri, musik, gift, dan data tamu lebih gampang dirawat.</p>
+      <p>Panel admin dibagi per section: umum, acara, gift, tamu, galeri, dan musik agar lebih gampang dirawat.</p>
     </header>
 
     <section class="card">
@@ -37,13 +37,12 @@
     </section>
 
     <nav class="card admin-nav" aria-label="Navigasi admin">
-      <button type="button" class="admin-tab is-active" data-target="identitasCard">Identitas</button>
-      <button type="button" class="admin-tab" data-target="mempelaiCard">Mempelai</button>
+      <button type="button" class="admin-tab is-active" data-target="identitasCard">Umum</button>
       <button type="button" class="admin-tab" data-target="acaraCard">Acara</button>
+      <button type="button" class="admin-tab" data-target="giftCard">Gift</button>
+      <button type="button" class="admin-tab" data-target="tamuRsvpCard">Tamu</button>
       <button type="button" class="admin-tab" data-target="galeriCard">Galeri</button>
       <button type="button" class="admin-tab" data-target="musikCard">Musik</button>
-      <button type="button" class="admin-tab" data-target="giftCard">Gift</button>
-      <button type="button" class="admin-tab" data-target="tamuRsvpCard">Tamu / RSVP</button>
     </nav>
 
     <section class="card admin-action-bar" aria-label="Aksi cepat admin">
@@ -87,11 +86,11 @@
       <div class="row-between">
         <div>
           <p class="section-label">Publik Config</p>
-          <h2>Identitas Acara</h2>
+          <h2>Umum</h2>
         </div>
         <button id="btnLoadConfig" class="btn btn-ghost" type="button">Muat dari Server</button>
       </div>
-      <p class="section-copy">Atur identitas utama undangan, SEO, hero, dan konten pelengkap acara.</p>
+      <p class="section-copy">Atur identitas utama, mempelai, SEO, hero, doa, dan love story.</p>
       <div class="grid two">
         <label>Inisial Brand<input id="brandInitials" type="text" /></label>
         <label>Judul SEO (title browser)<input id="seoTitle" type="text" placeholder="Undangan Pernikahan Dina & Alfian" /></label>
@@ -133,24 +132,22 @@
           </label>
         </div>
       </div>
-    </section>
-
-    <section class="card admin-panel-section" id="mempelaiCard" data-section="mempelaiCard" hidden>
-      <div class="section-head">
-        <div>
-          <p class="section-label">Publik Config</p>
-          <h2>Mempelai</h2>
+      <div class="admin-subcard">
+        <div class="section-head">
+          <div>
+            <p class="section-label">Publik Config</p>
+            <h2>Mempelai</h2>
+          </div>
         </div>
-      </div>
-      <p class="section-copy">Kelola informasi kedua mempelai dan konten love story yang tampil di halaman undangan.</p>
-      <div class="grid two">
-        <label>Nama Pendek Mempelai Wanita<input id="brideShortName" type="text" /></label>
-        <label>Nama Pendek Mempelai Pria<input id="groomShortName" type="text" /></label>
-        <label>Nama Lengkap Mempelai Wanita<input id="brideFullName" type="text" /></label>
-        <label>Nama Lengkap Mempelai Pria<input id="groomFullName" type="text" /></label>
-        <label>Orang Tua Mempelai Wanita<input id="brideParents" type="text" /></label>
-        <label>Orang Tua Mempelai Pria<input id="groomParents" type="text" /></label>
-      </div>
+        <p class="section-copy">Kelola informasi kedua mempelai dan konten love story yang tampil di halaman undangan.</p>
+        <div class="grid two">
+          <label>Nama Pendek Mempelai Wanita<input id="brideShortName" type="text" /></label>
+          <label>Nama Pendek Mempelai Pria<input id="groomShortName" type="text" /></label>
+          <label>Nama Lengkap Mempelai Wanita<input id="brideFullName" type="text" /></label>
+          <label>Nama Lengkap Mempelai Pria<input id="groomFullName" type="text" /></label>
+          <label>Orang Tua Mempelai Wanita<input id="brideParents" type="text" /></label>
+          <label>Orang Tua Mempelai Pria<input id="groomParents" type="text" /></label>
+        </div>
 
       <div class="admin-subcard">
         <div class="section-head">
@@ -205,6 +202,7 @@
             <textarea id="storyDesc3" rows="2" placeholder="Ceritakan momen ketiga..."></textarea>
           </label>
         </div>
+      </div>
       </div>
     </section>
 
@@ -444,7 +442,7 @@
       <div class="section-head">
         <div>
           <p class="section-label">Admin Data</p>
-          <h2>Tamu / RSVP</h2>
+          <h2>Tamu</h2>
         </div>
       </div>
       <p class="section-copy">Kelola import tamu, link undangan, filter status, serta data RSVP dan ucapan masuk.</p>
