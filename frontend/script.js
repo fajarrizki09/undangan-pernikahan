@@ -473,6 +473,15 @@ function refreshWishesAutoScroll() {
   window.setTimeout(startWishesAutoScroll, 380);
 }
 
+function scrollToWishesPanel() {
+  const target = wishesList ? wishesList.closest(".wishes-panel") : null;
+  if (!target) return;
+  target.scrollIntoView({
+    behavior: prefersReducedMotion ? "auto" : "smooth",
+    block: "start"
+  });
+}
+
 function escapeHtml(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
@@ -1456,11 +1465,13 @@ if (form) {
       form.reset();
       applyGuestName();
       setFormStatus("RSVP berhasil dikirim. Terima kasih.", "is-success");
-      loadWishes();
+      await loadWishes();
+      scrollToWishesPanel();
     } catch (error) {
       if (/terlalu lama|aborted|abort/i.test(error.message || "")) {
         setFormStatus("RSVP kemungkinan sudah terkirim, tetapi server lambat memberi balasan. Silakan cek daftar ucapan atau coba refresh sebelum mengirim ulang.", "is-error");
-        loadWishes();
+        await loadWishes();
+        scrollToWishesPanel();
         return;
       }
       setFormStatus(`Terjadi kesalahan: ${error.message}`, "is-error");
