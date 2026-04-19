@@ -226,6 +226,7 @@ export function createGalleryController(options = {}) {
 
       galleryGrid.dataset.mode = mode;
       galleryGrid.dataset.style = style;
+      galleryGrid.dataset.count = String(cleanPhotos.length);
 
       if (!cleanPhotos.length) {
         galleryGrid.innerHTML = '<p class="gallery-empty">Belum ada foto galeri.</p>';
