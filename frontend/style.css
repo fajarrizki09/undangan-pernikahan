@@ -1486,6 +1486,17 @@ h3 {
   grid-template-columns: minmax(0, 320px);
 }
 
+.gift-category-hint {
+  grid-column: 1 / -1;
+  margin: 0 auto -4px;
+  color: #607569;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .gift-accounts-list.is-single .gift-account-card {
   width: min(100%, 320px);
   margin-inline: auto;

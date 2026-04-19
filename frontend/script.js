@@ -846,6 +846,11 @@ function renderGiftSection() {
   giftAccountsList.innerHTML = "";
   giftAccountsList.classList.toggle("is-hidden", !giftUiState.isExpanded);
   if (!giftUiState.isExpanded) return;
+  const categoryHint = document.createElement("p");
+  categoryHint.className = "gift-category-hint";
+  categoryHint.textContent = activeCategory === "ewallet" ? "Nomor e-wallet" : "Rekening bank";
+  giftAccountsList.appendChild(categoryHint);
+
   giftAccountsList.classList.toggle("is-single", (groupedAccounts[activeCategory] || []).length === 1);
   (groupedAccounts[activeCategory] || []).forEach((account) => {
     const category = getGiftAccountCategory(account);
