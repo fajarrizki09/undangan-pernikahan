@@ -1,5 +1,4 @@
-(function attachWeddingGalleryModule(global) {
-  function createGalleryController(options = {}) {
+export function createGalleryController(options = {}) {
     const {
       galleryGrid,
       lightbox,
@@ -254,9 +253,4 @@
       closeGalleryLightbox,
       renderGalleryGrid
     };
-  }
-
-  global.WeddingGalleryModule = {
-    createGalleryController
-  };
-}(window));
+}

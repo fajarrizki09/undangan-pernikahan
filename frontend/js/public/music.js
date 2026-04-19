@@ -1,5 +1,4 @@
-(function attachWeddingMusicModule(global) {
-  function buildMusicProxyUrl(fileId, resourceKey, sourceUrl, isLikelyDriveFileId) {
+function buildMusicProxyUrl(fileId, resourceKey, sourceUrl, isLikelyDriveFileId) {
     const rawFileId = String(fileId || "").trim();
     const cleanFileId = isLikelyDriveFileId(rawFileId) ? rawFileId : "";
     const cleanResourceKey = String(resourceKey || "").trim();
@@ -14,7 +13,7 @@
     return `/api/music?${params.toString()}`;
   }
 
-  function createController(options = {}) {
+export function createMusicController(options = {}) {
     const {
       musicToggle,
       bgMusic,
@@ -298,9 +297,4 @@
       getAudioSourceCandidates,
       setupMusicControl
     };
-  }
-
-  global.WeddingMusicModule = {
-    createController
-  };
-}(window));
+}

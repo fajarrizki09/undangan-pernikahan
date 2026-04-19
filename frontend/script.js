@@ -1,4 +1,12 @@
-﻿const form = document.getElementById("rsvpForm");
+import { setMetaDescription as updateMetaDescription } from "./js/shared/meta.js";
+import { createPublicConfigRuntime } from "./js/public/config.js";
+import { createGalleryController } from "./js/public/gallery.js";
+import { createMusicController } from "./js/public/music.js";
+
+const RSVP_API_URL = window.RSVP_API_URL || "";
+const WEDDING_CONFIG = window.WEDDING_CONFIG || {};
+
+const form = document.getElementById("rsvpForm");
 const statusText = document.getElementById("formStatus");
 const inputNama = document.getElementById("inputNama");
 const rsvpNameLabel = document.getElementById("rsvpNameLabel");
@@ -118,12 +126,11 @@ let currentConfig = {
 const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
 const CONFIG_CACHE_TTL_MS = 1000 * 30;
 const ADMIN_PREVIEW_DRAFT_KEY = "wedding_admin_preview_draft_v1";
-const metaModule = window.WeddingMetaModule;
-const publicConfigRuntime = window.WeddingPublicConfigModule.createRuntime({
+const publicConfigRuntime = createPublicConfigRuntime({
   cacheKey: CONFIG_CACHE_KEY,
   cacheTtlMs: CONFIG_CACHE_TTL_MS
 });
-const galleryController = window.WeddingGalleryModule.createGalleryController({
+const galleryController = createGalleryController({
   galleryGrid,
   lightbox,
   lightboxImg,
@@ -138,7 +145,7 @@ const galleryController = window.WeddingGalleryModule.createGalleryController({
   getGalleryObjectPosition,
   extractDriveFileId
 });
-const musicController = window.WeddingMusicModule.createController({
+const musicController = createMusicController({
   musicToggle,
   bgMusic,
   musicState,
@@ -545,7 +552,7 @@ function cleanStoryDescription(value) {
 }
 
 function setMetaDescription(content) {
-  metaModule.setMetaDescription(content);
+  updateMetaDescription(content);
 }
 
 function normalizeGalleryMode(value) {

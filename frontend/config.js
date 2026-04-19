@@ -62,3 +62,7 @@ const WEDDING_CONFIG = {
   giftSectionSubtitle: "",
   giftAccounts: []
 };
+
+window.RSVP_API_URL = RSVP_API_URL;
+window.ADMIN_CONFIG = ADMIN_CONFIG;
+window.WEDDING_CONFIG = WEDDING_CONFIG;
