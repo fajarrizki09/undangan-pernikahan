@@ -977,6 +977,7 @@ function applyWeddingConfig() {
 
   const akadCard = document.getElementById("akadCard");
   const resepsiCard = document.getElementById("resepsiCard");
+  const eventGrid = document.querySelector(".event-grid");
 
   if (currentConfig.akad) {
     setHtml("akadDate", formatEventDateHtml(currentConfig.akad.date));
@@ -1012,6 +1013,12 @@ function applyWeddingConfig() {
     if (resepsiCard) resepsiCard.classList.toggle("is-hidden", !hasResepsiValue);
   } else if (resepsiCard) {
     resepsiCard.classList.add("is-hidden");
+  }
+
+  if (eventGrid) {
+    const visibleEventCount = [akadCard, resepsiCard].filter((card) => card && !card.classList.contains("is-hidden")).length;
+    eventGrid.classList.toggle("is-single", visibleEventCount === 1);
+    eventGrid.classList.toggle("is-duo", visibleEventCount >= 2);
   }
 
   renderGalleryGrid(currentConfig.galleryPhotos);
