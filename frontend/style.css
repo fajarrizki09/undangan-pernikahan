@@ -23,6 +23,8 @@ body {
   min-height: 100vh;
   color: var(--ink);
   font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
   background:
     radial-gradient(980px 640px at 50% 15%, rgba(255, 237, 242, 0.48) 0%, rgba(255, 237, 242, 0) 72%),
     radial-gradient(860px 560px at 50% 100%, rgba(249, 230, 217, 0.4) 0%, rgba(249, 230, 217, 0) 74%),
@@ -351,9 +353,13 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
   padding: 56px 52px;
 }
 
+.section > * + * {
+  margin-top: 14px;
+}
+
 main {
   display: grid;
-  gap: 44px;
+  gap: 32px;
   padding: 8px 0 52px;
 }
 
@@ -567,7 +573,8 @@ h3 {
 }
 
 .countdown {
-  margin-top: 14px;
+  margin-top: 20px;
+  margin-bottom: 4px;
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -575,6 +582,8 @@ h3 {
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.24);
   border: 1px solid rgba(79, 119, 100, 0.14);
+  transform: scale(0.92);
+  transform-origin: center;
 }
 
 .countdown-item {
@@ -594,7 +603,7 @@ h3 {
 .countdown strong {
   display: block;
   color: var(--sage);
-  font-size: clamp(1.26rem, 3vw, 1.62rem);
+  font-size: clamp(1.12rem, 2.7vw, 1.44rem);
   line-height: 1;
   font-variant-numeric: tabular-nums;
   text-shadow: none;
@@ -655,7 +664,6 @@ h3 {
   box-shadow: 0 26px 46px rgba(55, 88, 70, 0.06);
 }
 
-#peta.card,
 #loveStory.card,
 .quran-card.card {
   background: transparent;
@@ -664,6 +672,12 @@ h3 {
   backdrop-filter: none;
   padding-top: 20px;
   padding-bottom: 20px;
+}
+
+.map-section {
+  width: min(1040px, 93vw);
+  padding-block: 44px;
+  text-align: center;
 }
 
 #loveStory.card {
@@ -905,26 +919,26 @@ h3 {
 }
 
 .map-grid {
-  margin-top: 28px;
+  margin-top: 24px;
   display: grid;
   gap: 18px;
   grid-template-columns: 1fr;
-  max-width: 640px;
+  max-width: 760px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .map-card {
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.72);
-  padding: 22px;
-  box-shadow: 0 14px 28px rgba(44, 68, 57, 0.1);
+  border: 1px solid rgba(79, 119, 100, 0.14);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.48);
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(44, 68, 57, 0.06);
 }
 
 .map-card iframe {
   width: 100%;
-  height: 280px;
+  height: 340px;
   border: 0;
   border-radius: 12px;
   background: #eef4ef;
@@ -1689,18 +1703,19 @@ textarea:focus {
   width: fit-content;
   border: 1px solid transparent;
   border-radius: 999px;
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #426856, #6f9882);
+  padding: 11px 24px;
+  background: linear-gradient(135deg, #486b5a, #719982);
   color: #fff;
-  font-weight: 700;
+  font-weight: 500;
   text-decoration: none;
   cursor: pointer;
-  transition: transform .22s ease, box-shadow .22s ease;
+  box-shadow: 0 8px 20px rgba(50, 83, 68, 0.18);
+  transition: transform .22s ease, box-shadow .22s ease, opacity .22s ease;
 }
 
 .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(50, 83, 68, 0.28);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(50, 83, 68, 0.22);
 }
 
 .btn-ghost {
@@ -1808,6 +1823,23 @@ body.is-loading .page-loader {
   text-align: center;
   color: var(--muted);
   padding-bottom: 150px;
+}
+
+.closing-section {
+  max-width: 860px;
+  text-align: center;
+  padding-top: 30px;
+  padding-bottom: 24px;
+}
+
+.closing-section h2 {
+  max-width: 18ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.closing-section .lead {
+  max-width: 58ch;
 }
 
 .footer-names {
@@ -1965,6 +1997,10 @@ body.is-loading .page-loader {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .map-card iframe {
+    height: 300px;
+  }
+
   .couple-grid,
   .event-grid,
   .map-grid {
@@ -2104,7 +2140,7 @@ body.is-loading .page-loader {
 
 @media (max-width: 520px) {
   .texture {
-    opacity: 0.44;
+    opacity: 0.3;
     background-position: 0 0, center, center;
   }
 
@@ -2112,7 +2148,7 @@ body.is-loading .page-loader {
   body::after {
     width: 240px;
     height: 240px;
-    opacity: 0.48;
+    opacity: 0.34;
   }
 
   body::before {
@@ -2176,6 +2212,7 @@ body.is-loading .page-loader {
     gap: 8px;
     padding: 6px;
     border-radius: 18px;
+    transform: scale(0.96);
   }
 
   .countdown-item {
