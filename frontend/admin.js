@@ -375,6 +375,9 @@ const draftRestoreText = document.getElementById("draftRestoreText");
 const btnRestoreDraft = document.getElementById("btnRestoreDraft");
 const btnDiscardDraft = document.getElementById("btnDiscardDraft");
 const toastRoot = document.getElementById("toastRoot");
+const adminUi = window.WeddingAdminUi.createAdminUi({ toastRoot });
+const setStatus = adminUi.setStatus;
+const showToast = adminUi.showToast;
 const ADMIN_KEY_STORAGE_KEY = "wedding_admin_key";
 const INVITATION_BASE_URL_STORAGE_KEY = "wedding_invitation_base_url";
 const ADMIN_PREVIEW_DRAFT_KEY = "wedding_admin_preview_draft_v1";
@@ -541,34 +544,6 @@ function getAdminKeyOrThrow() {
   }
 
   throw new Error("Admin key wajib diisi");
-}
-
-function setStatus(el, message) {
-  if (!el) return;
-  el.textContent = message;
-}
-
-function showToast(title, message = "", type = "info") {
-  if (!toastRoot) return;
-  const toast = document.createElement("article");
-  toast.className = `admin-toast is-${type}`;
-
-  const titleEl = document.createElement("p");
-  titleEl.className = "admin-toast-title";
-  titleEl.textContent = title;
-  toast.appendChild(titleEl);
-
-  if (message) {
-    const messageEl = document.createElement("p");
-    messageEl.className = "admin-toast-message";
-    messageEl.textContent = message;
-    toast.appendChild(messageEl);
-  }
-
-  toastRoot.appendChild(toast);
-  window.setTimeout(() => {
-    toast.remove();
-  }, 3600);
 }
 
 function updateDirtyStateLabel() {
