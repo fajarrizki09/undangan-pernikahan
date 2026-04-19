@@ -1963,6 +1963,10 @@ body.is-loading .page-loader {
     grid-template-columns: 1fr;
   }
 
+  .wishes-panel {
+    order: -1;
+  }
+
   .hero-cloud-photo {
     top: 31%;
     width: min(980px, 100vw);
