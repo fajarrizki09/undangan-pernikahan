@@ -73,8 +73,8 @@ const particleState = {
   leafTimer: null,
   flowerTimer: null,
   countdownTimer: null,
-  maxLeaves: isLowPowerDevice ? 8 : 18,
-  maxFlowers: isLowPowerDevice ? 6 : 14
+  maxLeaves: isSmallMobileViewport ? 4 : (isLowPowerDevice ? 8 : 18),
+  maxFlowers: isSmallMobileViewport ? 3 : (isLowPowerDevice ? 6 : 14)
 };
 const musicState = {
   startSec: 0,
@@ -1401,14 +1401,14 @@ function startTimers() {
     particleState.countdownTimer = window.setInterval(updateCountdown, 1000);
   }
 
-  if (prefersReducedMotion || isSmallMobileViewport) return;
+  if (prefersReducedMotion) return;
 
   if (!particleState.leafTimer && leafLayer) {
-    particleState.leafTimer = window.setInterval(createLeaf, isLowPowerDevice ? 1300 : 900);
+    particleState.leafTimer = window.setInterval(createLeaf, isSmallMobileViewport ? 2600 : (isLowPowerDevice ? 1300 : 900));
   }
 
   if (!particleState.flowerTimer && flowerLayer) {
-    particleState.flowerTimer = window.setInterval(createFlower, isLowPowerDevice ? 1600 : 1100);
+    particleState.flowerTimer = window.setInterval(createFlower, isSmallMobileViewport ? 3400 : (isLowPowerDevice ? 1600 : 1100));
   }
 }
 

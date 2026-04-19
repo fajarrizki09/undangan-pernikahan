@@ -2224,9 +2224,12 @@ body.is-loading .page-loader {
 
 @media (max-width: 520px) {
   .leaf-layer,
-  .flower-layer,
+  .flower-layer {
+    opacity: 0.42;
+  }
+
   .aura {
-    display: none;
+    opacity: 0.18;
   }
 
   .texture {
