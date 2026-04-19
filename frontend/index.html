@@ -145,13 +145,18 @@
       <div class="map-grid">
         <article class="map-card">
           <p class="event-tag">Lokasi Resepsi</p>
-          <iframe id="resepsiMapEmbed" title="Peta Lokasi Resepsi" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <div class="map-frame-wrap">
+            <iframe id="resepsiMapEmbed" title="Peta Lokasi Resepsi" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <div class="map-placeholder">
+              <p>Lihat lokasi di Google Maps</p>
+            </div>
+          </div>
           <a class="text-link" id="resepsiMapOpen" href="https://maps.google.com" target="_blank" rel="noopener noreferrer">Buka di Google Maps</a>
         </article>
       </div>
     </section>
 
-    <section id="galeri" class="section card reveal">
+    <section id="galeri" class="section gallery-section reveal">
       <h2>Galeri Momen</h2>
       <p class="lead">Potret perjalanan kami menuju hari istimewa.</p>
       <div id="galleryGrid" class="gallery-grid"></div>
@@ -213,7 +218,7 @@
 
     <section id="giftSection" class="section card reveal gift-section">
       <h2 id="giftSectionTitle">Wedding Gift</h2>
-      <p id="giftSectionSubtitle" class="lead">Doa restu Anda adalah hadiah terindah. Jika berkenan, Anda dapat mengirimkan tanda kasih melalui rekening berikut.</p>
+      <p id="giftSectionSubtitle" class="lead">Doa restu Anda adalah hadiah terindah. Jika berkenan, Anda dapat mengirimkan tanda kasih melalui metode berikut.</p>
       <div id="giftCategoryTabs" class="gift-category-tabs" role="tablist" aria-label="Pilih jenis hadiah"></div>
       <div id="giftAccountsList" class="gift-accounts-list"></div>
     </section>
@@ -256,8 +261,11 @@
 
         <aside class="wishes-panel">
           <div class="wishes-head">
-            <h3>Ucapan Terbaru</h3>
-            <p id="wishesMeta">Memuat ucapan...</p>
+            <div>
+              <h3>Ucapan Terbaru</h3>
+              <p id="wishesMeta">Memuat ucapan...</p>
+            </div>
+            <button id="wishesToggle" class="wishes-toggle" type="button" aria-expanded="true">Lihat</button>
           </div>
           <div id="wishesList" class="wishes-list" aria-live="polite">
             <p class="wishes-empty">Belum ada ucapan.</p>

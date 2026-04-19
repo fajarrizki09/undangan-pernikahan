@@ -23,6 +23,8 @@ const submitRsvpBtn = form ? form.querySelector("button[type='submit']") : null;
 const galleryGrid = document.getElementById("galleryGrid");
 const wishesList = document.getElementById("wishesList");
 const wishesMeta = document.getElementById("wishesMeta");
+const wishesToggle = document.getElementById("wishesToggle");
+const resepsiMapEmbed = document.getElementById("resepsiMapEmbed");
 
 const cdDays = document.getElementById("cdDays");
 const cdHours = document.getElementById("cdHours");
@@ -65,6 +67,7 @@ const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)
 const isSmallScreen = window.matchMedia("(max-width: 860px)").matches;
 const isLowPowerDevice = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || isSmallScreen;
 const isMobileViewport = window.matchMedia("(max-width: 768px)").matches;
+const isSmallMobileViewport = window.matchMedia("(max-width: 520px)").matches;
 
 const particleState = {
   leafTimer: null,
@@ -495,6 +498,7 @@ function refreshWishesAutoScroll() {
 function scrollToWishesPanel() {
   const target = wishesList ? wishesList.closest(".wishes-panel") : null;
   if (!target) return;
+  setWishesCollapsed(false);
   target.scrollIntoView({
     behavior: prefersReducedMotion ? "auto" : "smooth",
     block: "start"
@@ -847,7 +851,8 @@ function renderGiftSection() {
     giftSectionTitle.textContent = sectionTitleText;
   }
   if (giftSectionSubtitle) {
-    giftSectionSubtitle.textContent = sectionSubtitleText || "Doa restu Anda adalah hadiah terindah.";
+    giftSectionSubtitle.textContent = (sectionSubtitleText || "Doa restu Anda adalah hadiah terindah. Jika berkenan, Anda dapat mengirimkan tanda kasih melalui metode berikut.")
+      .replace(/melalui rekening berikut\.?/i, "melalui metode berikut.");
   }
 
   const groupedAccounts = {
@@ -1396,7 +1401,7 @@ function startTimers() {
     particleState.countdownTimer = window.setInterval(updateCountdown, 1000);
   }
 
-  if (prefersReducedMotion) return;
+  if (prefersReducedMotion || isSmallMobileViewport) return;
 
   if (!particleState.leafTimer && leafLayer) {
     particleState.leafTimer = window.setInterval(createLeaf, isLowPowerDevice ? 1300 : 900);
@@ -1522,6 +1527,39 @@ if (wishesList) {
   wishesList.addEventListener("touchmove", pauseAutoScroll, { passive: true });
 }
 
+function setWishesCollapsed(isCollapsed) {
+  const panel = wishesList ? wishesList.closest(".wishes-panel") : null;
+  if (!panel || !wishesToggle) return;
+  panel.classList.toggle("is-collapsed", isCollapsed);
+  wishesToggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+  wishesToggle.textContent = isCollapsed ? "Lihat" : "Tutup";
+  if (isCollapsed) {
+    stopWishesAutoScroll();
+  } else {
+    refreshWishesAutoScroll();
+  }
+}
+
+function syncWishesMobileState() {
+  if (!wishesToggle) return;
+  setWishesCollapsed(window.matchMedia("(max-width: 900px)").matches);
+}
+
+if (wishesToggle) {
+  wishesToggle.addEventListener("click", () => {
+    const panel = wishesList ? wishesList.closest(".wishes-panel") : null;
+    setWishesCollapsed(!(panel && panel.classList.contains("is-collapsed")));
+  });
+  window.addEventListener("resize", syncWishesMobileState);
+}
+
+if (resepsiMapEmbed) {
+  resepsiMapEmbed.addEventListener("load", () => {
+    const wrap = resepsiMapEmbed.closest(".map-frame-wrap");
+    if (wrap) wrap.classList.add("is-loaded");
+  });
+}
+
 async function initPage() {
   setLoaderMessage("Memuat data undangan dari Sheet...", false);
 
@@ -1540,6 +1578,7 @@ async function initPage() {
     applyWeddingConfig();
     applyGuestName();
     loadWishes();
+    syncWishesMobileState();
     updateCountdown();
     setupRevealAnimation();
     setupMusicControl();

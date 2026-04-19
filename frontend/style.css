@@ -250,9 +250,9 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
 }
 
 .topbar {
-  width: min(920px, 92vw);
+  width: min(860px, 92vw);
   margin: 12px auto 0;
-  padding: 10px 16px 10px 14px;
+  padding: 8px 14px 8px 12px;
   position: sticky;
   top: 10px;
   z-index: 40;
@@ -265,7 +265,7 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
     linear-gradient(90deg, rgba(255, 250, 244, 0.78), rgba(255, 248, 241, 0.58)),
     rgba(255, 250, 244, 0.52);
   backdrop-filter: blur(18px);
-  box-shadow: 0 12px 28px rgba(44, 68, 57, 0.08);
+  box-shadow: 0 10px 24px rgba(44, 68, 57, 0.055);
 }
 
 .brand {
@@ -281,7 +281,7 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
   text-decoration: none;
   color: var(--sage);
   font-family: "Cormorant Garamond", serif;
-  font-size: 1.82rem;
+  font-size: 1.64rem;
   font-weight: 700;
   letter-spacing: 0.03em;
 }
@@ -325,11 +325,11 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
   text-decoration: none;
   color: var(--ink);
   font-weight: 600;
-  font-size: 0.76rem;
-  letter-spacing: 0.06em;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
   white-space: nowrap;
-  opacity: 0.76;
-  padding: 8px 12px;
+  opacity: 0.62;
+  padding: 7px 10px;
   border-radius: 999px;
   transition: background 0.24s ease, color 0.24s ease, opacity 0.24s ease, transform 0.24s ease;
 }
@@ -656,12 +656,25 @@ h3 {
     inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
-#galeri.card {
+.gallery-section {
+  width: min(1180px, 94vw);
+  padding-inline: 0;
+}
+
+.gallery-section h2,
+.gallery-section .lead {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+#galeri.gallery-section {
   background:
     radial-gradient(circle at top right, rgba(216, 232, 221, 0.28), transparent 28%),
     linear-gradient(180deg, rgba(255, 254, 251, 0.92), rgba(249, 252, 250, 0.88));
-  border-color: rgba(146, 181, 160, 0.28);
-  box-shadow: 0 26px 46px rgba(55, 88, 70, 0.06);
+  border-radius: 28px;
+  box-shadow: 0 26px 46px rgba(55, 88, 70, 0.045);
 }
 
 #loveStory.card,
@@ -942,6 +955,49 @@ h3 {
   border: 0;
   border-radius: 12px;
   background: #eef4ef;
+}
+
+.map-frame-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #eef4ef;
+}
+
+.map-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  color: rgba(67, 87, 77, 0.78);
+  background:
+    radial-gradient(circle at 20% 18%, rgba(111, 152, 130, 0.14), transparent 28%),
+    linear-gradient(135deg, rgba(238, 244, 239, 0.96), rgba(250, 246, 239, 0.96));
+  transition: opacity 0.24s ease;
+}
+
+.map-placeholder p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.map-frame-wrap iframe {
+  position: relative;
+  z-index: 1;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.24s ease;
+}
+
+.map-frame-wrap.is-loaded iframe {
+  opacity: 1;
+}
+
+.map-frame-wrap.is-loaded .map-placeholder {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .text-link {
@@ -1362,10 +1418,29 @@ h3 {
   letter-spacing: -0.01em;
 }
 
+.wishes-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .wishes-head p {
   margin: 4px 0 0;
   font-size: 0.84rem;
   color: var(--muted);
+}
+
+.wishes-toggle {
+  display: none;
+  border: 1px solid rgba(79, 119, 100, 0.18);
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.66);
+  color: #476454;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
 }
 
 .wishes-list {
@@ -2070,6 +2145,14 @@ body.is-loading .page-loader {
     order: -1;
   }
 
+  .wishes-toggle {
+    display: inline-flex;
+  }
+
+  .wishes-panel.is-collapsed .wishes-list {
+    display: none;
+  }
+
   .wishes-list {
     max-height: min(300px, 42vh);
   }
@@ -2140,6 +2223,12 @@ body.is-loading .page-loader {
 }
 
 @media (max-width: 520px) {
+  .leaf-layer,
+  .flower-layer,
+  .aura {
+    display: none;
+  }
+
   .texture {
     opacity: 0.3;
     background-position: 0 0, center, center;
