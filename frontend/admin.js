@@ -386,8 +386,12 @@ const btnAddGiftBank = document.getElementById("btnAddGiftBank");
 const btnAddGiftEwallet = document.getElementById("btnAddGiftEwallet");
 const btnLoadMusicLibrary = document.getElementById("btnLoadMusicLibrary");
 const musicLibraryEditor = document.getElementById("musicLibraryEditor");
-const adminTabs = Array.from(document.querySelectorAll(".admin-tab"));
-const adminPanelSections = Array.from(document.querySelectorAll(".admin-panel-section"));
+const adminSectionNavigator = window.WeddingAdminNavigation
+  ? window.WeddingAdminNavigation.createAdminSectionNavigator({
+    tabs: document.querySelectorAll(".admin-tab"),
+    sections: document.querySelectorAll(".admin-panel-section")
+  })
+  : null;
 const previewPanel = document.getElementById("previewPanel");
 const previewFrame = document.getElementById("previewFrame");
 const btnActionSave = document.getElementById("btnActionSave");
@@ -695,20 +699,7 @@ function showDraftRestoreBanner(draft) {
 }
 
 function setActiveAdminSection(targetId) {
-  const safeTarget = String(targetId || "").trim();
-  if (!safeTarget) return;
-
-  adminTabs.forEach((button) => {
-    const isActive = button.dataset.target === safeTarget;
-    button.classList.toggle("is-active", isActive);
-    button.setAttribute("aria-selected", isActive ? "true" : "false");
-  });
-
-  adminPanelSections.forEach((section) => {
-    const isActive = section.id === safeTarget;
-    section.hidden = !isActive;
-    section.classList.toggle("is-active", isActive);
-  });
+  if (adminSectionNavigator) adminSectionNavigator.setActive(targetId);
 }
 
 function getAdminPreviewUrl() {
@@ -2492,13 +2483,6 @@ const savedLocalDraft = readLocalDraft();
 if (savedLocalDraft) {
   showDraftRestoreBanner(savedLocalDraft);
 }
-
-adminTabs.forEach((button) => {
-  button.setAttribute("aria-selected", button.classList.contains("is-active") ? "true" : "false");
-  button.addEventListener("click", () => {
-    setActiveAdminSection(button.dataset.target);
-  });
-});
 
 if (btnPreviewToggle) {
   btnPreviewToggle.addEventListener("click", () => {
