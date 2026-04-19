@@ -111,7 +111,7 @@ body.invitation-locked .music-toggle {
   inset: 0;
   z-index: -3;
   pointer-events: none;
-  opacity: 0.34;
+  opacity: 0.24;
   background:
     radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
     linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.1)),
@@ -801,11 +801,11 @@ h3 {
 
 .event-item {
   position: relative;
-  border: 1px solid rgba(79, 119, 100, 0.14);
+  border: 1px solid rgba(44, 68, 57, 0.06);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.7);
-  padding: 28px 26px 24px;
-  box-shadow: 0 12px 24px rgba(41, 62, 52, 0.08);
+  background: rgba(255, 255, 255, 0.76);
+  padding: 32px 28px 28px;
+  box-shadow: 0 10px 30px rgba(41, 62, 52, 0.045);
 }
 
 .event-item::before {
@@ -822,27 +822,45 @@ h3 {
 
 .event-tag {
   display: inline-block;
-  margin: 0 0 10px;
-  padding: 5px 11px;
+  margin: 0 0 14px;
+  padding: 5px 10px;
   border-radius: 999px;
-  background: #e7f1ea;
-  color: #456453;
+  background: rgba(231, 241, 234, 0.72);
+  color: rgba(69, 100, 83, 0.72);
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 
 .event-item h3 {
-  font-size: clamp(1.7rem, 3.3vw, 2.2rem);
-  line-height: 1.02;
-  margin-bottom: 14px;
-  letter-spacing: -0.01em;
+  margin: 0 0 22px;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+.event-date-main,
+.event-date-day {
+  display: block;
+}
+
+.event-date-main {
+  color: #23372e;
+  font-size: clamp(1.72rem, 3.3vw, 2.24rem);
+  font-weight: 500;
+}
+
+.event-date-day {
+  margin-top: 6px;
+  color: rgba(76, 96, 86, 0.7);
+  font-family: "Manrope", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
 }
 
 .event-meta {
   display: grid;
-  gap: 8px;
+  gap: 14px;
   margin: 0;
 }
 
@@ -855,18 +873,18 @@ h3 {
 }
 
 .event-label {
-  font-size: 0.62rem;
+  font-size: 0.66rem;
   text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: #70857a;
+  letter-spacing: 0.2em;
+  color: rgba(112, 133, 122, 0.56);
   font-weight: 700;
 }
 
 .event-meta p span:last-child {
-  color: #4d6157;
-  font-size: 0.98rem;
-  font-weight: 600;
-  line-height: 1.65;
+  color: #43574d;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.58;
 }
 
 .event-item.is-hidden {
@@ -900,10 +918,14 @@ h3 {
 }
 
 .text-link {
-  display: inline-block;
-  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
   color: var(--sage);
-  font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0.82;
   text-decoration: none;
 }
 
@@ -1802,8 +1824,8 @@ body.is-loading .page-loader {
   height: 15px;
   background: linear-gradient(135deg, #2f9e44, #8adf6b);
   border-radius: 100% 0 100% 0;
-  opacity: 0.94;
-  box-shadow: 0 0 8px rgba(56, 142, 60, 0.45);
+  opacity: 0.24;
+  box-shadow: 0 0 8px rgba(56, 142, 60, 0.18);
   animation: leaf-fall linear forwards;
   will-change: transform, opacity;
 }
@@ -1935,7 +1957,6 @@ body.is-loading .page-loader {
   }
 
   .event-item h3 {
-    font-size: clamp(1.34rem, 5vw, 1.72rem);
     line-height: 1.18;
     letter-spacing: 0;
     text-wrap: balance;
@@ -2195,9 +2216,18 @@ body.is-loading .page-loader {
   }
 
   .event-item h3 {
-    font-size: clamp(1.18rem, 5.8vw, 1.42rem);
     line-height: 1.28;
-    margin-bottom: 12px;
+    margin-bottom: 18px;
+  }
+
+  .event-date-main {
+    font-size: clamp(1.36rem, 6.2vw, 1.72rem);
+    line-height: 1.16;
+  }
+
+  .event-date-day {
+    margin-top: 7px;
+    font-size: 0.82rem;
   }
 
   .event-meta {

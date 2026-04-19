@@ -239,6 +239,25 @@ function setHtml(id, value) {
   if (el && value) el.innerHTML = value;
 }
 
+function formatEventDateHtml(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const normalized = text
+    .replace(/\s+-\s+/g, " – ")
+    .replace(/(\d{1,2})\s+–\s+(\d{1,2})/g, "$1–$2");
+  const commaIndex = normalized.indexOf(",");
+  if (commaIndex === -1) return escapeHtml(normalized);
+
+  const dayText = normalized.slice(0, commaIndex).trim();
+  const dateText = normalized.slice(commaIndex + 1).trim();
+  if (!dayText || !dateText) return escapeHtml(normalized);
+
+  return `
+    <span class="event-date-main">${escapeHtml(dateText)}</span>
+    <span class="event-date-day">${escapeHtml(dayText)}</span>
+  `;
+}
+
 function setIframeSrc(id, value) {
   const el = document.getElementById(id);
   if (el && value) el.src = value;
@@ -960,7 +979,7 @@ function applyWeddingConfig() {
   const resepsiCard = document.getElementById("resepsiCard");
 
   if (currentConfig.akad) {
-    setText("akadDate", currentConfig.akad.date);
+    setHtml("akadDate", formatEventDateHtml(currentConfig.akad.date));
     setText("akadTime", currentConfig.akad.time);
     setText("akadVenue", currentConfig.akad.venue);
     setLink("akadMap", currentConfig.akad.mapUrl);
@@ -978,7 +997,7 @@ function applyWeddingConfig() {
   }
 
   if (currentConfig.resepsi) {
-    setText("resepsiDate", currentConfig.resepsi.date);
+    setHtml("resepsiDate", formatEventDateHtml(currentConfig.resepsi.date));
     setText("resepsiTime", currentConfig.resepsi.time);
     setText("resepsiVenue", currentConfig.resepsi.venue);
     setInternalAnchorLink("resepsiMap", "#peta");
