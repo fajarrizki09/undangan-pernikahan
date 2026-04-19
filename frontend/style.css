@@ -1967,6 +1967,10 @@ body.is-loading .page-loader {
     order: -1;
   }
 
+  .wishes-list {
+    max-height: min(300px, 42vh);
+  }
+
   .hero-cloud-photo {
     top: 31%;
     width: min(980px, 100vw);
