@@ -25,36 +25,6 @@ const SHARED_EWALLET_OPTIONS = [
 const SHARED_BANK_CATALOG = Object.fromEntries(SHARED_BANK_OPTIONS.map((item) => [item.code, item]));
 const SHARED_EWALLET_CATALOG = Object.fromEntries(SHARED_EWALLET_OPTIONS.map((item) => [item.code, item]));
 
-function createAdminApiClient(options = {}) {
-  const rsvpApiUrl = String(options.rsvpApiUrl || "").trim();
-  function getValidApiUrl() {
-    if (!rsvpApiUrl || rsvpApiUrl.includes("PASTE_WEB_APP_URL")) {
-      throw new Error("Isi RSVP_API_URL di config.js terlebih dahulu");
-    }
-    return rsvpApiUrl;
-  }
-  async function postApi(payload) {
-    const response = await fetch(getValidApiUrl(), {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    });
-    const result = await response.json();
-    if (!result.success) throw new Error(result.message || "Request gagal");
-    return result;
-  }
-  async function getConfig() {
-    const url = new URL(getValidApiUrl());
-    url.searchParams.set("action", "config");
-    url.searchParams.set("_ts", String(Date.now()));
-    const response = await fetch(url.toString(), { cache: "no-store" });
-    const result = await response.json();
-    if (!result.success) throw new Error(result.message || "Gagal memuat config");
-    return result.config || {};
-  }
-  return { postApi, getConfig };
-}
-
 function parseJsonValue(input, fallback) {
   if (typeof input !== "string") return input;
   try {
@@ -277,7 +247,7 @@ function sharedNormalizeMusicPlaylist(input, fallbackUrl = "", options = {}) {
   return tracks;
 }
 
-const adminApiClient = createAdminApiClient({ rsvpApiUrl: ADMIN_RSVP_API_URL });
+const adminApiClient = window.WeddingAdminApi.createAdminApiClient({ rsvpApiUrl: ADMIN_RSVP_API_URL });
 
 const fields = {
   brandInitials: document.getElementById("brandInitials"),
