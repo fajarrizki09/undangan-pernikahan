@@ -1822,6 +1822,7 @@ body.is-loading .page-loader {
 .footer {
   text-align: center;
   color: var(--muted);
+  padding-top: 0;
   padding-bottom: 150px;
 }
 
@@ -1843,7 +1844,7 @@ body.is-loading .page-loader {
 }
 
 .footer-names {
-  margin: 8px 0 0;
+  margin: 0;
   color: var(--sage);
   font-family: "Cormorant Garamond", serif;
   font-size: 2.1rem;
