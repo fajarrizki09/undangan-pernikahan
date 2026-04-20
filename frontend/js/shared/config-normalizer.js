@@ -3,10 +3,16 @@ import { normalizeGalleryMode, normalizeGalleryPhotoFocusMap, normalizeGallerySt
 import { normalizeGiftAccounts } from "./schema/gift.js";
 import { normalizeMusicPlaybackMode, normalizeMusicPlaylist } from "./schema/music.js";
 
+export function normalizeThemeName(value) {
+  const theme = String(value || "").trim().toLowerCase();
+  return ["botanical", "rose", "royal", "minimal"].includes(theme) ? theme : "botanical";
+}
+
 export function createInitialWeddingConfig(defaultConfig = {}) {
   return {
     ...defaultConfig,
     invitationBaseUrl: String(defaultConfig.invitationBaseUrl || "").trim(),
+    themeName: normalizeThemeName(defaultConfig.themeName),
     akad: { ...(defaultConfig.akad || {}) },
     resepsi: { ...(defaultConfig.resepsi || {}) },
     loveStoryPhotos: cleanPhotoArray(defaultConfig.loveStoryPhotos),
@@ -53,6 +59,7 @@ export function mergeWeddingConfig(baseConfig = {}, incomingConfig = {}, default
     ...baseConfig,
     ...incomingConfig,
     invitationBaseUrl: String(incomingConfig.invitationBaseUrl || baseConfig.invitationBaseUrl || defaultConfig.invitationBaseUrl || "").trim(),
+    themeName: normalizeThemeName(incomingConfig.themeName || baseConfig.themeName || defaultConfig.themeName),
     backgroundMusicUrl: incomingMusicUrl || baseMusicUrl,
     musicPlaybackMode: normalizeMusicPlaybackMode(
       incomingConfig.musicPlaybackMode || baseConfig.musicPlaybackMode || defaultConfig.musicPlaybackMode || "ordered"

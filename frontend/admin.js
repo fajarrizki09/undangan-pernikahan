@@ -25,6 +25,11 @@ const SHARED_EWALLET_OPTIONS = [
 const SHARED_BANK_CATALOG = Object.fromEntries(SHARED_BANK_OPTIONS.map((item) => [item.code, item]));
 const SHARED_EWALLET_CATALOG = Object.fromEntries(SHARED_EWALLET_OPTIONS.map((item) => [item.code, item]));
 
+function sharedNormalizeThemeName(value) {
+  const theme = String(value || "").trim().toLowerCase();
+  return ["botanical", "rose", "royal", "minimal"].includes(theme) ? theme : "botanical";
+}
+
 function parseJsonValue(input, fallback) {
   if (typeof input !== "string") return input;
   try {
@@ -253,6 +258,7 @@ const fields = {
   brandInitials: document.getElementById("brandInitials"),
   seoTitle: document.getElementById("seoTitle"),
   seoDescription: document.getElementById("seoDescription"),
+  themeName: document.getElementById("themeName"),
   heroOverline: document.getElementById("heroOverline"),
   brideShortName: document.getElementById("brideShortName"),
   groomShortName: document.getElementById("groomShortName"),
@@ -1346,6 +1352,10 @@ function normalizeGalleryStyle(value) {
   return sharedNormalizeGalleryStyle(value);
 }
 
+function normalizeThemeName(value) {
+  return sharedNormalizeThemeName(value);
+}
+
 function clampPercent(value, fallback = 50) {
   return sharedClampPercent(value, fallback);
 }
@@ -1418,6 +1428,7 @@ function readConfigFromForm() {
     brandInitials: fields.brandInitials.value.trim(),
     seoTitle: fields.seoTitle.value.trim(),
     seoDescription: fields.seoDescription.value.trim(),
+    themeName: normalizeThemeName(fields.themeName.value),
     heroOverline: fields.heroOverline.value.trim(),
     brideShortName: fields.brideShortName.value.trim(),
     groomShortName: fields.groomShortName.value.trim(),
@@ -1529,6 +1540,7 @@ function fillForm(config) {
   fields.brandInitials.value = safeConfig.brandInitials || "";
   fields.seoTitle.value = safeConfig.seoTitle || "";
   fields.seoDescription.value = safeConfig.seoDescription || "";
+  fields.themeName.value = normalizeThemeName(safeConfig.themeName || ADMIN_WEDDING_CONFIG.themeName || "botanical");
   fields.heroOverline.value = safeConfig.heroOverline || "";
   fields.brideShortName.value = safeConfig.brideShortName || "";
   fields.groomShortName.value = safeConfig.groomShortName || "";

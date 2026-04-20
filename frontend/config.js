@@ -13,6 +13,7 @@ const WEDDING_CONFIG = {
   seoTitle: "Undangan Pernikahan",
   seoDescription: "Undangan pernikahan digital dengan RSVP online.",
   heroOverline: "Wedding Invitation",
+  themeName: "botanical",
   brideShortName: "",
   groomShortName: "",
   brideFullName: "",

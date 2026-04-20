@@ -1,5 +1,5 @@
 import { setMetaDescription as updateMetaDescription } from "./js/shared/meta.js";
-import { createInitialWeddingConfig, healMisplacedPhotoConfig as sharedHealMisplacedPhotoConfig, mergeWeddingConfig } from "./js/shared/config-normalizer.js";
+import { createInitialWeddingConfig, healMisplacedPhotoConfig as sharedHealMisplacedPhotoConfig, mergeWeddingConfig, normalizeThemeName as sharedNormalizeThemeName } from "./js/shared/config-normalizer.js";
 import { BANK_CATALOG, findProviderByName } from "./js/shared/catalogs.js";
 import { extractDriveFileId as sharedExtractDriveFileId, isLikelyDriveFileId as sharedIsLikelyDriveFileId } from "./js/shared/drive.js";
 import { cleanPhotoArray as sharedCleanPhotoArray, clampPercent as sharedClampPercent, normalizeBoolean as sharedNormalizeBoolean, normalizeCountString as sharedNormalizeCountString, normalizePositiveNumberString as sharedNormalizePositiveNumberString } from "./js/shared/utils.js";
@@ -406,6 +406,14 @@ function normalizeCountString(value) {
 
 function normalizePositiveNumberString(value) {
   return sharedNormalizePositiveNumberString(value);
+}
+
+function normalizeThemeName(value) {
+  return sharedNormalizeThemeName(value);
+}
+
+function applyThemeName(value) {
+  document.body.dataset.theme = normalizeThemeName(value);
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
@@ -926,6 +934,7 @@ function renderGiftSection() {
 }
 
 function applyWeddingConfig() {
+  applyThemeName(currentConfig.themeName);
   setBrandMonogram(currentConfig.brandInitials);
   setText("heroOverline", currentConfig.heroOverline || "Wedding Invitation");
   setAnimatedName("heroBrideShort", currentConfig.brideShortName, 140);

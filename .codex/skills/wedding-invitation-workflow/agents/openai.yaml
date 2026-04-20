@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wedding Invitation Workflow"
+  short_description: "Work efficiently on this wedding invitation repo."
+  default_prompt: "Use this skill to inspect and modify the wedding invitation project with compact context first."
