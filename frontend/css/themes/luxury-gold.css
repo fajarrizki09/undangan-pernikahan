@@ -314,3 +314,9 @@ body[data-theme="luxury-gold"] .leaf {
   opacity: 0.32;
   filter: sepia(0.42) saturate(0.82) brightness(1.08);
 }
+
+@media (max-width: 520px) {
+  body[data-theme="luxury-gold"] .section h2 {
+    letter-spacing: 0.055em;
+  }
+}

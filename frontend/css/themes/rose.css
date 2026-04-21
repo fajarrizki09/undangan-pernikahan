@@ -278,7 +278,11 @@ body[data-theme="rose"] .hero-text-link {
   }
 
   body[data-theme="rose"] .section {
-    padding-inline: 18px;
+    padding-inline: 28px;
+  }
+
+  body[data-theme="rose"] .section h2 {
+    letter-spacing: 0.035em;
   }
 
   body[data-theme="rose"] .mempelai-intro,

@@ -262,3 +262,9 @@ body[data-theme="botanical"] .gift-copy-btn:hover {
     color: #516253;
   }
 }
+
+@media (max-width: 520px) {
+  body[data-theme="botanical"] .section h2 {
+    letter-spacing: 0.025em;
+  }
+}

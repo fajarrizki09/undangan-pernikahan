@@ -210,3 +210,11 @@ body[data-theme="royal"] .gift-copy-btn:hover {
     opacity: 0.36;
   }
 }
+
+@media (max-width: 520px) {
+  body[data-theme="royal"] .section h2::before,
+  body[data-theme="royal"] .section h2::after {
+    width: 32px;
+    margin-inline: 10px;
+  }
+}
