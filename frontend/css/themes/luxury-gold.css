@@ -18,6 +18,10 @@ body[data-theme="luxury-gold"] {
   --aura-right-color: #f3c24f;
   --hero-photo-opacity: 0.24;
   --hero-photo-filter: saturate(0.76) brightness(0.82) contrast(1.18);
+  --font-body: "Anonymous Pro", monospace;
+  --font-heading: "Anonymous Pro", monospace;
+  --font-display: "Mr Dafoe", cursive;
+  --font-accent: "Anonymous Pro", monospace;
 }
 
 body[data-theme="luxury-gold"] .brand {
@@ -29,9 +33,50 @@ body[data-theme="luxury-gold"] .brand {
     0 22px 54px rgba(0, 0, 0, 0.32);
 }
 
+body[data-theme="luxury-gold"] .gate-envelope {
+  color: #fff3d0;
+  background:
+    linear-gradient(145deg, rgba(32, 23, 12, 0.94), rgba(15, 11, 7, 0.92)),
+    radial-gradient(circle at 50% 0%, rgba(255, 215, 110, 0.2), transparent 42%);
+  border-color: rgba(255, 215, 110, 0.32);
+  box-shadow:
+    0 0 0 1px rgba(255, 215, 110, 0.16),
+    0 32px 80px rgba(0, 0, 0, 0.36);
+}
+
+body[data-theme="luxury-gold"] .gate-envelope::before {
+  background: linear-gradient(145deg, rgba(255, 232, 152, 0.28), rgba(185, 130, 34, 0.12));
+  border-color: rgba(255, 215, 110, 0.24);
+}
+
+body[data-theme="luxury-gold"] .gate-overline,
+body[data-theme="luxury-gold"] .gate-envelope p {
+  color: #dcc68e;
+}
+
+body[data-theme="luxury-gold"] .gate-envelope h2,
+body[data-theme="luxury-gold"] .gate-recipient h3 {
+  color: #fff3d0;
+  text-shadow: 0 12px 34px rgba(0, 0, 0, 0.4);
+}
+
+body[data-theme="luxury-gold"] .gate-recipient {
+  background: rgba(255, 248, 224, 0.08);
+  border-color: rgba(255, 215, 110, 0.28);
+}
+
+body[data-theme="luxury-gold"] .gate-recipient p {
+  color: rgba(220, 198, 142, 0.88);
+}
+
 body[data-theme="luxury-gold"] .hero-title-block {
   color: #fff3d0;
   text-shadow: 0 18px 42px rgba(0, 0, 0, 0.36);
+}
+
+body[data-theme="luxury-gold"] .hero-name {
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 body[data-theme="luxury-gold"] .hero-cloud-photo {
@@ -42,6 +87,7 @@ body[data-theme="luxury-gold"] .hero-cloud-photo {
 }
 
 body[data-theme="luxury-gold"] .card {
+  color: #fff3d0;
   border-radius: 14px;
   background:
     linear-gradient(145deg, rgba(35, 25, 13, 0.92), rgba(20, 16, 11, 0.88)),
@@ -54,6 +100,7 @@ body[data-theme="luxury-gold"] .card {
 body[data-theme="luxury-gold"] .event-item,
 body[data-theme="luxury-gold"] .gift-account-card,
 body[data-theme="luxury-gold"] .countdown-item {
+  color: #fff3d0;
   border-radius: 10px;
   background:
     linear-gradient(135deg, rgba(255, 248, 224, 0.12), rgba(255, 215, 110, 0.08)),
@@ -65,6 +112,76 @@ body[data-theme="luxury-gold"] .section-kicker,
 body[data-theme="luxury-gold"] .event-tag {
   color: #ffd76e;
   letter-spacing: 0.2em;
+}
+
+body[data-theme="luxury-gold"] .lead,
+body[data-theme="luxury-gold"] .event-date-day,
+body[data-theme="luxury-gold"] .event-meta p,
+body[data-theme="luxury-gold"] .gift-section .lead,
+body[data-theme="luxury-gold"] .closing-section .lead,
+body[data-theme="luxury-gold"] .rsvp-mode-hint,
+body[data-theme="luxury-gold"] .gift-account-holder {
+  color: #dcc68e;
+}
+
+body[data-theme="luxury-gold"] .event-date-main,
+body[data-theme="luxury-gold"] .event-meta p span:last-child,
+body[data-theme="luxury-gold"] .gift-account-number,
+body[data-theme="luxury-gold"] .gift-bank-name,
+body[data-theme="luxury-gold"] .countdown strong,
+body[data-theme="luxury-gold"] #loveStory h3,
+body[data-theme="luxury-gold"] #loveStory p,
+body[data-theme="luxury-gold"] .quran-card,
+body[data-theme="luxury-gold"] .rsvp-form label {
+  color: #fff3d0;
+}
+
+body[data-theme="luxury-gold"] .event-label,
+body[data-theme="luxury-gold"] .countdown span,
+body[data-theme="luxury-gold"] .gift-category-hint {
+  color: rgba(255, 215, 110, 0.78);
+}
+
+body[data-theme="luxury-gold"] .event-tag,
+body[data-theme="luxury-gold"] .rsvp-pill-row span,
+body[data-theme="luxury-gold"] .gift-category-tab {
+  background: rgba(255, 215, 110, 0.12);
+  border-color: rgba(255, 215, 110, 0.28);
+}
+
+body[data-theme="luxury-gold"] .text-link,
+body[data-theme="luxury-gold"] .event-utility a,
+body[data-theme="luxury-gold"] .hero-text-link {
+  color: #ffd76e;
+  text-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+body[data-theme="luxury-gold"] .btn,
+body[data-theme="luxury-gold"] .gate-open-btn,
+body[data-theme="luxury-gold"] .gift-copy-btn,
+body[data-theme="luxury-gold"] .rsvp-submit {
+  color: #2a1a07;
+  background: linear-gradient(135deg, #fff2b5, #ffd76e 45%, #b98222);
+  border-color: rgba(255, 246, 191, 0.42);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
+}
+
+body[data-theme="luxury-gold"] .btn:hover,
+body[data-theme="luxury-gold"] .gift-copy-btn:hover {
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.34);
+}
+
+body[data-theme="luxury-gold"] input,
+body[data-theme="luxury-gold"] select,
+body[data-theme="luxury-gold"] textarea {
+  color: #fff3d0;
+  background: rgba(255, 248, 224, 0.08);
+  border-color: rgba(255, 215, 110, 0.26);
+}
+
+body[data-theme="luxury-gold"] input::placeholder,
+body[data-theme="luxury-gold"] textarea::placeholder {
+  color: rgba(220, 198, 142, 0.68);
 }
 
 body[data-theme="luxury-gold"] .story-moon,

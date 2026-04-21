@@ -23,6 +23,10 @@
   --aura-left-y: 0px;
   --aura-right-y: 0px;
   --texture-y: 0px;
+  --font-body: "Manrope", sans-serif;
+  --font-heading: "Cormorant Garamond", serif;
+  --font-display: "Cormorant Garamond", serif;
+  --font-accent: "Manrope", sans-serif;
 }
 
 * {
@@ -37,7 +41,7 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--ink);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.6;
   background: var(--body-bg);
@@ -310,7 +314,7 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
   background: transparent;
   text-decoration: none;
   color: var(--sage);
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-heading);
   font-size: 1.64rem;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -484,7 +488,7 @@ h1,
 h2,
 h3 {
   margin: 0;
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-heading);
 }
 
 h1 {
@@ -526,6 +530,7 @@ h3 {
 .hero-name {
   display: inline-flex;
   flex-wrap: wrap;
+  font-family: var(--font-display);
 }
 
 .hero-name .char {
@@ -740,6 +745,7 @@ h3 {
   letter-spacing: 0.18em;
   font-size: 0.72rem;
   font-weight: 700;
+  font-family: var(--font-accent);
   text-transform: uppercase;
   opacity: 0.9;
 }
@@ -815,7 +821,7 @@ h3 {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-heading);
   font-size: 1.6rem;
   font-weight: 700;
   background: linear-gradient(135deg, #ecd2ae, #d5a36e);
@@ -826,7 +832,7 @@ h3 {
   display: grid;
   place-items: center;
   color: var(--champagne);
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-heading);
   font-size: 2.4rem;
 }
 
@@ -904,6 +910,7 @@ h3 {
   letter-spacing: 0.18em;
   font-size: 0.7rem;
   font-weight: 700;
+  font-family: var(--font-accent);
 }
 
 .event-item h3 {
@@ -926,7 +933,7 @@ h3 {
 .event-date-day {
   margin-top: 6px;
   color: rgba(76, 96, 86, 0.7);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-body);
   font-size: 0.92rem;
   font-weight: 500;
 }
@@ -1954,7 +1961,7 @@ body.is-loading .page-loader {
 .footer-names {
   margin: 0;
   color: var(--sage);
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-display);
   font-size: 2.1rem;
 }
 

@@ -17,6 +17,10 @@ body[data-theme="rose"] {
   --aura-right-color: #d89c54;
   --hero-photo-opacity: 0.36;
   --hero-photo-filter: saturate(1.02) brightness(1.03) contrast(1.04);
+  --font-body: "Montserrat", sans-serif;
+  --font-heading: "Montserrat", sans-serif;
+  --font-display: "Great Vibes", cursive;
+  --font-accent: "Montserrat", sans-serif;
 }
 
 body[data-theme="rose"] .flower {
@@ -33,6 +37,8 @@ body[data-theme="rose"] .hero-title-block {
 }
 
 body[data-theme="rose"] .hero-name {
+  font-weight: 400;
+  letter-spacing: 0;
   text-shadow: 0 12px 34px rgba(166, 79, 104, 0.18);
 }
 
@@ -65,4 +71,19 @@ body[data-theme="rose"] .gallery-grid[data-style="polaroid"] .gallery-item {
 body[data-theme="rose"] .gallery-grid[data-style="polaroid"] .gallery-slide:nth-child(even) .gallery-item,
 body[data-theme="rose"] .gallery-grid[data-style="polaroid"] .gallery-item:nth-child(even) {
   transform: rotate(1.2deg);
+}
+
+body[data-theme="rose"] .btn,
+body[data-theme="rose"] .gate-open-btn,
+body[data-theme="rose"] .gift-copy-btn,
+body[data-theme="rose"] .rsvp-submit {
+  color: #fff8fa;
+  background: linear-gradient(135deg, #c23d68, #e86f96);
+  border-color: rgba(245, 193, 207, 0.58);
+  box-shadow: 0 12px 28px rgba(194, 61, 104, 0.25);
+}
+
+body[data-theme="rose"] .btn:hover,
+body[data-theme="rose"] .gift-copy-btn:hover {
+  box-shadow: 0 14px 32px rgba(194, 61, 104, 0.32);
 }

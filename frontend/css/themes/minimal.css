@@ -17,6 +17,10 @@ body[data-theme="minimal"] {
   --aura-right-color: #dad7cc;
   --hero-photo-opacity: 0.24;
   --hero-photo-filter: saturate(0.28) brightness(1.08) contrast(1.08);
+  --font-body: "Open Sans", sans-serif;
+  --font-heading: "Open Sans", sans-serif;
+  --font-display: "Pacifico", cursive;
+  --font-accent: "Open Sans", sans-serif;
 }
 
 body[data-theme="minimal"] .flower::before,
@@ -53,6 +57,11 @@ body[data-theme="minimal"] .hero-title-block {
   max-width: 720px;
 }
 
+body[data-theme="minimal"] .hero-name {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 body[data-theme="minimal"] .hero-name .char {
   animation-duration: 0.24s;
 }
@@ -79,4 +88,14 @@ body[data-theme="minimal"] .rsvp-pill-row span,
 body[data-theme="minimal"] .gift-category-tab,
 body[data-theme="minimal"] .gift-copy-btn {
   border-radius: 8px;
+}
+
+body[data-theme="minimal"] .btn,
+body[data-theme="minimal"] .gate-open-btn,
+body[data-theme="minimal"] .gift-copy-btn,
+body[data-theme="minimal"] .rsvp-submit {
+  color: #ffffff;
+  background: linear-gradient(135deg, #485640, #6e7b66);
+  border-color: rgba(72, 86, 64, 0.28);
+  box-shadow: none;
 }

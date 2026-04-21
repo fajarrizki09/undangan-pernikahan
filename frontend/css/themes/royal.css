@@ -17,6 +17,10 @@ body[data-theme="royal"] {
   --aura-right-color: #cf9e36;
   --hero-photo-opacity: 0.33;
   --hero-photo-filter: saturate(0.88) brightness(0.98) contrast(1.08);
+  --font-body: "Forum", serif;
+  --font-heading: "Forum", serif;
+  --font-display: "Pinyon Script", cursive;
+  --font-accent: "Forum", serif;
 }
 
 body[data-theme="royal"] .flower {
@@ -41,6 +45,11 @@ body[data-theme="royal"] .brand {
 
 body[data-theme="royal"] .hero-title-block {
   text-transform: none;
+}
+
+body[data-theme="royal"] .hero-name {
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 body[data-theme="royal"] .hero-cloud-photo {
@@ -77,4 +86,19 @@ body[data-theme="royal"] .gallery-item {
 
 body[data-theme="royal"] .countdown-item {
   border-radius: 10px;
+}
+
+body[data-theme="royal"] .btn,
+body[data-theme="royal"] .gate-open-btn,
+body[data-theme="royal"] .gift-copy-btn,
+body[data-theme="royal"] .rsvp-submit {
+  color: #fffaf0;
+  background: linear-gradient(135deg, #174f78, #b98222);
+  border-color: rgba(185, 130, 34, 0.42);
+  box-shadow: 0 12px 30px rgba(16, 28, 44, 0.24);
+}
+
+body[data-theme="royal"] .btn:hover,
+body[data-theme="royal"] .gift-copy-btn:hover {
+  box-shadow: 0 14px 34px rgba(16, 28, 44, 0.3);
 }
