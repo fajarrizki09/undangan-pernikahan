@@ -1,0 +1,80 @@
+body[data-theme="royal"] {
+  --bg: #eef3f8;
+  --paper: #fdfefe;
+  --ink: #172230;
+  --muted: #5d6b7a;
+  --sage: #315f7d;
+  --sage-soft: #d7e5ee;
+  --champagne: #c79b55;
+  --line: rgba(49, 95, 125, 0.24);
+  --shadow: 0 24px 50px rgba(23, 34, 48, 0.16);
+  --body-bg:
+    radial-gradient(920px 620px at 50% 12%, rgba(208, 226, 239, 0.62) 0%, rgba(208, 226, 239, 0) 72%),
+    radial-gradient(760px 520px at 12% 100%, rgba(219, 192, 141, 0.22) 0%, rgba(219, 192, 141, 0) 72%),
+    linear-gradient(170deg, #fbfdff, #eef3f8);
+  --sparkle-opacity: 0.3;
+  --aura-left-color: #b9cee0;
+  --aura-right-color: #d7b86e;
+  --hero-photo-opacity: 0.29;
+  --hero-photo-filter: saturate(0.72) brightness(0.98) contrast(1.05);
+}
+
+body[data-theme="royal"] .flower {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 248, 219, 0.96) 0 28%, rgba(211, 169, 77, 0.86) 32% 64%, transparent 68%);
+  box-shadow: 0 0 12px rgba(211, 169, 77, 0.56);
+}
+
+body[data-theme="royal"] .flower::before,
+body[data-theme="royal"] .flower::after {
+  display: none;
+}
+
+body[data-theme="royal"] .brand {
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 0 1px rgba(199, 155, 85, 0.34),
+    0 18px 44px rgba(23, 34, 48, 0.18);
+}
+
+body[data-theme="royal"] .hero-title-block {
+  text-transform: none;
+}
+
+body[data-theme="royal"] .hero-cloud-photo {
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px rgba(199, 155, 85, 0.3),
+    0 26px 70px rgba(23, 34, 48, 0.22);
+}
+
+body[data-theme="royal"] .card {
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgba(199, 155, 85, 0.16),
+    var(--shadow);
+}
+
+body[data-theme="royal"] .event-item,
+body[data-theme="royal"] .gift-account-card {
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(238, 243, 248, 0.76)),
+    linear-gradient(90deg, rgba(199, 155, 85, 0.22), transparent 32%, rgba(49, 95, 125, 0.14));
+}
+
+body[data-theme="royal"] .section-kicker,
+body[data-theme="royal"] .event-tag {
+  letter-spacing: 0.18em;
+}
+
+body[data-theme="royal"] .story-moon,
+body[data-theme="royal"] .gallery-item {
+  border-radius: 12px;
+}
+
+body[data-theme="royal"] .countdown-item {
+  border-radius: 10px;
+}

@@ -1,0 +1,26 @@
+body[data-theme="botanical"] .leaf {
+  opacity: 0.34;
+}
+
+body[data-theme="botanical"] .hero-cloud-photo {
+  border-radius: 48% 52% 46% 54% / 52% 45% 55% 48%;
+}
+
+body[data-theme="botanical"] .card {
+  border-radius: 28px;
+}
+
+body[data-theme="botanical"] .event-item,
+body[data-theme="botanical"] .gift-account-card {
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(212, 228, 217, 0.34)),
+    radial-gradient(circle at 12% 18%, rgba(79, 119, 100, 0.12), transparent 30%);
+}
+
+body[data-theme="botanical"] .story-moon {
+  border-radius: 42% 58% 48% 52% / 52% 44% 56% 48%;
+}
+
+body[data-theme="botanical"] .gallery-item {
+  border-radius: 30px 18px 30px 18px;
+}
