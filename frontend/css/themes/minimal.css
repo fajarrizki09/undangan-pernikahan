@@ -50,7 +50,14 @@ body[data-theme="minimal"] .hero-cloud-photo {
 
 body[data-theme="minimal"] .brand {
   border-radius: 12px;
+  color: #2e463a;
+  font-size: 1.54rem;
+  line-height: 1.18;
   box-shadow: none;
+}
+
+body[data-theme="minimal"] .brand-sep {
+  color: #7f8d83;
 }
 
 body[data-theme="minimal"] .hero-title-block {

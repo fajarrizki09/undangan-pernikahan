@@ -27,10 +27,18 @@ body[data-theme="luxury-gold"] {
 body[data-theme="luxury-gold"] .brand {
   border-radius: 10px;
   color: #2a1a07;
+  font-size: 1.9rem;
+  line-height: 1.1;
+  padding: 4px 12px 5px;
   background: linear-gradient(135deg, #fff2b5, #d59a2f 48%, #7a4a0b);
   box-shadow:
     inset 0 0 0 1px rgba(255, 246, 191, 0.64),
     0 22px 54px rgba(0, 0, 0, 0.32);
+}
+
+body[data-theme="luxury-gold"] .brand-sep {
+  color: #fdf1bd;
+  margin-inline: 0.02em;
 }
 
 body[data-theme="luxury-gold"] .gate-envelope {
