@@ -212,9 +212,29 @@ body[data-theme="royal"] .gift-copy-btn:hover {
 }
 
 @media (max-width: 520px) {
+  body[data-theme="royal"] .section h2 {
+    max-width: 16ch;
+    font-size: clamp(2.05rem, 9.2vw, 2.48rem);
+    line-height: 1.18;
+    letter-spacing: 0.035em;
+  }
+
+  body[data-theme="royal"] .lead {
+    max-width: 32ch;
+  }
+
   body[data-theme="royal"] .section h2::before,
+  body[data-theme="royal"] .gallery-section h2::before,
+  body[data-theme="royal"] .gift-section h2::before,
+  body[data-theme="royal"] .closing-section h2::before {
+    display: none;
+  }
+
   body[data-theme="royal"] .section h2::after {
-    width: 32px;
-    margin-inline: 10px;
+    display: block;
+    width: min(118px, 36vw);
+    height: 1px;
+    margin: 14px auto 0;
+    background: linear-gradient(90deg, transparent, rgba(187, 163, 107, 0.82), rgba(53, 93, 128, 0.5), transparent);
   }
 }
