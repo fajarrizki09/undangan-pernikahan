@@ -1,30 +1,30 @@
 body[data-theme="royal"] {
-  --bg: #eef3f8;
-  --paper: #fdfefe;
-  --ink: #172230;
-  --muted: #5d6b7a;
-  --sage: #315f7d;
-  --sage-soft: #d7e5ee;
-  --champagne: #c79b55;
-  --line: rgba(49, 95, 125, 0.24);
-  --shadow: 0 24px 50px rgba(23, 34, 48, 0.16);
+  --bg: #e9f0f7;
+  --paper: #fbfdff;
+  --ink: #101c2c;
+  --muted: #4d6278;
+  --sage: #174f78;
+  --sage-soft: #c9dce9;
+  --champagne: #b98222;
+  --line: rgba(23, 79, 120, 0.34);
+  --shadow: 0 28px 58px rgba(16, 28, 44, 0.22);
   --body-bg:
-    radial-gradient(920px 620px at 50% 12%, rgba(208, 226, 239, 0.62) 0%, rgba(208, 226, 239, 0) 72%),
-    radial-gradient(760px 520px at 12% 100%, rgba(219, 192, 141, 0.22) 0%, rgba(219, 192, 141, 0) 72%),
-    linear-gradient(170deg, #fbfdff, #eef3f8);
-  --sparkle-opacity: 0.3;
-  --aura-left-color: #b9cee0;
-  --aura-right-color: #d7b86e;
-  --hero-photo-opacity: 0.29;
-  --hero-photo-filter: saturate(0.72) brightness(0.98) contrast(1.05);
+    radial-gradient(920px 620px at 50% 12%, rgba(169, 202, 226, 0.7) 0%, rgba(169, 202, 226, 0) 72%),
+    radial-gradient(760px 520px at 12% 100%, rgba(209, 163, 78, 0.3) 0%, rgba(209, 163, 78, 0) 72%),
+    linear-gradient(170deg, #fbfdff, #e9f0f7);
+  --sparkle-opacity: 0.38;
+  --aura-left-color: #8fb6d0;
+  --aura-right-color: #cf9e36;
+  --hero-photo-opacity: 0.33;
+  --hero-photo-filter: saturate(0.88) brightness(0.98) contrast(1.08);
 }
 
 body[data-theme="royal"] .flower {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 248, 219, 0.96) 0 28%, rgba(211, 169, 77, 0.86) 32% 64%, transparent 68%);
-  box-shadow: 0 0 12px rgba(211, 169, 77, 0.56);
+  background: radial-gradient(circle, rgba(255, 246, 202, 0.98) 0 28%, rgba(185, 130, 34, 0.94) 32% 64%, transparent 68%);
+  box-shadow: 0 0 14px rgba(185, 130, 34, 0.66);
 }
 
 body[data-theme="royal"] .flower::before,
@@ -35,8 +35,8 @@ body[data-theme="royal"] .flower::after {
 body[data-theme="royal"] .brand {
   border-radius: 14px;
   box-shadow:
-    inset 0 0 0 1px rgba(199, 155, 85, 0.34),
-    0 18px 44px rgba(23, 34, 48, 0.18);
+    inset 0 0 0 1px rgba(185, 130, 34, 0.42),
+    0 18px 44px rgba(16, 28, 44, 0.24);
 }
 
 body[data-theme="royal"] .hero-title-block {
@@ -46,14 +46,14 @@ body[data-theme="royal"] .hero-title-block {
 body[data-theme="royal"] .hero-cloud-photo {
   border-radius: 18px;
   box-shadow:
-    0 0 0 1px rgba(199, 155, 85, 0.3),
-    0 26px 70px rgba(23, 34, 48, 0.22);
+    0 0 0 1px rgba(185, 130, 34, 0.4),
+    0 26px 70px rgba(16, 28, 44, 0.28);
 }
 
 body[data-theme="royal"] .card {
   border-radius: 16px;
   box-shadow:
-    0 0 0 1px rgba(199, 155, 85, 0.16),
+    0 0 0 1px rgba(185, 130, 34, 0.24),
     var(--shadow);
 }
 
@@ -61,8 +61,8 @@ body[data-theme="royal"] .event-item,
 body[data-theme="royal"] .gift-account-card {
   border-radius: 12px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(238, 243, 248, 0.76)),
-    linear-gradient(90deg, rgba(199, 155, 85, 0.22), transparent 32%, rgba(49, 95, 125, 0.14));
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(233, 240, 247, 0.82)),
+    linear-gradient(90deg, rgba(185, 130, 34, 0.3), transparent 32%, rgba(23, 79, 120, 0.2));
 }
 
 body[data-theme="royal"] .section-kicker,

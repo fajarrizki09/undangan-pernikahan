@@ -1,31 +1,31 @@
 body[data-theme="rose"] {
-  --bg: #fff1f3;
-  --paper: #fffafa;
-  --ink: #342229;
-  --muted: #8b6670;
-  --sage: #a64f68;
-  --sage-soft: #f4d5dc;
-  --champagne: #c4915d;
-  --line: rgba(166, 79, 104, 0.22);
-  --shadow: 0 24px 50px rgba(92, 42, 57, 0.14);
+  --bg: #ffe9ee;
+  --paper: #fff8fa;
+  --ink: #351721;
+  --muted: #85505f;
+  --sage: #c23d68;
+  --sage-soft: #f5c1cf;
+  --champagne: #b87934;
+  --line: rgba(194, 61, 104, 0.34);
+  --shadow: 0 26px 54px rgba(117, 36, 63, 0.2);
   --body-bg:
-    radial-gradient(900px 620px at 50% 12%, rgba(255, 218, 226, 0.58) 0%, rgba(255, 218, 226, 0) 72%),
-    radial-gradient(760px 520px at 80% 95%, rgba(224, 184, 143, 0.25) 0%, rgba(224, 184, 143, 0) 72%),
-    linear-gradient(170deg, #fffafb, #fff1f3);
-  --sparkle-opacity: 0.44;
-  --aura-left-color: #f2c2cf;
-  --aura-right-color: #e8c390;
-  --hero-photo-opacity: 0.32;
-  --hero-photo-filter: saturate(0.86) brightness(1.04);
+    radial-gradient(900px 620px at 50% 12%, rgba(255, 187, 205, 0.7) 0%, rgba(255, 187, 205, 0) 72%),
+    radial-gradient(760px 520px at 80% 95%, rgba(214, 148, 88, 0.32) 0%, rgba(214, 148, 88, 0) 72%),
+    linear-gradient(170deg, #fff9fb, #ffe9ee);
+  --sparkle-opacity: 0.52;
+  --aura-left-color: #ef8fad;
+  --aura-right-color: #d89c54;
+  --hero-photo-opacity: 0.36;
+  --hero-photo-filter: saturate(1.02) brightness(1.03) contrast(1.04);
 }
 
 body[data-theme="rose"] .flower {
   background:
     radial-gradient(circle at 26% 32%, rgba(255, 255, 255, 0.95) 0 18%, transparent 19%),
-    linear-gradient(135deg, #ffe3ef 0%, #ffadc9 45%, #d96d93 100%);
+    linear-gradient(135deg, #ffe1ec 0%, #ff91b7 45%, #c23d68 100%);
   box-shadow:
-    inset -1px -2px 0 rgba(199, 76, 120, 0.22),
-    0 0 10px rgba(240, 138, 180, 0.5);
+    inset -1px -2px 0 rgba(168, 43, 84, 0.28),
+    0 0 12px rgba(231, 91, 139, 0.58);
 }
 
 body[data-theme="rose"] .hero-title-block {
@@ -49,8 +49,8 @@ body[data-theme="rose"] .gift-account-card {
 
 body[data-theme="rose"] .event-item {
   background:
-    radial-gradient(circle at 88% 12%, rgba(255, 196, 214, 0.32), transparent 34%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(255, 241, 243, 0.74));
+    radial-gradient(circle at 88% 12%, rgba(255, 160, 190, 0.4), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(255, 233, 238, 0.82));
 }
 
 body[data-theme="rose"] .story-moon {

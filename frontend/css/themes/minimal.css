@@ -1,22 +1,22 @@
 body[data-theme="minimal"] {
-  --bg: #f6f5f1;
+  --bg: #f3f4f0;
   --paper: #ffffff;
-  --ink: #20201d;
-  --muted: #70706a;
-  --sage: #5e6b5a;
-  --sage-soft: #e6e8df;
-  --champagne: #9f8054;
-  --line: rgba(94, 107, 90, 0.2);
-  --shadow: 0 22px 46px rgba(38, 38, 34, 0.1);
+  --ink: #171914;
+  --muted: #5e6259;
+  --sage: #485640;
+  --sage-soft: #dde3d8;
+  --champagne: #7e653f;
+  --line: rgba(72, 86, 64, 0.28);
+  --shadow: 0 22px 46px rgba(28, 30, 24, 0.12);
   --body-bg:
-    radial-gradient(820px 560px at 50% 12%, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0) 72%),
-    linear-gradient(170deg, #ffffff, #f2f1ec);
+    radial-gradient(820px 560px at 50% 12%, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0) 72%),
+    linear-gradient(170deg, #ffffff, #eceee8);
   --texture-opacity: 0.12;
   --sparkle-opacity: 0;
   --aura-left-color: #e7e8e2;
   --aura-right-color: #dad7cc;
-  --hero-photo-opacity: 0.2;
-  --hero-photo-filter: saturate(0.48) brightness(1.06);
+  --hero-photo-opacity: 0.24;
+  --hero-photo-filter: saturate(0.28) brightness(1.08) contrast(1.08);
 }
 
 body[data-theme="minimal"] .flower::before,
