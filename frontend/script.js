@@ -10,8 +10,9 @@ import { createPublicConfigRuntime } from "./js/public/config.js";
 import { createGalleryController } from "./js/public/gallery.js";
 import { createMusicController } from "./js/public/music.js";
 
-const RSVP_API_URL = window.RSVP_API_URL || "";
+let RSVP_API_URL = window.RSVP_API_URL || "";
 const WEDDING_CONFIG = window.WEDDING_CONFIG || {};
+let PUBLIC_CONFIG_MODE = window.PUBLIC_CONFIG_MODE || "server";
 
 const form = document.getElementById("rsvpForm");
 const statusText = document.getElementById("formStatus");
@@ -34,6 +35,9 @@ const countdownNodes = [cdDays, cdHours, cdMinutes, cdSeconds];
 
 const musicToggle = document.getElementById("musicToggle");
 const bgMusic = document.getElementById("bgMusic");
+const textureLayer = document.querySelector(".texture");
+const auraLeft = document.querySelector(".aura-left");
+const auraRight = document.querySelector(".aura-right");
 const leafLayer = document.getElementById("leafLayer");
 const flowerLayer = document.getElementById("flowerLayer");
 const heroCloudPhoto = document.getElementById("heroCloudPhoto");
@@ -95,11 +99,18 @@ let attemptMusicStartFromGesture = async () => false;
 let wishesAutoScrollTimer = null;
 let wishesAutoPauseUntil = 0;
 let wishesRefreshTimer = null;
+let themeMotionFrame = null;
+let themeMotionSetupDone = false;
+let revealAnimationSetupDone = false;
+let musicControlSetupDone = false;
+let visibilityOptimizationSetupDone = false;
+let invitationGateSetupDone = false;
 
 let currentConfig = createInitialWeddingConfig(WEDDING_CONFIG);
 const CONFIG_CACHE_KEY = "wedding_config_cache_v2";
 const CONFIG_CACHE_TTL_MS = 1000 * 30;
 const ADMIN_PREVIEW_DRAFT_KEY = "wedding_admin_preview_draft_v1";
+const elementCache = new Map();
 const publicConfigRuntime = createPublicConfigRuntime({
   cacheKey: CONFIG_CACHE_KEY,
   cacheTtlMs: CONFIG_CACHE_TTL_MS
@@ -160,14 +171,21 @@ function healMisplacedPhotoConfig(config) {
   return sharedHealMisplacedPhotoConfig(config, WEDDING_CONFIG);
 }
 
+function getCachedElement(id) {
+  if (!elementCache.has(id)) {
+    elementCache.set(id, document.getElementById(id));
+  }
+  return elementCache.get(id);
+}
+
 function setText(id, value) {
-  const el = document.getElementById(id);
+  const el = getCachedElement(id);
   if (!el) return;
   el.textContent = String(value || "");
 }
 
 function setBrandMonogram(value) {
-  const el = document.getElementById("brandInitials");
+  const el = getCachedElement("brandInitials");
   if (!el) return;
 
   const raw = String(value || "").trim();
@@ -192,7 +210,7 @@ function setBrandMonogram(value) {
 }
 
 function setAnimatedName(id, value, baseDelayMs = 0) {
-  const el = document.getElementById(id);
+  const el = getCachedElement(id);
   if (!el) return;
 
   const text = String(value || "").trim();
@@ -225,12 +243,12 @@ function setAnimatedName(id, value, baseDelayMs = 0) {
 }
 
 function setLink(id, value) {
-  const el = document.getElementById(id);
+  const el = getCachedElement(id);
   if (el && value) el.href = value;
 }
 
 function setInternalAnchorLink(id, hashTarget) {
-  const el = document.getElementById(id);
+  const el = getCachedElement(id);
   if (!el) return;
   el.href = hashTarget || "#";
   el.removeAttribute("target");
@@ -238,7 +256,7 @@ function setInternalAnchorLink(id, hashTarget) {
 }
 
 function setHtml(id, value) {
-  const el = document.getElementById(id);
+  const el = getCachedElement(id);
   if (el && value) el.innerHTML = value;
 }
 
@@ -262,7 +280,7 @@ function formatEventDateHtml(value) {
 }
 
 function setIframeSrc(id, value) {
-  const el = document.getElementById(id);
+  const el = getCachedElement(id);
   if (el && value) el.src = value;
 }
 
@@ -413,14 +431,82 @@ function normalizeThemeName(value) {
 }
 
 function applyThemeName(value) {
-  document.body.dataset.theme = normalizeThemeName(value);
+  const theme = normalizeThemeName(value);
+  document.body.dataset.theme = theme;
+  syncThemeMotion(theme);
+}
+
+function syncThemeMotion(theme) {
+  const normalized = normalizeThemeName(theme);
+  const shouldReduceMotion = prefersReducedMotion || isSmallMobileViewport;
+  document.body.classList.toggle("theme-motion-off", shouldReduceMotion);
+
+  if (normalized === "minimal") {
+    particleState.maxLeaves = isSmallMobileViewport ? 2 : (isLowPowerDevice ? 4 : 8);
+    particleState.maxFlowers = isSmallMobileViewport ? 1 : (isLowPowerDevice ? 3 : 6);
+  } else if (normalized === "royal") {
+    particleState.maxLeaves = isSmallMobileViewport ? 2 : (isLowPowerDevice ? 5 : 10);
+    particleState.maxFlowers = isSmallMobileViewport ? 4 : (isLowPowerDevice ? 8 : 16);
+  } else if (normalized === "rose") {
+    particleState.maxLeaves = isSmallMobileViewport ? 2 : (isLowPowerDevice ? 5 : 10);
+    particleState.maxFlowers = isSmallMobileViewport ? 5 : (isLowPowerDevice ? 10 : 20);
+  } else {
+    particleState.maxLeaves = isSmallMobileViewport ? 4 : (isLowPowerDevice ? 8 : 18);
+    particleState.maxFlowers = isSmallMobileViewport ? 3 : (isLowPowerDevice ? 6 : 14);
+  }
+
+  updateThemeParallax();
+}
+
+function setMotionVar(name, value) {
+  document.documentElement.style.setProperty(name, value);
+}
+
+function updateThemeParallax() {
+  if (prefersReducedMotion || isSmallMobileViewport) {
+    setMotionVar("--hero-parallax-y", "0px");
+    setMotionVar("--hero-title-parallax-y", "0px");
+    setMotionVar("--aura-left-y", "0px");
+    setMotionVar("--aura-right-y", "0px");
+    setMotionVar("--texture-y", "0px");
+    return;
+  }
+
+  const scrollY = window.scrollY || window.pageYOffset || 0;
+  const viewportH = window.innerHeight || 1;
+  const heroProgress = Math.min(scrollY / viewportH, 1.35);
+  setMotionVar("--hero-parallax-y", `${(heroProgress * 46).toFixed(2)}px`);
+  setMotionVar("--hero-title-parallax-y", `${(heroProgress * -14).toFixed(2)}px`);
+  setMotionVar("--aura-left-y", `${(scrollY * -0.035).toFixed(2)}px`);
+  setMotionVar("--aura-right-y", `${(scrollY * 0.045).toFixed(2)}px`);
+  setMotionVar("--texture-y", `${(scrollY * -0.018).toFixed(2)}px`);
+}
+
+function scheduleThemeParallax() {
+  if (themeMotionFrame) return;
+  themeMotionFrame = window.requestAnimationFrame(() => {
+    themeMotionFrame = null;
+    updateThemeParallax();
+  });
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
   return publicConfigRuntime.fetchWithTimeout(url, options, timeoutMs);
 }
 
+async function hydrateRuntimeConfig() {
+  if (window.RUNTIME_CONFIG_PROMISE && typeof window.RUNTIME_CONFIG_PROMISE.then === "function") {
+    await window.RUNTIME_CONFIG_PROMISE;
+  }
+  RSVP_API_URL = window.RSVP_API_URL || RSVP_API_URL;
+  PUBLIC_CONFIG_MODE = window.PUBLIC_CONFIG_MODE || PUBLIC_CONFIG_MODE;
+}
+
 async function loadServerConfig() {
+  if (PUBLIC_CONFIG_MODE === "local") {
+    return true;
+  }
+
   const result = await publicConfigRuntime.loadServerConfig({
     currentConfig,
     mergeConfig,
@@ -1038,21 +1124,17 @@ function applyWeddingConfig() {
   renderGalleryGrid(currentConfig.galleryPhotos);
   renderGiftSection();
 
-  if (Array.isArray(currentConfig.loveStoryPhotos)) {
-    currentConfig.loveStoryPhotos.slice(0, 3).forEach((src, index) => {
-      const img = document.getElementById(`storyPhoto${index + 1}`);
-      applyImageWithFallback(img, src, {
-        purpose: "story",
-        fallbackSrc: `assets/photos/foto-${index + 1}.svg`
-      });
-    });
-  }
-
   const storyItems = Array.isArray(currentConfig.loveStoryItems) && currentConfig.loveStoryItems.length
     ? currentConfig.loveStoryItems
     : (Array.isArray(WEDDING_CONFIG.loveStoryItems) ? WEDDING_CONFIG.loveStoryItems : []);
   storyItems.slice(0, 3).forEach((item, index) => {
     const i = index + 1;
+    const storyPhoto = String((item && item.photo) || (currentConfig.loveStoryPhotos && currentConfig.loveStoryPhotos[index]) || "").trim();
+    const img = document.getElementById(`storyPhoto${i}`);
+    applyImageWithFallback(img, storyPhoto, {
+      purpose: "story",
+      fallbackSrc: `assets/photos/foto-${i}.svg`
+    });
     setText(`storyYear${i}`, formatStoryDateDisplay(item && item.date));
     setText(`storyTitle${i}`, item && item.title);
     setText(`storyDesc${i}`, cleanStoryDescription(item && item.description));
@@ -1080,6 +1162,9 @@ function setupInvitationGate() {
     invitationGate.setAttribute("aria-hidden", "true");
     return;
   }
+
+  if (invitationGateSetupDone) return;
+  invitationGateSetupDone = true;
 
   openInvitationBtn.addEventListener("click", () => {
     attemptMusicStartFromGesture().catch(() => {});
@@ -1249,6 +1334,18 @@ function parseIndonesianDateToMs(dateText, timeText) {
 }
 
 function parsePrimaryWeddingTimestamp() {
+  const eventStartIso = String(currentConfig.eventStartISO || "").trim();
+  if (eventStartIso) {
+    const eventStartMs = parseIsoDateTimeToMs(eventStartIso);
+    if (!Number.isNaN(eventStartMs)) return eventStartMs;
+  }
+
+  const isoValue = String(currentConfig.weddingDateISO || "").trim();
+  if (isoValue) {
+    const isoTime = parseIsoDateTimeToMs(isoValue);
+    if (!Number.isNaN(isoTime)) return isoTime;
+  }
+
   const resepsiDate = (currentConfig.resepsi && currentConfig.resepsi.date) || "";
   const resepsiTime = (currentConfig.resepsi && currentConfig.resepsi.time) || "";
   const resepsiMs = parseIndonesianDateToMs(resepsiDate, resepsiTime);
@@ -1261,18 +1358,6 @@ function parsePrimaryWeddingTimestamp() {
 
   const heroMs = parseIndonesianDateToMs(currentConfig.heroDatePlace || "", resepsiTime);
   if (!Number.isNaN(heroMs)) return heroMs;
-
-  const eventStartIso = String(currentConfig.eventStartISO || "").trim();
-  if (eventStartIso) {
-    const eventStartMs = parseIsoDateTimeToMs(eventStartIso);
-    if (!Number.isNaN(eventStartMs)) return eventStartMs;
-  }
-
-  const isoValue = String(currentConfig.weddingDateISO || "").trim();
-  if (isoValue) {
-    const isoTime = parseIsoDateTimeToMs(isoValue);
-    if (!Number.isNaN(isoTime)) return isoTime;
-  }
 
   return NaN;
 }
@@ -1333,6 +1418,9 @@ function updateCountdown() {
 }
 
 function setupRevealAnimation() {
+  if (revealAnimationSetupDone) return;
+  revealAnimationSetupDone = true;
+
   const sections = document.querySelectorAll(".reveal");
 
   const observer = new IntersectionObserver(
@@ -1351,6 +1439,9 @@ function setupRevealAnimation() {
 }
 
 function setupMusicControl() {
+  if (musicControlSetupDone) return;
+  musicControlSetupDone = true;
+
   const runtime = musicController.setupMusicControl();
   if (runtime && typeof runtime.startMusicFromGesture === "function") {
     attemptMusicStartFromGesture = runtime.startMusicFromGesture;
@@ -1439,6 +1530,9 @@ function stopTimers() {
 }
 
 function setupVisibilityOptimization() {
+  if (visibilityOptimizationSetupDone) return;
+  visibilityOptimizationSetupDone = true;
+
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       stopTimers();
@@ -1569,10 +1663,19 @@ if (resepsiMapEmbed) {
   });
 }
 
+function setupThemeMotion() {
+  updateThemeParallax();
+  if (themeMotionSetupDone) return;
+  themeMotionSetupDone = true;
+  window.addEventListener("scroll", scheduleThemeParallax, { passive: true });
+  window.addEventListener("resize", scheduleThemeParallax);
+}
+
 async function initPage() {
   setLoaderMessage("Memuat data undangan dari Sheet...", false);
 
   try {
+    await hydrateRuntimeConfig();
     const ready = await loadServerConfig();
     const shouldUseServer = RSVP_API_URL && !RSVP_API_URL.includes("PASTE_WEB_APP_URL");
 
@@ -1592,6 +1695,7 @@ async function initPage() {
     setupRevealAnimation();
     setupMusicControl();
     setupVisibilityOptimization();
+    setupThemeMotion();
     setupInvitationGate();
     startTimers();
     startWishesRefresh();

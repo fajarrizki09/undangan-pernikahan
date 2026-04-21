@@ -43,6 +43,15 @@ This is a digital wedding invitation app in Indonesian.
 6. Do not dump full large files into context. Use targeted `Select-String`, line ranges, or the snapshot script.
 7. Preserve Indonesian UI copy unless the user asks for another language.
 
+## Token Economy
+
+- Keep context lean by default: use `tools/ai-snapshot.ps1`, `rg`, `Select-String`, `Get-Content -TotalCount`, or small line ranges before opening whole files.
+- Treat command output like an API response: filter, summarize, and return only the lines needed for the current decision.
+- Prefer exact file paths, function names, and line references over broad project scans.
+- Reuse the project map in this file and the local workflow skill instead of rediscovering the repository from scratch.
+- When researching tools, libraries, or technical choices, collect only decision-grade facts: what it solves, why it fits this repo, risks, and whether it needs new dependencies.
+- Use a concise, direct technical style. Preserve accuracy and Indonesian user-facing copy, but avoid long narration unless the user asks for deep explanation.
+
 ## Validation
 
 There is no package manifest or automated test command in this repo right now.
@@ -61,3 +70,7 @@ Use lightweight checks:
 - Optional Drive uploads can use Script Properties (`DRIVE_FOLDER_ID`).
 - GitHub Pages can serve `frontend/`; Vercel is used when dynamic share metadata or `/api/music` proxy is needed.
 
+## Roadmaps
+
+- Multi-client planning lives in `docs/MULTI_CLIENT_PLAN.md`.
+- Backend Apps Script (`backend-gas/Code.gs`) and local Codex skill files are managed locally/manual-first and should not be pushed unless the user explicitly asks.
