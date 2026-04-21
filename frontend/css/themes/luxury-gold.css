@@ -97,6 +97,20 @@ body[data-theme="luxury-gold"] .card {
     var(--shadow);
 }
 
+body[data-theme="luxury-gold"] .gallery-section,
+body[data-theme="luxury-gold"] .map-card,
+body[data-theme="luxury-gold"] .timeline article,
+body[data-theme="luxury-gold"] .faith-block {
+  color: #fff3d0;
+  background:
+    linear-gradient(145deg, rgba(35, 25, 13, 0.94), rgba(17, 12, 7, 0.92)),
+    radial-gradient(circle at 90% 8%, rgba(255, 215, 110, 0.16), transparent 36%);
+  border-color: rgba(255, 215, 110, 0.24);
+  box-shadow:
+    0 0 0 1px rgba(255, 215, 110, 0.12),
+    0 24px 58px rgba(0, 0, 0, 0.32);
+}
+
 body[data-theme="luxury-gold"] .event-item,
 body[data-theme="luxury-gold"] .gift-account-card,
 body[data-theme="luxury-gold"] .countdown-item {
@@ -117,9 +131,11 @@ body[data-theme="luxury-gold"] .event-tag {
 body[data-theme="luxury-gold"] .lead,
 body[data-theme="luxury-gold"] .event-date-day,
 body[data-theme="luxury-gold"] .event-meta p,
+body[data-theme="luxury-gold"] .timeline-content p:last-child,
 body[data-theme="luxury-gold"] .gift-section .lead,
 body[data-theme="luxury-gold"] .closing-section .lead,
 body[data-theme="luxury-gold"] .rsvp-mode-hint,
+body[data-theme="luxury-gold"] .faith-text,
 body[data-theme="luxury-gold"] .gift-account-holder {
   color: #dcc68e;
 }
@@ -129,8 +145,11 @@ body[data-theme="luxury-gold"] .event-meta p span:last-child,
 body[data-theme="luxury-gold"] .gift-account-number,
 body[data-theme="luxury-gold"] .gift-bank-name,
 body[data-theme="luxury-gold"] .countdown strong,
+body[data-theme="luxury-gold"] .timeline-content h3,
 body[data-theme="luxury-gold"] #loveStory h3,
 body[data-theme="luxury-gold"] #loveStory p,
+body[data-theme="luxury-gold"] .faith-title,
+body[data-theme="luxury-gold"] .quran-ar,
 body[data-theme="luxury-gold"] .quran-card,
 body[data-theme="luxury-gold"] .rsvp-form label {
   color: #fff3d0;
@@ -138,6 +157,8 @@ body[data-theme="luxury-gold"] .rsvp-form label {
 
 body[data-theme="luxury-gold"] .event-label,
 body[data-theme="luxury-gold"] .countdown span,
+body[data-theme="luxury-gold"] .year,
+body[data-theme="luxury-gold"] .quran-ref,
 body[data-theme="luxury-gold"] .gift-category-hint {
   color: rgba(255, 215, 110, 0.78);
 }
@@ -154,6 +175,28 @@ body[data-theme="luxury-gold"] .event-utility a,
 body[data-theme="luxury-gold"] .hero-text-link {
   color: #ffd76e;
   text-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+body[data-theme="luxury-gold"] .map-frame-wrap,
+body[data-theme="luxury-gold"] .map-placeholder {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255, 215, 110, 0.14), transparent 28%),
+    linear-gradient(135deg, rgba(30, 22, 12, 0.96), rgba(18, 13, 8, 0.96));
+}
+
+body[data-theme="luxury-gold"] .map-placeholder {
+  color: #dcc68e;
+}
+
+body[data-theme="luxury-gold"] .timeline::before {
+  background: linear-gradient(180deg, rgba(255, 215, 110, 0.95), rgba(255, 215, 110, 0.18));
+  box-shadow: 0 0 0 6px rgba(255, 215, 110, 0.08);
+}
+
+body[data-theme="luxury-gold"] .timeline article::before {
+  background: linear-gradient(135deg, #fff2b5, #b98222);
+  border-color: rgba(35, 25, 13, 0.98);
+  box-shadow: 0 0 0 6px rgba(255, 215, 110, 0.18);
 }
 
 body[data-theme="luxury-gold"] .btn,

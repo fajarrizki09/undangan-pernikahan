@@ -212,6 +212,9 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
 
 .gate-envelope h2 {
   margin-top: 10px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0;
   font-size: clamp(2rem, 8vw, 3.2rem);
 }
 
@@ -237,6 +240,9 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
 
 .gate-recipient h3 {
   margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0;
   font-size: clamp(1.2rem, 4.6vw, 1.58rem);
   line-height: 1.1;
 }
