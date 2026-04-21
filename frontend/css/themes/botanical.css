@@ -16,8 +16,8 @@ body[data-theme="botanical"] {
     linear-gradient(170deg, #fbfcf6, #e9f0e5);
   --aura-left-color: #8faa88;
   --aura-right-color: #d8c38a;
-  --hero-photo-opacity: 0.42;
-  --hero-photo-filter: saturate(0.5) brightness(1.08) contrast(0.98);
+  --hero-photo-opacity: 0.58;
+  --hero-photo-filter: saturate(0.62) brightness(1.04) contrast(1.03);
   --font-body: "Manrope", sans-serif;
   --font-heading: "Cormorant Garamond", serif;
   --font-display: "Cormorant Garamond", serif;
@@ -75,7 +75,7 @@ body[data-theme="botanical"] .hero-title-block {
   background:
     radial-gradient(circle at 14% 18%, rgba(255, 255, 255, 0.22) 0 18px, transparent 19px),
     radial-gradient(circle at 86% 20%, rgba(255, 255, 255, 0.16) 0 14px, transparent 15px),
-    linear-gradient(145deg, rgba(95, 126, 98, 0.82), rgba(78, 111, 82, 0.74));
+    linear-gradient(145deg, rgba(95, 126, 98, 0.68), rgba(78, 111, 82, 0.58));
   border: 1px solid rgba(255, 253, 248, 0.24);
   color: #fffdf8;
   box-shadow: 0 24px 54px rgba(42, 70, 47, 0.16);
@@ -168,4 +168,49 @@ body[data-theme="botanical"] .rsvp-submit {
 body[data-theme="botanical"] .btn:hover,
 body[data-theme="botanical"] .gift-copy-btn:hover {
   box-shadow: 0 14px 30px rgba(69, 106, 79, 0.3);
+}
+
+@media (min-width: 901px) {
+  body[data-theme="botanical"] .hero {
+    min-height: 92vh;
+    place-content: end center;
+    padding-bottom: 12vh;
+  }
+
+  body[data-theme="botanical"] .hero-cloud-photo {
+    top: 36%;
+    width: min(980px, 82vw);
+    aspect-ratio: 16 / 7.2;
+    opacity: 0.62;
+  }
+
+  body[data-theme="botanical"] .hero-title-block {
+    width: min(820px, 78vw);
+    background:
+      radial-gradient(circle at 14% 18%, rgba(255, 255, 255, 0.2) 0 18px, transparent 19px),
+      linear-gradient(145deg, rgba(95, 126, 98, 0.68), rgba(78, 111, 82, 0.54));
+  }
+
+  body[data-theme="botanical"] .event-item,
+  body[data-theme="botanical"] .gift-account-card {
+    background-image:
+      radial-gradient(circle at 12% 16%, rgba(255, 255, 255, 0.22) 0 16px, transparent 17px),
+      linear-gradient(145deg, rgba(255, 253, 248, 0.94), rgba(222, 232, 215, 0.74));
+    color: #172119;
+  }
+
+  body[data-theme="botanical"] .event-item h3,
+  body[data-theme="botanical"] .event-date-main,
+  body[data-theme="botanical"] .event-meta p span:last-child,
+  body[data-theme="botanical"] .gift-bank-name,
+  body[data-theme="botanical"] .gift-account-number {
+    color: #172119;
+  }
+
+  body[data-theme="botanical"] .event-tag,
+  body[data-theme="botanical"] .event-label,
+  body[data-theme="botanical"] .event-date-day,
+  body[data-theme="botanical"] .event-meta p {
+    color: #516253;
+  }
 }
