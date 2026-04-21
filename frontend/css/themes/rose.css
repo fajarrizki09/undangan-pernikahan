@@ -17,10 +17,60 @@ body[data-theme="rose"] {
   --aura-right-color: #c5a46f;
   --hero-photo-opacity: 0.28;
   --hero-photo-filter: saturate(0.74) brightness(1.07) contrast(1.02);
-  --font-body: "Montserrat", sans-serif;
-  --font-heading: "Montserrat", sans-serif;
+  --font-body: "Manrope", sans-serif;
+  --font-heading: "Cormorant Garamond", serif;
   --font-display: "Great Vibes", cursive;
-  --font-accent: "Montserrat", sans-serif;
+  --font-accent: "Manrope", sans-serif;
+}
+
+body[data-theme="rose"] .section h2 {
+  font-weight: 600;
+}
+
+body[data-theme="rose"] .section-title,
+body[data-theme="rose"] .section h2 {
+  letter-spacing: 0.06em;
+}
+
+body[data-theme="rose"] .section h2::after {
+  content: "";
+  display: block;
+  width: min(150px, 42vw);
+  height: 3px;
+  margin-top: 14px;
+  background: linear-gradient(90deg, rgba(181, 111, 120, 0.74), rgba(197, 164, 111, 0.36), transparent);
+  border-radius: 999px;
+}
+
+body[data-theme="rose"] .card,
+body[data-theme="rose"] .gallery-section {
+  overflow: hidden;
+}
+
+body[data-theme="rose"] .card::after,
+body[data-theme="rose"] .gallery-section::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  pointer-events: none;
+  border: 1px solid rgba(181, 111, 120, 0.12);
+  border-radius: inherit;
+}
+
+body[data-theme="rose"] .mempelai-intro {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(181, 111, 120, 0.18), transparent 30%),
+    linear-gradient(180deg, rgba(255, 250, 248, 0.99), rgba(255, 255, 255, 0.96));
+}
+
+body[data-theme="rose"] #acara.card {
+  background:
+    linear-gradient(90deg, rgba(181, 111, 120, 0.1), transparent 28%),
+    linear-gradient(180deg, rgba(255, 250, 248, 0.99), rgba(255, 255, 255, 0.96));
+}
+
+body[data-theme="rose"] #rsvp.card {
+  border-radius: 28px;
 }
 
 body[data-theme="rose"] .flower {

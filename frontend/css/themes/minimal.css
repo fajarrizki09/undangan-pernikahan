@@ -17,10 +17,15 @@ body[data-theme="minimal"] {
   --aura-right-color: #dad7cc;
   --hero-photo-opacity: 0.24;
   --hero-photo-filter: saturate(0.28) brightness(1.08) contrast(1.08);
-  --font-body: "Open Sans", sans-serif;
-  --font-heading: "Open Sans", sans-serif;
-  --font-display: "Pacifico", cursive;
-  --font-accent: "Open Sans", sans-serif;
+  --font-body: "Manrope", sans-serif;
+  --font-heading: "Cormorant Garamond", serif;
+  --font-display: "Great Vibes", cursive;
+  --font-accent: "Manrope", sans-serif;
+  font-size: 16px;
+}
+
+body[data-theme="minimal"] h1 {
+  font-weight: 500;
 }
 
 body[data-theme="minimal"] .flower::before,
@@ -82,8 +87,39 @@ body[data-theme="minimal"] .countdown-item {
 }
 
 body[data-theme="minimal"] .section {
+  max-width: 720px;
+  margin-inline: auto;
   padding-top: clamp(56px, 8vw, 92px);
   padding-bottom: clamp(56px, 8vw, 92px);
+}
+
+body[data-theme="minimal"] .section + .section {
+  border-top: 1px solid rgba(72, 86, 64, 0.14);
+}
+
+body[data-theme="minimal"] .section h2::after {
+  content: "";
+  display: block;
+  width: 44px;
+  height: 1px;
+  margin-top: 18px;
+  background: rgba(72, 86, 64, 0.46);
+}
+
+body[data-theme="minimal"] .card,
+body[data-theme="minimal"] .gallery-section {
+  background: transparent;
+  border-left: 0;
+  border-right: 0;
+}
+
+body[data-theme="minimal"] .mempelai-intro {
+  border-top: 1px solid rgba(72, 86, 64, 0.2);
+}
+
+body[data-theme="minimal"] #giftSection,
+body[data-theme="minimal"] #rsvp.card {
+  background: rgba(255, 255, 255, 0.48);
 }
 
 body[data-theme="minimal"] .gallery-item,

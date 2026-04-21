@@ -18,10 +18,52 @@ body[data-theme="royal"] {
   --aura-right-color: #d9c88f;
   --hero-photo-opacity: 0.3;
   --hero-photo-filter: saturate(0.7) brightness(1.08) contrast(1.02);
-  --font-body: "Forum", serif;
-  --font-heading: "Forum", serif;
+  --font-body: "Montserrat", sans-serif;
+  --font-heading: "Cormorant Garamond", serif;
   --font-display: "Pinyon Script", cursive;
-  --font-accent: "Forum", serif;
+  --font-accent: "Montserrat", sans-serif;
+}
+
+body[data-theme="royal"] .section h2,
+body[data-theme="royal"] .section h3 {
+  font-family: "Cormorant Garamond", serif;
+}
+
+body[data-theme="royal"] .section h2,
+body[data-theme="royal"] .section-kicker,
+body[data-theme="royal"] .lead {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body[data-theme="royal"] .section h2::before,
+body[data-theme="royal"] .section h2::after {
+  content: "";
+  display: inline-block;
+  width: clamp(38px, 8vw, 86px);
+  height: 1px;
+  margin: 0 16px 0.18em;
+  vertical-align: middle;
+  background: linear-gradient(90deg, transparent, rgba(187, 163, 107, 0.82), rgba(53, 93, 128, 0.42));
+}
+
+body[data-theme="royal"] .section h2::after {
+  background: linear-gradient(90deg, rgba(53, 93, 128, 0.42), rgba(187, 163, 107, 0.82), transparent);
+}
+
+body[data-theme="royal"] .card,
+body[data-theme="royal"] .gallery-section {
+  outline: 1px solid rgba(187, 163, 107, 0.28);
+  outline-offset: -10px;
+}
+
+body[data-theme="royal"] #acara.card .event-grid {
+  max-width: 900px;
+}
+
+body[data-theme="royal"] #rsvp.card {
+  max-width: 920px;
 }
 
 body[data-theme="royal"] .flower {
