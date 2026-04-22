@@ -82,6 +82,26 @@ body[data-theme="rose"] #rsvp.card {
   border-radius: 28px;
 }
 
+body[data-theme="rose"] .rsvp-form,
+body[data-theme="rose"] .wishes-panel,
+body[data-theme="rose"] .wishes-item {
+  border-color: rgba(181, 111, 120, 0.22);
+  background: rgba(255, 250, 248, 0.88);
+}
+
+body[data-theme="rose"] .rsvp-mode-hint,
+body[data-theme="rose"] .rsvp-pill-row span,
+body[data-theme="rose"] .wish-presence,
+body[data-theme="rose"] .wishes-toggle {
+  color: #9f5963;
+  border-color: rgba(181, 111, 120, 0.22);
+  background: rgba(181, 111, 120, 0.08);
+}
+
+body[data-theme="rose"] .wishes-item-head strong {
+  color: #8f4e58;
+}
+
 body[data-theme="rose"] .flower {
   background:
     radial-gradient(circle at 26% 32%, rgba(255, 255, 255, 0.9) 0 18%, transparent 19%),
@@ -154,9 +174,21 @@ body[data-theme="rose"] .gallery-section {
 
 body[data-theme="rose"] .event-item {
   background:
-    linear-gradient(90deg, rgba(181, 111, 120, 0.18), transparent 34%),
+    linear-gradient(90deg, rgba(181, 111, 120, 0.14), transparent 34%),
     linear-gradient(145deg, rgba(255, 250, 248, 0.99), rgba(255, 255, 255, 0.96));
   border-color: rgba(181, 111, 120, 0.2);
+  box-shadow: 0 14px 30px rgba(145, 91, 96, 0.12);
+}
+
+body[data-theme="rose"] .event-item::before {
+  background: linear-gradient(90deg, #b56f78, #c5a46f);
+  opacity: 0.62;
+}
+
+body[data-theme="rose"] .event-tag {
+  color: #9f5963;
+  background: linear-gradient(90deg, rgba(181, 111, 120, 0.16), rgba(197, 164, 111, 0.1));
+  border: 1px solid rgba(181, 111, 120, 0.16);
 }
 
 body[data-theme="rose"] .gallery-item,
