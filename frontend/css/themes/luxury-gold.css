@@ -229,6 +229,13 @@ body[data-theme="luxury-gold"] .gift-category-tab {
   border-color: rgba(198, 164, 91, 0.24);
 }
 
+body[data-theme="luxury-gold"] .gift-category-tab.is-active {
+  color: #fffdf8;
+  background: linear-gradient(135deg, #8a7542, #c6a45b);
+  border-color: rgba(198, 164, 91, 0.42);
+  box-shadow: 0 14px 28px rgba(83, 67, 42, 0.18);
+}
+
 body[data-theme="luxury-gold"] .text-link,
 body[data-theme="luxury-gold"] .event-utility a,
 body[data-theme="luxury-gold"] .hero-text-link {

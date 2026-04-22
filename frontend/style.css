@@ -1552,9 +1552,9 @@ h3 {
 }
 
 .wishes-panel {
-  border: 1px solid rgba(79, 119, 100, 0.14);
+  border: 1px solid var(--line);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.66);
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
   padding: 18px;
 }
 
@@ -1579,11 +1579,11 @@ h3 {
 
 .wishes-toggle {
   display: none;
-  border: 1px solid rgba(79, 119, 100, 0.18);
+  border: 1px solid var(--line);
   border-radius: 999px;
   padding: 7px 12px;
-  background: rgba(255, 255, 255, 0.66);
-  color: #476454;
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  color: var(--sage);
   font: inherit;
   font-size: 0.76rem;
   font-weight: 700;
@@ -1600,9 +1600,9 @@ h3 {
 }
 
 .wishes-item {
-  border: 1px solid rgba(79, 119, 100, 0.14);
+  border: 1px solid var(--line);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.72);
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
   padding: 10px 12px;
 }
 
@@ -1615,7 +1615,7 @@ h3 {
 }
 
 .wishes-item-head strong {
-  color: #365444;
+  color: var(--sage);
   font-size: 0.96rem;
 }
 
@@ -1626,9 +1626,9 @@ h3 {
   text-transform: uppercase;
   border-radius: 999px;
   padding: 4px 8px;
-  border: 1px solid rgba(79, 119, 100, 0.2);
-  color: #476454;
-  background: #edf5ef;
+  border: 1px solid color-mix(in srgb, var(--sage) 28%, transparent);
+  color: var(--sage);
+  background: color-mix(in srgb, var(--sage-soft) 72%, var(--paper));
 }
 
 .wish-presence.absent {
@@ -1639,24 +1639,24 @@ h3 {
 
 .wish-text {
   margin: 8px 0 0;
-  color: #42574d;
+  color: var(--ink);
   line-height: 1.65;
 }
 
 .wish-time {
   margin: 8px 0 0;
   font-size: 0.73rem;
-  color: #708579;
+  color: var(--muted);
 }
 
 .wishes-empty {
   margin: 0;
-  border: 1px dashed rgba(79, 119, 100, 0.26);
+  border: 1px dashed color-mix(in srgb, var(--sage) 32%, transparent);
   border-radius: 12px;
   padding: 12px;
   text-align: center;
-  color: #607569;
-  background: rgba(255, 255, 255, 0.68);
+  color: var(--muted);
+  background: color-mix(in srgb, var(--paper) 76%, transparent);
 }
 
 .gift-section {
@@ -1699,17 +1699,18 @@ h3 {
 .gift-category-tab {
   flex: 1 1 0;
   min-width: 150px;
-  border: 1px solid rgba(79, 119, 100, 0.18);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 252, 247, 0.95), rgba(244, 248, 245, 0.95));
-  color: #3b5748;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--paper) 94%, white), color-mix(in srgb, var(--sage-soft) 46%, var(--paper)));
+  color: var(--sage);
   padding: 13px 18px;
   font: inherit;
   font-weight: 700;
   letter-spacing: 0.01em;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-  box-shadow: 0 8px 18px rgba(52, 86, 69, 0.08);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--sage) 12%, transparent);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1718,14 +1719,14 @@ h3 {
 
 .gift-category-tab:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(52, 86, 69, 0.12);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--sage) 16%, transparent);
 }
 
 .gift-category-tab.is-active {
-  background: linear-gradient(135deg, #557d66, #85ae95);
+  background: linear-gradient(135deg, var(--sage), color-mix(in srgb, var(--sage) 64%, var(--champagne)));
   color: #fffdf8;
-  border-color: rgba(95, 130, 110, 0.35);
-  box-shadow: 0 14px 26px rgba(52, 86, 69, 0.18);
+  border-color: color-mix(in srgb, var(--champagne) 42%, var(--sage));
+  box-shadow: 0 14px 26px color-mix(in srgb, var(--sage) 22%, transparent);
 }
 
 .gift-category-chevron {
@@ -1735,8 +1736,8 @@ h3 {
   height: 20px;
   border-radius: 999px;
   font-size: 0.9rem;
-  background: rgba(233, 241, 236, 0.95);
-  color: #557162;
+  background: color-mix(in srgb, var(--sage-soft) 78%, var(--paper));
+  color: var(--sage);
   transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
@@ -1765,7 +1766,7 @@ h3 {
 .gift-category-hint {
   grid-column: 1 / -1;
   margin: 0 auto -4px;
-  color: #607569;
+  color: var(--sage);
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -1784,12 +1785,12 @@ h3 {
 }
 
 .gift-account-card {
-  border: 1px solid rgba(79, 119, 100, 0.16);
+  border: 1px solid var(--line);
   border-radius: 26px;
-  background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(246, 249, 246, 0.94));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--paper) 96%, white), color-mix(in srgb, var(--sage-soft) 24%, var(--paper)));
   display: grid;
   gap: 0;
-  box-shadow: 0 16px 30px rgba(45, 71, 58, 0.12);
+  box-shadow: 0 16px 30px color-mix(in srgb, var(--sage) 14%, transparent);
   overflow: hidden;
 }
 
@@ -1813,7 +1814,7 @@ h3 {
   width: min(100%, 182px);
   height: 86px;
   border-radius: 18px;
-  border: 1px solid rgba(79, 119, 100, 0.12);
+  border: 1px solid var(--line);
   object-fit: contain;
   background: rgba(255, 255, 255, 0.92);
   padding: 10px 12px;
@@ -1825,14 +1826,14 @@ h3 {
   width: min(100%, 182px);
   height: 86px;
   border-radius: 18px;
-  border: 1px solid rgba(79, 119, 100, 0.12);
+  border: 1px solid var(--line);
   display: grid;
   place-items: center;
   font-weight: 700;
   font-size: 1.7rem;
   letter-spacing: 0.08em;
-  color: #557d66;
-  background: rgba(255, 255, 255, 0.92);
+  color: var(--sage);
+  background: color-mix(in srgb, var(--paper) 92%, white);
 }
 
 .gift-bank-fallback.is-hidden {
@@ -1868,27 +1869,27 @@ h3 {
 
 .gift-account-holder {
   margin: 0;
-  color: #5d7367;
+  color: var(--muted);
   font-size: 1rem;
   font-weight: 600;
 }
 
 .gift-copy-btn {
   width: fit-content;
-  border: 1px solid rgba(79, 119, 100, 0.16);
+  border: 1px solid color-mix(in srgb, var(--champagne) 42%, var(--sage));
   border-radius: 999px;
-  background: linear-gradient(180deg, #5f826e, #6f927d);
+  background: linear-gradient(135deg, var(--sage), color-mix(in srgb, var(--sage) 58%, var(--champagne)));
   color: #fffdf8;
   padding: 10px 18px;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 10px 18px rgba(52, 86, 69, 0.18);
+  box-shadow: 0 10px 18px color-mix(in srgb, var(--sage) 22%, transparent);
 }
 
 .gift-copy-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 22px rgba(52, 86, 69, 0.24);
+  box-shadow: 0 12px 22px color-mix(in srgb, var(--sage) 28%, transparent);
 }
 
 label {
@@ -1902,10 +1903,10 @@ input,
 select,
 textarea {
   width: 100%;
-  border: 1px solid rgba(79, 119, 100, 0.3);
+  border: 1px solid color-mix(in srgb, var(--sage) 34%, transparent);
   border-radius: 12px;
   padding: 12px;
-  background: #fff;
+  background: color-mix(in srgb, var(--paper) 92%, white);
   color: var(--ink);
   font: inherit;
 }
@@ -1913,8 +1914,8 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid #c7decd;
-  border-color: #79a28d;
+  outline: 2px solid color-mix(in srgb, var(--sage-soft) 70%, transparent);
+  border-color: var(--sage);
 }
 
 .btn {
