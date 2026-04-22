@@ -423,19 +423,20 @@ body.invitation-locked:not(.is-loading) .invitation-gate {
   text-align: left;
 }
 
-body[data-theme] .section:not(.hero):not(.footer) {
+body[data-theme] {
   --section-ornament-url: url("assets/ornaments/royal-divider.svg");
   --section-ornament-color: var(--champagne);
   --section-ornament-opacity: 0.18;
 }
 
-body[data-theme] .section:not(.hero):not(.footer)::before,
-body[data-theme] .section:not(.hero):not(.footer)::after {
+body[data-theme] .hero::after,
+body[data-theme] .closing-section::before,
+body[data-theme] .closing-section::after {
   content: "";
   position: absolute;
   left: 50%;
-  width: min(300px, 62%);
-  height: 62px;
+  width: min(430px, 64vw);
+  height: 82px;
   pointer-events: none;
   background-color: var(--section-ornament-color);
   -webkit-mask: var(--section-ornament-url) center / contain no-repeat;
@@ -444,19 +445,19 @@ body[data-theme] .section:not(.hero):not(.footer)::after {
   z-index: 0;
 }
 
-body[data-theme] .section:not(.hero):not(.footer)::before {
-  top: 12px;
-  transform: translateX(-50%);
-}
-
-body[data-theme] .section:not(.hero):not(.footer)::after {
-  bottom: 12px;
+body[data-theme] .hero::after {
+  bottom: clamp(28px, 6vh, 72px);
   transform: translateX(-50%) rotate(180deg);
 }
 
-body[data-theme] .section:not(.hero):not(.footer) > * {
-  position: relative;
-  z-index: 1;
+body[data-theme] .closing-section::before {
+  top: 10px;
+  transform: translateX(-50%);
+}
+
+body[data-theme] .closing-section::after {
+  bottom: 10px;
+  transform: translateX(-50%) rotate(180deg);
 }
 
 .section > * + * {
@@ -791,6 +792,23 @@ h3 {
   margin-left: auto;
   margin-right: auto;
   text-align: center;
+}
+
+.gallery-section h2::after,
+.gift-section h2::after,
+.quran-card h2::after,
+.closing-section h2::after {
+  display: block !important;
+  width: min(260px, 56vw) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.gallery-section h2::before,
+.gift-section h2::before,
+.quran-card h2::before,
+.closing-section h2::before {
+  display: none !important;
 }
 
 #galeri.gallery-section {
@@ -2032,18 +2050,30 @@ body.is-loading .page-loader {
 .closing-section {
   max-width: 860px;
   text-align: center;
-  padding-top: 30px;
-  padding-bottom: 24px;
+  padding-top: 68px;
+  padding-bottom: 64px;
+}
+
+.closing-section > * {
+  position: relative;
+  z-index: 1;
 }
 
 .closing-section h2 {
-  max-width: 18ch;
+  max-width: min(18ch, 620px);
   margin-left: auto;
   margin-right: auto;
 }
 
+.closing-section .section-kicker {
+  text-align: center;
+}
+
 .closing-section .lead {
   max-width: 58ch;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 
 .footer-names {
@@ -2372,10 +2402,15 @@ body.theme-motion-off .hero-cloud-photo {
     padding: 40px 28px;
   }
 
-  body[data-theme] .section:not(.hero):not(.footer)::before,
-  body[data-theme] .section:not(.hero):not(.footer)::after {
-    width: min(230px, 70%);
+  body[data-theme] .hero::after,
+  body[data-theme] .closing-section::before,
+  body[data-theme] .closing-section::after {
+    width: min(330px, 88%);
     height: 48px;
+  }
+
+  body[data-theme] .hero::after {
+    bottom: 18px;
   }
 
   .gallery-section {

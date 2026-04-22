@@ -225,8 +225,9 @@ body[data-theme="royal"] .gift-copy-btn:hover {
     max-width: 32ch;
   }
 
-  body[data-theme="royal"] .section:not(.hero):not(.footer)::before,
-  body[data-theme="royal"] .section:not(.hero):not(.footer)::after {
+  body[data-theme="royal"] .hero::after,
+  body[data-theme="royal"] .closing-section::before,
+  body[data-theme="royal"] .closing-section::after {
     width: min(230px, 70%);
     height: 48px;
     opacity: 0.22;
