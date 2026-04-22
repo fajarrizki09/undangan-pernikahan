@@ -21,6 +21,8 @@ body[data-theme="minimal"] {
   --font-heading: "Cormorant Garamond", serif;
   --font-display: "Great Vibes", cursive;
   --font-accent: "Manrope", sans-serif;
+  --section-ornament-color: #485640;
+  --section-ornament-opacity: 0.1;
   font-size: 16px;
 }
 

@@ -22,6 +22,8 @@ body[data-theme="royal"] {
   --font-heading: "Cormorant Garamond", serif;
   --font-display: "Pinyon Script", cursive;
   --font-accent: "Montserrat", sans-serif;
+  --section-ornament-color: #bba36b;
+  --section-ornament-opacity: 0.28;
 }
 
 body[data-theme="royal"] .section h2,
@@ -221,6 +223,13 @@ body[data-theme="royal"] .gift-copy-btn:hover {
 
   body[data-theme="royal"] .lead {
     max-width: 32ch;
+  }
+
+  body[data-theme="royal"] .section:not(.hero):not(.footer)::before,
+  body[data-theme="royal"] .section:not(.hero):not(.footer)::after {
+    width: min(230px, 70%);
+    height: 48px;
+    opacity: 0.22;
   }
 
   body[data-theme="royal"] .section h2::before,
