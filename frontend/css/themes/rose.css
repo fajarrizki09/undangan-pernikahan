@@ -22,7 +22,13 @@ body[data-theme="rose"] {
   --font-display: "Great Vibes", cursive;
   --font-accent: "Manrope", sans-serif;
   --section-ornament-color: #b56f78;
-  --section-ornament-opacity: 0.18;
+  --section-ornament-opacity: 0.34;
+}
+
+body[data-theme="rose"] .section:not(.hero):not(.footer)::before,
+body[data-theme="rose"] .section:not(.hero):not(.footer)::after {
+  width: min(430px, 82%);
+  height: 82px;
 }
 
 body[data-theme="rose"] .section h2 {
@@ -334,4 +340,13 @@ body[data-theme="rose"] .section:not(.hero):not(.footer)::after {
   opacity: var(--section-ornament-opacity);
   transform: translateX(-50%) rotate(180deg);
   z-index: 0;
+}
+
+@media (max-width: 520px) {
+  body[data-theme="rose"] .section:not(.hero):not(.footer)::before,
+  body[data-theme="rose"] .section:not(.hero):not(.footer)::after {
+    width: min(330px, 88%);
+    height: 66px;
+    opacity: 0.38;
+  }
 }
