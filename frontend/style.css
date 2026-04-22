@@ -842,6 +842,40 @@ h3 {
   padding-top: 28px;
 }
 
+@media (min-width: 901px) {
+  .mempelai-intro {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.7fr) minmax(420px, 1fr);
+    column-gap: clamp(36px, 6vw, 82px);
+    align-items: center;
+    padding-top: 70px;
+    padding-bottom: 70px;
+  }
+
+  .mempelai-intro .section-kicker,
+  .mempelai-intro .bismillah-title,
+  .mempelai-intro .lead {
+    grid-column: 1;
+    margin-left: 0;
+    margin-right: 0;
+    text-align: left;
+  }
+
+  .mempelai-intro .bismillah-title {
+    max-width: 11ch;
+  }
+
+  .mempelai-intro .lead {
+    max-width: 46ch;
+  }
+
+  .mempelai-intro .couple-grid {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    margin-top: 0;
+  }
+}
+
 .section-kicker {
   margin: 0;
   text-align: left;
@@ -1368,24 +1402,24 @@ h3 {
   bottom: 18px;
   width: 3px;
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(86, 125, 104, 0.95), rgba(216, 176, 125, 0.18));
-  box-shadow: 0 0 0 6px rgba(255, 243, 236, 0.6);
+  background: linear-gradient(180deg, var(--sage), color-mix(in srgb, var(--champagne) 46%, transparent));
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--sage-soft) 44%, transparent);
 }
 
 .timeline article {
   position: relative;
   margin-left: 34px;
-  border: 1px solid rgba(217, 194, 180, 0.9);
+  border: 1px solid var(--line);
   border-radius: 28px;
   padding: 28px 30px;
   background:
-    radial-gradient(circle at top right, rgba(247, 218, 210, 0.3), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 250, 246, 0.92));
+    radial-gradient(circle at top right, color-mix(in srgb, var(--champagne) 18%, transparent), transparent 42%),
+    linear-gradient(180deg, color-mix(in srgb, var(--paper) 86%, white), color-mix(in srgb, var(--sage-soft) 18%, var(--paper)));
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 26px;
   align-items: center;
-  box-shadow: 0 20px 40px rgba(44, 68, 57, 0.08);
+  box-shadow: 0 20px 40px color-mix(in srgb, var(--sage) 12%, transparent);
 }
 
 .timeline article::before {
@@ -1396,9 +1430,9 @@ h3 {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f0d0c0, #c98f77);
-  border: 3px solid rgba(255, 249, 245, 0.96);
-  box-shadow: 0 0 0 6px rgba(233, 209, 197, 0.32);
+  background: linear-gradient(135deg, var(--paper), var(--sage));
+  border: 3px solid color-mix(in srgb, var(--paper) 96%, white);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--sage) 18%, transparent);
 }
 
 .timeline-content {

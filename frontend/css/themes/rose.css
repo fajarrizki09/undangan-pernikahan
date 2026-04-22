@@ -247,6 +247,16 @@ body[data-theme="rose"] .story-moon {
   box-shadow: 0 18px 38px rgba(145, 91, 96, 0.18);
 }
 
+body[data-theme="rose"] .timeline::before {
+  background: linear-gradient(180deg, rgba(181, 111, 120, 0.82), rgba(197, 164, 111, 0.24));
+  box-shadow: 0 0 0 6px rgba(181, 111, 120, 0.08);
+}
+
+body[data-theme="rose"] .timeline article::before {
+  background: linear-gradient(135deg, #fffaf8, #b56f78);
+  box-shadow: 0 0 0 6px rgba(181, 111, 120, 0.16);
+}
+
 body[data-theme="rose"] .gallery-grid[data-style="polaroid"] .gallery-item {
   transform: rotate(-1.2deg);
 }
